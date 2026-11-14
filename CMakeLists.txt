@@ -1482,6 +1482,20 @@ add_custom_target(bf2_client_plugins
 # point where it hurts, which is a live debugging session.
 add_dependencies(bf2_client_plugins bf2_textureatlas_native bf2_renddx9_native bf2_swiffplayer_native bf2_bf2audio_native)
 add_dependencies(bf2_client bf2_client_plugins)
+# [CHOSEN, not recovered] The rebuilt bot AI, staged as the client's "aidll.dll" (BF2Engine's client
+# spelling). The retail AIDLL.dll in the game directory cannot run against the rebuilt host (issue
+# #7), and LoadLibraryBf's relative ".\\aidll.dll" resolves from the application directory first.
+# The client and dedicated AI images share one source manifest, so bf2_aidll's output is reused.
+if(TARGET bf2_aidll)
+    add_custom_target(bf2_client_aidll
+        COMMAND "${CMAKE_COMMAND}" -E copy_if_different
+                "$<TARGET_FILE:bf2_aidll>" "${BF2_CLIENT_OUTPUT_DIR}/aidll.dll"
+        COMMENT "Staging the rebuilt AIDLL_w32ded.dll beside the diagnostic BF2.exe as aidll.dll"
+        VERBATIM
+    )
+    add_dependencies(bf2_client_aidll bf2_aidll)
+    add_dependencies(bf2_client bf2_client_aidll)
+endif()
 # System imports present in the retail BF2.exe.
 target_link_libraries(bf2_client PRIVATE
     advapi32 crypt32 dbghelp dinput8 dsound dxguid gdi32 ole32 psapi shell32 user32 winmm ws2_32
