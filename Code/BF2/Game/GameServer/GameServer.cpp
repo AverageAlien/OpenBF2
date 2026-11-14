@@ -95,6 +95,8 @@
 #if !DEDICATED
 #include "../Common/ClientVoteManager.h"         // update()'s listen-server vote tick (BF2.exe 4D11AD)
 #include "../../Sound/BfSound.h"                // g_bfSound - update()'s listen-server sound step (BF2.exe 4D1148)
+#include "../Main/BF2ClientSeams.h"             // hudManager - the radio methods' listen-server spam notice
+#include "../../Menu/BF2HudManager.h"
 #endif
 // the frame loop
 #include "ServerInfo.h"                         // the server-info broadcast (real class since this batch)
@@ -1462,22 +1464,58 @@ bool GameServer::destroyObject(world::IObject* object)
     return Game::destroyObject(object);
 }
 
+#if !DEDICATED
+namespace {
+
+// The listen server's spam notice for the host's own radio message, the same body as
+// GameClient::radioMessage's (BF2.exe 0x4C5228 and 0x4C4FB6).
+void showRadioSpamNotice(GameServer* server, world::IPlayer* player)
+{
+    server->localGameInfoMessage(static_cast<TargetChannel>(14), std::string("spam"));
+    if (hudManager)
+    {
+        const int blockedDuration = serverInfo->m_block.radioBlockedDuration;
+        const int seconds = static_cast<int>(
+            player->getRadioSpamFilterFlagTimer()
+            + blockedDuration + 1.0f
+            - WorldPref::getWorldTime());
+        const std::wstring text = hudManager->replaceWideTokenFromInt(
+            hudManager->getLocalizedString(
+                std::string("HUD_HUD_MENU_CHAT_SPAM_MESSAGE")),
+            std::string("#SEC#"), seconds);
+        hudManager->addServerChat(text, player->getTeam());
+    }
+}
+
+} // namespace
+#endif
+
+// [PLATFORM] The three radio methods below carry listen-server arms (BF2.exe 0x4C5180, 0x4C4F10,
+// 0x4C53F0) that the dedicated images fold away: the relay never sends a message back to its
+// sender, so a hosting player hears and sees their own message only through the local playback.
 bool GameServer::radioMessage(TargetChannel channel, const std::string& message,
                               world::IPlayer* player, unsigned int extra,
-                              bool /*unused*/, bool bypassSpamCheck)
+                              bool localPlayback, bool bypassSpamCheck)
 {
     if (!player)
         return true;
 
+#if !DEDICATED
+    if (player != world::playerManager->getLocalHumanPlayer())
+        localPlayback = false;
+#else
     // Retail performs this virtual call even though it discards the result.
     world::playerManager->getLocalHumanPlayer();
+#endif
 
     int messageId;
     const std::string empty1;
     const std::string empty2;
-    if (static_cast<GameLogic*>(gameLogic)->getVoiceMessages()->namesToIds(
-            &messageId, 0, 0, message, empty1, empty2) &&
-        (bypassSpamCheck || !player->getIsThisASpam(true)))
+    if (!static_cast<GameLogic*>(gameLogic)->getVoiceMessages()->namesToIds(
+            &messageId, 0, 0, message, empty1, empty2))
+        return true;
+
+    if (bypassSpamCheck || !player->getIsThisASpam(true))
     {
         EventNode* node = createRadioMessageReceivedEvent(
             -1,
@@ -1487,13 +1525,25 @@ bool GameServer::radioMessage(TargetChannel channel, const std::string& message,
             static_cast<unsigned char>(extra),
             static_cast<int>(channel), 3);
         eventManager->postEvent(ECNetwork, node, 0.0f);
+#if !DEDICATED
+        if (!isDedicated() && localPlayback)
+        {
+            const int id   = player->getId();                 // getId first in this arm
+            const int team = player->getTeam();
+            playbackRadioMessage(channel, static_cast<ChannelMessageType>(3), team, id, messageId);
+        }
+#endif
     }
+#if !DEDICATED
+    else if (!isDedicated() && localPlayback && !player->getIsAIPlayer())
+        showRadioSpamNotice(this, player);
+#endif
     return true;
 }
 
 bool GameServer::radioMessageFromPlayer(TargetChannel channel, const std::string& message,
                                         unsigned int playerId, unsigned int extra,
-                                        bool /*unused*/, bool bypassSpamCheck)
+                                        bool localPlayback, bool bypassSpamCheck)
 {
     world::IPlayer* player = world::playerManager->getPlayerFromId(static_cast<int>(playerId));
     if (!player)
@@ -1502,9 +1552,11 @@ bool GameServer::radioMessageFromPlayer(TargetChannel channel, const std::string
     int messageId;
     const std::string empty1;
     const std::string empty2;
-    if (static_cast<GameLogic*>(gameLogic)->getVoiceMessages()->namesToIds(
-            &messageId, 0, 0, message, empty1, empty2) &&
-        (bypassSpamCheck || !player->getIsThisASpam(true)))
+    if (!static_cast<GameLogic*>(gameLogic)->getVoiceMessages()->namesToIds(
+            &messageId, 0, 0, message, empty1, empty2))
+        return true;
+
+    if (bypassSpamCheck || !player->getIsThisASpam(true))
     {
         const int connectionId = player->getIsAIPlayer()
                                    ? static_cast<unsigned char>(playerId)
@@ -1517,12 +1569,24 @@ bool GameServer::radioMessageFromPlayer(TargetChannel channel, const std::string
             static_cast<unsigned char>(extra),
             static_cast<int>(channel), 3);
         eventManager->postEvent(ECNetwork, node, 0.0f);
+#if !DEDICATED
+        if (!isDedicated() && localPlayback)
+        {
+            const int id   = player->getId();                 // the player's id, not the argument
+            const int team = player->getTeam();
+            playbackRadioMessage(channel, static_cast<ChannelMessageType>(3), team, id, messageId);
+        }
+#endif
     }
+#if !DEDICATED
+    else if (!isDedicated() && localPlayback && !player->getIsAIPlayer())
+        showRadioSpamNotice(this, player);
+#endif
     return true;
 }
 
 bool GameServer::gameInfoMessage(TargetChannel channel, const std::string& message,
-                                 unsigned int a, unsigned int b, bool /*unused*/)
+                                 unsigned int a, unsigned int b, bool localPlayback)
 {
     int messageId;
     const std::string empty1;
@@ -1538,6 +1602,12 @@ bool GameServer::gameInfoMessage(TargetChannel channel, const std::string& messa
             static_cast<unsigned char>(b),
             static_cast<int>(channel), 0);
         eventManager->postEvent(ECNetwork, node, 0.0f);
+#if !DEDICATED
+        // `a` in the team position and `b` in the sender position, as GameClient::gameInfoMessage.
+        if (!isDedicated() && localPlayback)
+            playbackRadioMessage(channel, static_cast<ChannelMessageType>(0),
+                                 static_cast<int>(a), static_cast<int>(b), messageId);
+#endif
     }
     return true;
 }
