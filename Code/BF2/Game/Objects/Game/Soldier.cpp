@@ -2922,8 +2922,8 @@ IObject* SoldierTemplate::createObject() const
     return new Soldier(this);
 }
 
-// Rearms the alternate-fire latch for a man-down player receiving a fire message.
-// Primary fire and other messages have no effect.
+// Handles a fire message for a man-down player: alternate fire rearms its latch, and on a client a
+// primary-fire press by the local human calls for a medic. Other messages have no effect.
 void Soldier::handleManDownActions(TemplateMessage message, IPlayer* player)
 {
     if (static_cast<int>(message) != 6)
@@ -2931,7 +2931,19 @@ void Soldier::handleManDownActions(TemplateMessage message, IPlayer* player)
 
     switch (player->getCurrentFiringButton())     // IPlayer vslot ELF +0x208 / PE +0x204
     {
-    case io::PIFire:                              // 8 - explicit and empty; see the note above
+    case io::PIFire:                              // 8
+#if !DEDICATED
+        // [PLATFORM] BF2.exe 0x5A5BF7..0x5A5C3B, the client arm the dedicated ELF leaves empty: a
+        // fresh primary-fire press by the local human asks for a revive (hud node 49), at most three
+        // calls per death counting the automatic one in handleMessage's die case.
+        if (!isDedicated() && player == playerManager->getLocalHumanPlayer()
+            && m_fireButtonState[0].translateMessage(6) == 7                  // PE this+0x32C
+            && m_medicCalled < 3)
+        {
+            gameCallForSpecialist(player, static_cast<HudNodeTypes>(49));
+            ++m_medicCalled;
+        }
+#endif
         break;
 
     case io::PIAltFire:                           // 31
