@@ -68,6 +68,10 @@
 #include "../../Main/Game.h"                         // isDedicated() - the same arm (inline true on the server)
 #include "../../../Scene/Object/WorldObjTemplPortal/PortalManager.h"   // purgePortalPassingObject (SimpleObject)
 #include "../../../Scene/Object/ObjectUtil.h"    // setNetworkableComp
+#if !DEDICATED
+#include "../../../Menu/BF2HudManager.h"           // hudManager->onManDown - handleMessage's client arm
+namespace dice { namespace hfe { extern hud::BF2HudManager* hudManager; } }   // ds:0xA10890
+#endif
 
 namespace dice {
 namespace hfe {
@@ -3165,7 +3169,14 @@ void Soldier::handleMessage(TemplateMessage message, IPlayer* player, bool remot
             {
                 gameCallForSpecialist(occupant, static_cast<HudNodeTypes>(50));
                 ++m_medicCalled;
+#if !DEDICATED
+                // [PLATFORM] BF2.exe 0x5A779A..0x5A77B5, the client arm the dedicated ELF folds to a
+                // discarded lookup: the local human's man-down HUD (KilledInfo, the bottom-left slide-out).
+                if (occupant == playerManager->getLocalHumanPlayer() && hudManager)
+                    hudManager->onManDown();
+#else
                 playerManager->getLocalHumanPlayer();   // discarded - a leftover, reproduced
+#endif
             }
         }
         m_isManDown = 1;
