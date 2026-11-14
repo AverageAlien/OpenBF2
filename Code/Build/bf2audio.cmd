@@ -197,7 +197,7 @@ if errorlevel 1 exit /b 1
 
 set ABI_BAD=0
 for %%E in (getSoundEngine shutdownSoundEngine) do (
-    findstr /r /c:"\<%%E\>" "%OUT%\exports.txt" >nul
+    findstr /l /c:" %%E " "%OUT%\exports.txt" >nul
     if errorlevel 1 (
         echo   exports:      %%E MISSING
         set /a ABI_BAD+=1

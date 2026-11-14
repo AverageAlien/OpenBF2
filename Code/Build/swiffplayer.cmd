@@ -217,9 +217,10 @@ dumpbin /nologo /imports "%BIN%\SwiffPlayer.dll" > "%OUT%\imports.txt"
 if errorlevel 1 exit /b 1
 
 set ABI_BAD=0
-rem Word boundaries prevent deinitDll or _initDll from satisfying the initDll check.
+rem The surrounding spaces stop deinitDll or _initDll from satisfying the initDll check (not \<\>:
+rem Wine's findstr has no word boundaries).
 for %%E in (initDll deinitDll) do (
-    findstr /r /c:"\<%%E\>" "%OUT%\exports.txt" >nul
+    findstr /l /c:" %%E " "%OUT%\exports.txt" >nul
     if errorlevel 1 (
         echo   exports:      %%E MISSING
         set /a ABI_BAD+=1
