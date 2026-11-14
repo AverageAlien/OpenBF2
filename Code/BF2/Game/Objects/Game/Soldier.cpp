@@ -69,7 +69,8 @@
 #include "../../../Scene/Object/WorldObjTemplPortal/PortalManager.h"   // purgePortalPassingObject (SimpleObject)
 #include "../../../Scene/Object/ObjectUtil.h"    // setNetworkableComp
 #if !DEDICATED
-#include "../../../Menu/BF2HudManager.h"           // hudManager->onManDown - handleMessage's client arm
+#include "../../../Menu/BF2HudManager.h"           // hudManager->onManDown - handleMessage's client arms
+#include "../../../Menu/HudVehicleInformation.h"   // updateHudMode - the revive arm
 namespace dice { namespace hfe { extern hud::BF2HudManager* hudManager; } }   // ds:0xA10890
 #endif
 
@@ -3207,6 +3208,16 @@ void Soldier::handleMessage(TemplateMessage message, IPlayer* player, bool remot
                 eventManager->postEvent(static_cast<EventCategory>(3), 7, &payload, 0.0f);
             }
         }
+#if !DEDICATED
+        // [PLATFORM] BF2.exe 0x5A790D..0x5A795A, the client arm the dedicated ELF folds away: the
+        // revived local human's HUD leaves the man-down mode (the bottom-left slides back in).
+        if (!isDedicated())
+        {
+            IPlayer* const local = playerManager->getLocalHumanPlayer();
+            if (getOccupingPlayer() == local && hudManager && hudManager->getVehicleInformation())
+                hudManager->getVehicleInformation()->updateHudMode();
+        }
+#endif
         break;
 
     case 28:

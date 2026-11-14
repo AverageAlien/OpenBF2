@@ -57,6 +57,8 @@ public:
     void setCloseToAmmo(bool);
     void setMouseLook(bool); // 78A790; [INFERRED] name, actual camera/HUD transition
     bool canSelectWeapon(bool checkVehicle); // 78A830; [INFERRED] name
+    // Recomputes m_field170, then the index. Soldier::handleMessage's revive arm calls it too.
+    void updateHudMode();
 private:
     // [INFERRED] names, caller-proven shapes; all bodies are transcribed (HudVehicleFrontiers.cpp,
     // except updateProximity, which lives in HudVehicleInformation.cpp).
@@ -77,7 +79,6 @@ private:
     void refreshVehicle(); // 78D8F0, actual wrapper
     // HUD state and vehicle-index helpers. [INFERRED] Names.
     void applyHudState(int mode);  // the ECHud 2 worker
-    void updateHudMode();          // recomputes m_field170, then the index
     void updateGuiIndex();         // recomputes m_guiIndex from the HUD component
     // Bodies in HudVehicleFrontiers.cpp; all written.
     // [INFERRED] name. - the occupant icon pass, driven both on entry
