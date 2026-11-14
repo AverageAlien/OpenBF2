@@ -3051,6 +3051,23 @@ void as_profile_logout(const gameswf::fn_call& fn)
     }
 }
 
+// The main menu's Quit (PE 0x1004CA70). Saves the current profile, or the global settings when no
+// profile is logged in, then asks the host to quit. The host is fetched before the singleton, as shipped.
+void as_logic_quit(const gameswf::fn_call& fn)
+{
+    SWF_AS_TRACE("as_logic_quit");
+    BusyHost cursorHost = busyOpen();
+    ISwiffHost* h = g_swiffPlayerInstance->getSwiffHost();
+    IBase* local = classManager->getSingleton(renddx9abi::HostString("LocalProfileManager"));
+    ILocalProfileManager* profiles = static_cast<ILocalProfileManager*>(local);
+    if (profiles->getCurrentProfile())
+        (void)profiles->saveCurrentProfile();
+    else
+        (void)profiles->saveGlobalSettings();
+    (void)h->requestQuit();
+    busyClose(cursorHost);
+}
+
 void as_logic_disconnectGame(const gameswf::fn_call& fn)
 {
     SWF_AS_TRACE("as_logic_disconnectGame");
@@ -8980,6 +8997,7 @@ static void registerAsMethods(SwiffAsNamespace* general, SwiffAsNamespace** ns,
         }
         else if (::strcmp(n, "Logic") == 0)
         {
+            ns[i]->registerNativeCompatibleMethod<as_logic_quit>("quit");
             ns[i]->registerNativeCompatibleMethod<as_logic_disconnectGame>("disconnectGame");
             ns[i]->registerNativeCompatibleMethod<as_logic_isGameRunning>("isGameRunning");
             ns[i]->registerNativeCompatibleMethod<as_logic_getActivateReason>("getActivateReason");
