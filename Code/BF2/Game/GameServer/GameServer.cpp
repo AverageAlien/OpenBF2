@@ -4108,8 +4108,15 @@ void GameServer::playerMessageEvent(IEventWrapper& wrapper)
     {
         if (!sender)
             return;
+#if !DEDICATED
+        // [PLATFORM] BF2.exe 0x4C8E8B compares only the id's low byte with 0xFF, so the listen-server
+        // host (id 255) is not counted a second time: GameServer::radioMessage already counted it.
+        if (sender->getIsThisASpam(static_cast<unsigned char>(sender->getId()) != 0xFF))
+            return;
+#else
         if (sender->getIsThisASpam(sender->getId() != -1))                   // +0x30C
             return;
+#endif
     }
 
     for (std::map<unsigned char, IClientConnection*>::iterator it = m_connections.begin();
