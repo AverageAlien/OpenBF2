@@ -94,6 +94,7 @@
 #include "../Main/Game.h"                       // Game::outputChatString - ServerStringMessageEW
 #if !DEDICATED
 #include "../Common/ClientVoteManager.h"         // update()'s listen-server vote tick (BF2.exe 4D11AD)
+#include "../../Sound/BfSound.h"                // g_bfSound - update()'s listen-server sound step (BF2.exe 4D1148)
 #endif
 // the frame loop
 #include "ServerInfo.h"                         // the server-info broadcast (real class since this batch)
@@ -2403,9 +2404,13 @@ bool GameServer::update(int steps, float dt)
             updateConnections(elapsed);
             processGameStateAndSendPackets(elapsed);
         }
-        // [PLATFORM] NOT  - BF2.exe 0x4D1138..0x4D1151, a listen-server arm the dedicated ELF
-        // folded away: `if (!isDedicated() && i == steps - 1)` the sound owner (ds:0xA23DC0) vslot
-        // +0x18(steps). Its identity is unread.
+#if !DEDICATED
+        // [PLATFORM] BF2.exe 0x4D1138..0x4D1151, a listen-server arm the dedicated ELF folded away:
+        // the last step updates the sound owner ds:0xA23DC0 (g_bfSound), vslot +0x18, the same call
+        // GameClient::update makes at 0x4D59A7. Without it a hosted game never schedules a sound.
+        if (!isDedicated() && i == steps - 1)
+            g_bfSound->update(steps);
+#endif
     }
     // [PLATFORM] NOT  - BF2.exe 0x4D1162..0x4D1173: `if (isLightmapRenderingNode())`
     // (0x440530) ds:0x987350 vslot +0x28() - a lightmap-farm tool arm the dedicated ELF folded away.
