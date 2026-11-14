@@ -505,7 +505,7 @@ void BundledMesh::draw(void*,void*,void*)
                     &slot<const Mat4&>(projectionView,0x84),sizeof(Mat4));
         if(state->m_animated)
         {
-            const unsigned int count=m_template->m_dword10C+1;
+            const unsigned int count=m_template->m_nrOfAnimatedUVMatrix+1;
             resizePod(m_parameters.userData.value,count<<6,1,false);
             for(int i=0;i<static_cast<int>(count);++i)
                 std::memcpy(m_parameters.userData.value.first+64*i,

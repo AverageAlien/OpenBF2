@@ -83,7 +83,7 @@ public:
     vc71::map_layout m_materialValues0E8;  // +0E8 packed geom/lod/material -> float
     vc71::map_layout m_map0F4;             // +0F4 packed key -> static gloss float
     vc71::map_layout m_map100;             // +100 packed key -> int, draw material+94
-    unsigned int m_dword10C;              // +10C
+    unsigned int m_nrOfAnimatedUVMatrix;  // +10C GeometryTemplate.nrOfAnimatedUVMatrix
     vc71::vector_layout m_geoms;           // +110 BundledMeshGeom
     unsigned int m_maxPartCount;          // +120
     unsigned char m_hasOpaqueMaterials;   // +124 readMaterials kind!=1

@@ -123,7 +123,7 @@ BundledMeshTemplate::BundledMeshTemplate() : MeshTemplate(),m_refCount(1)
 {
     initialize(m_materials); constructSet(m_instances);
     bundledMeshMapConstruct(m_materialValues0E8); bundledMeshMapConstruct(m_map0F4);
-    bundledMeshMapConstruct(m_map100); m_dword10C=0; initialize(m_geoms);
+    bundledMeshMapConstruct(m_map100); m_nrOfAnimatedUVMatrix=0; initialize(m_geoms);
     m_maxPartCount=0; m_hasOpaqueMaterials=0; m_byte125=0;
     m_hasEnvironmentMap=0; m_compressVertexData=1; m_byte192=0; m_maxTextureRepeat=16;
     m_byte198=0; m_byte199=0; zeroBounds(m_bounds);

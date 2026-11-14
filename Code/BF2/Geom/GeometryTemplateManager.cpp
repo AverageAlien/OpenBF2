@@ -18,6 +18,7 @@
 #include "../IO/Console/Console.h"          // getConsoleWorkingPath: typed (RW-266)
 #endif
 #include "MeshTemplate.h"
+#include "BundledMeshTemplate.h"             // nrOfAnimatedUVMatrix
 
 #include <new>
 
@@ -769,6 +770,28 @@ void setCompressVertexData(bool value) { setTemplateBool(0x78, value); }
 int getMaxTextureRepeat() { return getTemplateInt(0x8C); }
 void setMaxTextureRepeat(int value) { setTemplateInt(0x88, value); }
 
+// RendDX9.dll 0x100B1269: the active template, but only when its class id (+0x10) names a
+// BundledMeshTemplate (ds:1021AEFC).
+BundledMeshTemplate* activeBundledMeshTemplate()
+{
+    IGeometryTemplate* active = activeGeometryTemplate();
+    if (!active || active->getClassId() != 0x870CA651u)
+        return 0;
+    return static_cast<BundledMeshTemplate*>(active);
+}
+
+// nrOfAnimatedUVMatrix - binding 0x100B34A6, executor 0x100B3570: the dword at BundledMeshTemplate
+// +0x10C. The draw uploads that many UV matrices after the identity slot; vehicles author it next to
+// their animatedUV templates (the M1A2's treads and hubs use slots 1..6).
+int getNrOfAnimatedUVMatrix()
+{
+    return static_cast<int>(activeBundledMeshTemplate()->m_nrOfAnimatedUVMatrix);
+}
+void setNrOfAnimatedUVMatrix(int value)
+{
+    activeBundledMeshTemplate()->m_nrOfAnimatedUVMatrix = static_cast<unsigned int>(value);
+}
+
 // setLightmapSizeAll geom lod size: the active template's setLightmapSize (+0x70) with the three
 // arguments as given; a StaticMesh template stores the size only while lightmapOverride is set.
 // The executor fetches the template again without a null check.
@@ -792,6 +815,9 @@ BF2_CONSOLE_PROPERTY_FN(compressVertexData, bool, activeGeometryTemplate() != 0,
                         kGeometryTemplateConsoleTag)
 BF2_CONSOLE_PROPERTY_FN(maxTextureRepeat, int, activeGeometryTemplate() != 0,
                         getMaxTextureRepeat(), setMaxTextureRepeat,
+                        kGeometryTemplateConsoleTag)
+BF2_CONSOLE_PROPERTY_FN(nrOfAnimatedUVMatrix, int, activeBundledMeshTemplate() != 0,
+                        getNrOfAnimatedUVMatrix(), setNrOfAnimatedUVMatrix,
                         kGeometryTemplateConsoleTag)
 
 } // anonymous namespace

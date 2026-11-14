@@ -246,13 +246,13 @@ int BundledMesh::getMaterialCount() const
 void BundledMesh::setUvTranslation(int index,float x,float y)
 {
     // All three setters really use OR, admitting many out-of-range indices (retail defect).
-    if (index>=0 || index<static_cast<int>(m_template->m_dword10C+1))
+    if (index>=0 || index<static_cast<int>(m_template->m_nrOfAnimatedUVMatrix+1))
     { allocateUvMatrices(*this); m_uvMatrices[index].m[8]=x; m_uvMatrices[index].m[9]=y; }
     else uvRangeDiagnostic(index,1423);
 }
 void BundledMesh::setUvRotation(int index,float angle)
 {
-    if (index>=0 || index<static_cast<int>(m_template->m_dword10C+1))
+    if (index>=0 || index<static_cast<int>(m_template->m_nrOfAnimatedUVMatrix+1))
     {
         const float c=static_cast<float>(std::cos(angle)),s=static_cast<float>(std::sin(angle));
         allocateUvMatrices(*this);
@@ -263,7 +263,7 @@ void BundledMesh::setUvRotation(int index,float angle)
 }
 void BundledMesh::setUvTransformation(int index,const Mat4* value)
 {
-    if (index>=0 || index<static_cast<int>(m_template->m_dword10C+1))
+    if (index>=0 || index<static_cast<int>(m_template->m_nrOfAnimatedUVMatrix+1))
     { allocateUvMatrices(*this); m_uvMatrices[index]=*value; }
     else uvRangeDiagnostic(index,1467);
 }

@@ -64,6 +64,36 @@ struct BaseTemplateConsoleAccess
     static U32 getCollisionGroups() { return simpleObject()->m_collisionGroups; }
     static void setCollisionGroups(U32 value) { simpleObject()->m_collisionGroups = value; }
 
+    // The animated-UV block (PE +0x118..+0x16C): plain field reads and writes, no side effects.
+    static bool getAnimatedUVTranslation() { return simpleObject()->m_animatedUVTranslation; }
+    static void setAnimatedUVTranslation(bool value) { simpleObject()->m_animatedUVTranslation = value; }
+    static const Math::Vec2& getAnimatedUVTranslationSpeed() { return simpleObject()->m_animatedUVTranslationSpeed; }
+    static void setAnimatedUVTranslationSpeed(const Math::Vec2& value) { simpleObject()->m_animatedUVTranslationSpeed = value; }
+    static const Math::Vec2& getAnimatedUVTranslationMax() { return simpleObject()->m_animatedUVTranslationMax; }
+    static void setAnimatedUVTranslationMax(const Math::Vec2& value) { simpleObject()->m_animatedUVTranslationMax = value; }
+    static const Math::Vec2& getAnimatedUVTranslationSize() { return simpleObject()->m_animatedUVTranslationSize; }
+    static void setAnimatedUVTranslationSize(const Math::Vec2& value) { simpleObject()->m_animatedUVTranslationSize = value; }
+    static int getAnimatedUVTranslationIndex() { return simpleObject()->m_animatedUVTranslationIndex; }
+    static void setAnimatedUVTranslationIndex(int value) { simpleObject()->m_animatedUVTranslationIndex = value; }
+    static bool getAnimatedUVTranslationReverse() { return simpleObject()->m_animatedUVTranslationReverse; }
+    static void setAnimatedUVTranslationReverse(bool value) { simpleObject()->m_animatedUVTranslationReverse = value; }
+    static bool getAnimatedUVRotation() { return simpleObject()->m_animatedUVRotation; }
+    static void setAnimatedUVRotation(bool value) { simpleObject()->m_animatedUVRotation = value; }
+    static const Math::Vec2& getAnimatedUVRotationScale() { return simpleObject()->m_animatedUVRotationScale; }
+    static void setAnimatedUVRotationScale(const Math::Vec2& value) { simpleObject()->m_animatedUVRotationScale = value; }
+    static int getAnimatedUVRotationIndex() { return simpleObject()->m_animatedUVRotationIndex; }
+    static void setAnimatedUVRotationIndex(int value) { simpleObject()->m_animatedUVRotationIndex = value; }
+    static float getAnimatedUVRotationRadius() { return simpleObject()->m_animatedUVRotationRadius; }
+    static void setAnimatedUVRotationRadius(float value) { simpleObject()->m_animatedUVRotationRadius = value; }
+    static bool getAnimatedUVRotationReverse() { return simpleObject()->m_animatedUVRotationReverse; }
+    static void setAnimatedUVRotationReverse(bool value) { simpleObject()->m_animatedUVRotationReverse = value; }
+    static bool getRotateAsAnimatedUV() { return simpleObject()->m_rotateAsAnimatedUV; }
+    static void setRotateAsAnimatedUV(bool value) { simpleObject()->m_rotateAsAnimatedUV = value; }
+    static const std::string& getRotateAsAnimatedUVObject() { return simpleObject()->m_rotateAsAnimatedUVObject; }
+    static void setRotateAsAnimatedUVObject(const std::string& value) { simpleObject()->m_rotateAsAnimatedUVObject = value; }
+    static bool getRotateAsAnimatedUVReverse() { return simpleObject()->m_rotateAsAnimatedUVReverse; }
+    static void setRotateAsAnimatedUVReverse(bool value) { simpleObject()->m_rotateAsAnimatedUVReverse = value; }
+
     // Typed access to console-bound collision and physics fields.
     static const Math::Vec3& getCenterOfCollisionOffset()          // +108
         { return simpleObject()->m_centerOfCollisionOffset; }
@@ -548,6 +578,53 @@ BF2_CONSOLE_PROPERTY_FN(grip, PhysicsGripFlags,
                         getActiveTemplate(CID_SimpleObjectTemplate) != 0,
                         BaseTemplateConsoleAccess::getGrip(),
                         BaseTemplateConsoleAccess::setGrip, kObjTemplBaseConsoleTag)
+
+// The animated-UV properties - BF2.exe constructors 0x553493..0x55446C, between grip and material,
+// each a direct field of the active SimpleObjectTemplate (e.g. animatedUVTranslationSpeed's executor
+// 0x553680 copies a Vec2 at PE +0x11C). Tank treads and road-wheel hubs scroll and rotate through
+// them; without them BundledMesh's UV matrices stayed at rest.
+BF2_CONSOLE_PROPERTY_FN(animatedUVTranslation, bool, getActiveTemplate(CID_SimpleObjectTemplate) != 0,
+                        BaseTemplateConsoleAccess::getAnimatedUVTranslation(),
+                        BaseTemplateConsoleAccess::setAnimatedUVTranslation, kObjTemplBaseConsoleTag)
+BF2_CONSOLE_PROPERTY_FN(animatedUVTranslationSpeed, Vec2, getActiveTemplate(CID_SimpleObjectTemplate) != 0,
+                        BaseTemplateConsoleAccess::getAnimatedUVTranslationSpeed(),
+                        BaseTemplateConsoleAccess::setAnimatedUVTranslationSpeed, kObjTemplBaseConsoleTag)
+BF2_CONSOLE_PROPERTY_FN(animatedUVTranslationMax, Vec2, getActiveTemplate(CID_SimpleObjectTemplate) != 0,
+                        BaseTemplateConsoleAccess::getAnimatedUVTranslationMax(),
+                        BaseTemplateConsoleAccess::setAnimatedUVTranslationMax, kObjTemplBaseConsoleTag)
+BF2_CONSOLE_PROPERTY_FN(animatedUVTranslationSize, Vec2, getActiveTemplate(CID_SimpleObjectTemplate) != 0,
+                        BaseTemplateConsoleAccess::getAnimatedUVTranslationSize(),
+                        BaseTemplateConsoleAccess::setAnimatedUVTranslationSize, kObjTemplBaseConsoleTag)
+BF2_CONSOLE_PROPERTY_FN(animatedUVTranslationIndex, int, getActiveTemplate(CID_SimpleObjectTemplate) != 0,
+                        BaseTemplateConsoleAccess::getAnimatedUVTranslationIndex(),
+                        BaseTemplateConsoleAccess::setAnimatedUVTranslationIndex, kObjTemplBaseConsoleTag)
+BF2_CONSOLE_PROPERTY_FN(animatedUVTranslationReverse, bool, getActiveTemplate(CID_SimpleObjectTemplate) != 0,
+                        BaseTemplateConsoleAccess::getAnimatedUVTranslationReverse(),
+                        BaseTemplateConsoleAccess::setAnimatedUVTranslationReverse, kObjTemplBaseConsoleTag)
+BF2_CONSOLE_PROPERTY_FN(animatedUVRotation, bool, getActiveTemplate(CID_SimpleObjectTemplate) != 0,
+                        BaseTemplateConsoleAccess::getAnimatedUVRotation(),
+                        BaseTemplateConsoleAccess::setAnimatedUVRotation, kObjTemplBaseConsoleTag)
+BF2_CONSOLE_PROPERTY_FN(animatedUVRotationScale, Vec2, getActiveTemplate(CID_SimpleObjectTemplate) != 0,
+                        BaseTemplateConsoleAccess::getAnimatedUVRotationScale(),
+                        BaseTemplateConsoleAccess::setAnimatedUVRotationScale, kObjTemplBaseConsoleTag)
+BF2_CONSOLE_PROPERTY_FN(animatedUVRotationIndex, int, getActiveTemplate(CID_SimpleObjectTemplate) != 0,
+                        BaseTemplateConsoleAccess::getAnimatedUVRotationIndex(),
+                        BaseTemplateConsoleAccess::setAnimatedUVRotationIndex, kObjTemplBaseConsoleTag)
+BF2_CONSOLE_PROPERTY_FN(animatedUVRotationRadius, float, getActiveTemplate(CID_SimpleObjectTemplate) != 0,
+                        BaseTemplateConsoleAccess::getAnimatedUVRotationRadius(),
+                        BaseTemplateConsoleAccess::setAnimatedUVRotationRadius, kObjTemplBaseConsoleTag)
+BF2_CONSOLE_PROPERTY_FN(animatedUVRotationReverse, bool, getActiveTemplate(CID_SimpleObjectTemplate) != 0,
+                        BaseTemplateConsoleAccess::getAnimatedUVRotationReverse(),
+                        BaseTemplateConsoleAccess::setAnimatedUVRotationReverse, kObjTemplBaseConsoleTag)
+BF2_CONSOLE_PROPERTY_FN(rotateAsAnimatedUV, bool, getActiveTemplate(CID_SimpleObjectTemplate) != 0,
+                        BaseTemplateConsoleAccess::getRotateAsAnimatedUV(),
+                        BaseTemplateConsoleAccess::setRotateAsAnimatedUV, kObjTemplBaseConsoleTag)
+BF2_CONSOLE_PROPERTY_FN(rotateAsAnimatedUVObject, std::string, getActiveTemplate(CID_SimpleObjectTemplate) != 0,
+                        BaseTemplateConsoleAccess::getRotateAsAnimatedUVObject(),
+                        BaseTemplateConsoleAccess::setRotateAsAnimatedUVObject, kObjTemplBaseConsoleTag)
+BF2_CONSOLE_PROPERTY_FN(rotateAsAnimatedUVReverse, bool, getActiveTemplate(CID_SimpleObjectTemplate) != 0,
+                        BaseTemplateConsoleAccess::getRotateAsAnimatedUVReverse(),
+                        BaseTemplateConsoleAccess::setRotateAsAnimatedUVReverse, kObjTemplBaseConsoleTag)
 
 // Collision, simulation frequency and portal-passing properties.
 BF2_CONSOLE_PROPERTY_FN(centerOfCollisionOffset, Vec3,
