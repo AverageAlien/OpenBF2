@@ -96,7 +96,8 @@ void __fastcall od_updateVisible(void* self, void*, float time)
     static_cast<ObjectDrawer*>(self)->updateVisible(time);
 }
 
-void __fastcall od_slot18(void* self, void*)
+// Retail 0x100F7D60 returns with `ret 4`: renderFrame passes the frame time, which the body never reads.
+void __fastcall od_slot18(void* self, void*, float)
 {
     static_cast<ObjectDrawer*>(self)->slot_0x18();
 }
