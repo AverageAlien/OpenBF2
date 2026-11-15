@@ -60,7 +60,7 @@ rem   instrument-and-compare workflow the handoff describes cannot be run.
 rem /DDEDICATED=0 + /FI Core\BuildConfig.h, 2026-09-02: the IMAGE define. This DLL is part of the CLIENT
 rem configuration of the shared source, so client-only regions under #if !DEDICATED are compiled here and
 rem the header errors if a compile line forgets to say which image it builds.
-set FLAGS=/nologo /c %CRT% /std:c++14 /permissive /EHsc /W4 /wd4100 /wd4127 /Zi /FS ^
+set FLAGS=/nologo /c %CRT% /O2 /std:c++14 /permissive /EHsc /W4 /wd4100 /wd4127 /Zi /FS ^
  /DBF2_IMAGE_RENDDX9 %PLUGIN_ABI% /DDEDICATED=0 /FI"%BF2%\Core\BuildConfig.h" /DWIN32 /D_WINDOWS /D_CRT_SECURE_NO_WARNINGS /Fd"%OUT%\RendDX9.pdb"
 rem BF2_RENDDX9_EDITOR=1 (set only by Code\Tools\BF2Editor\renddx9_for_editor.cmd): the editor's own
 rem flavour. /DBF2_IMAGE_EDITOR=1 admits the editor-only regions of shared RendDX9 TUs (AGENTS.md, Editor

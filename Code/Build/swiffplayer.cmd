@@ -65,7 +65,7 @@ rem   "gameswf.h" (as DICE's SwiffPlayer subdir did); the gameswf TUs already re
 rem   this is additive and harmless. "%EXT%" (the root, for "base/xxx.h") stays first.
 rem /DDEDICATED=0 + /FI Core\BuildConfig.h, 2026-09-02: the IMAGE define. This DLL is part of the CLIENT
 rem configuration of the shared source; see Code\Build\renddx9.cmd.
-set FLAGS=/nologo /c %CRT% /std:c++14 /permissive /EHsc /W3 /FS /Zi ^
+set FLAGS=/nologo /c %CRT% /O2 /std:c++14 /permissive /EHsc /W3 /FS /Zi ^
  /I "%EXT%" /I "%EXT%\gameswf" ^
  /DBF2_IMAGE_SWIFFPLAYER %PLUGIN_ABI% /DDEDICATED=0 /FI"%BF2%\Core\BuildConfig.h" /DWIN32 /D_WINDOWS /DNDEBUG /D_CRT_SECURE_NO_WARNINGS /D_CRT_NONSTDC_NO_DEPRECATE ^
  /wd4100 /wd4127 /wd4244 /wd4267 /wd4291 /wd4305 /wd4996 /Fd"%OUT%\SwiffPlayer.pdb"

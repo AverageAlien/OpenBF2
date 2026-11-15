@@ -69,7 +69,7 @@ rem                    keeps the server's null-engine static objects out of Null
 rem /DDEDICATED=0 + /FI Core\BuildConfig.h - the IMAGE define; this DLL is part of the CLIENT
 rem                    configuration of the shared source.
 rem /DNDEBUG         - the shipped image is a release build: no CRT asserts.
-set FLAGS=/nologo /c %CRT% /std:c++14 /permissive /EHsc /W3 /FS /Zi ^
+set FLAGS=/nologo /c %CRT% /O2 /std:c++14 /permissive /EHsc /W3 /FS /Zi ^
  %VORBIS_INC% ^
  /DBF2_IMAGE_BF2AUDIO %PLUGIN_ABI% %VORBIS_DEF% /DDEDICATED=0 /FI"%BF2%\Core\BuildConfig.h" /DWIN32 /D_WINDOWS /DNDEBUG /D_CRT_SECURE_NO_WARNINGS /D_CRT_NONSTDC_NO_DEPRECATE ^
  /wd4100 /wd4127 /wd4244 /wd4267 /wd4291 /wd4305 /wd4996 /Fd"%OUT%\BF2Audio.pdb"
@@ -137,7 +137,7 @@ for %%F in (%SOURCES%) do (
 
 rem The Ogg Vorbis decoder (C, third-party: no image define, no BuildConfig, its own warning set).
 if "%VORBIS_ON%"=="1" (
-    set CFLAGS=/nologo /c %CRT% /W3 /FS /Zi /DWIN32 /D_WINDOWS /DNDEBUG /D_CRT_SECURE_NO_WARNINGS /D_CRT_NONSTDC_NO_DEPRECATE ^
+    set CFLAGS=/nologo /c %CRT% /O2 /W3 /FS /Zi /DWIN32 /D_WINDOWS /DNDEBUG /D_CRT_SECURE_NO_WARNINGS /D_CRT_NONSTDC_NO_DEPRECATE ^
      /I "%OGG%\include" /I "%VORBIS%\include" /I "%VORBIS%\lib" /wd4018 /wd4101 /wd4146 /wd4244 /wd4267 /wd4305 /wd4700 /wd4996 /Fd"%OUT%\BF2Audio.pdb"
     for %%F in ("%OGG%\src\bitwise.c" "%OGG%\src\framing.c" "%VORBIS%\lib\analysis.c" "%VORBIS%\lib\bitrate.c" "%VORBIS%\lib\block.c" ^
                 "%VORBIS%\lib\codebook.c" "%VORBIS%\lib\envelope.c" "%VORBIS%\lib\floor0.c" "%VORBIS%\lib\floor1.c" "%VORBIS%\lib\info.c" ^
