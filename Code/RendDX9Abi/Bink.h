@@ -38,6 +38,8 @@ struct BINKSUMMARY
     unsigned int TotalReadTime;
     unsigned int TotalVideoDecompTime;
     unsigned int TotalAudioDecompTime;
+    unsigned int TotalIdleReadTime;
+    unsigned int TotalBackReadTime;
     unsigned int TotalReadSpeed;
     unsigned int SlowestFrameTime;
     unsigned int Slowest2FrameTime;
@@ -51,6 +53,9 @@ struct BINKSUMMARY
     unsigned int Highest1SecRate;
     unsigned int Highest1SecFrame;
 };
+
+// BinkGetSummary writes the whole SDK structure.
+static_assert(sizeof(BINKSUMMARY) == 0x7C, "BINKSUMMARY: 31 dwords");
 
 // The BinkCopyToBuffer surface-format flag the wrapper uses to write 32-bit bgra into a locked D3D
 // texture (D3DFMT_X8R8G8B8). BINKSURFACE32 in the SDK.
