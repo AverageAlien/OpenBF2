@@ -5,6 +5,7 @@
 #include "Ref2System.h"
 #include "Bf2MenuMapNode.h"
 #include "HudAmmo.h"
+#include "HudCcip.h"
 #include "HudVehicleInformation.h"
 #include "HudInformationAdapter.h"
 #include "HudKitSelection.h"
@@ -128,6 +129,7 @@ bool BF2HudManager::update(float delta, world::IPlayer* player, Vec3 direction)
             }
             if (hudAmmo) hudAmmo->update(delta);
             if (hudVehicleInformation) hudVehicleInformation->update(delta);
+            if (hudCcip) hudCcip->update(delta);   // [CHOSEN, not recovered] OpenBF2 CCIP sight
             ref2System->update(delta);
             if (hudChat) hudChat->update(delta);
             if (m_field104->getBool("ShowRankUpIcon") && subtractTimer(m_field234, delta, false))

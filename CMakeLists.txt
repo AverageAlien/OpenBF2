@@ -268,6 +268,7 @@ set(bf2_client_only_sources
     "${BF2_ROOT}/Menu/HudCommander.cpp"     # commander selections/bindings/abilities; row helper open
     "${BF2_ROOT}/Menu/HudSquad.cpp"
     "${BF2_ROOT}/Menu/HudAmmo.cpp"
+    "${BF2_ROOT}/Menu/HudCcip.cpp"         # [CHOSEN, not recovered] OpenBF2 CCIP sight
     "${BF2_ROOT}/Menu/HudVehicleInformation.cpp"
     "${BF2_ROOT}/Menu/HudVehicleFrontiers.cpp" # named diagnostic stops for that class's unrecovered leaves
     "${BF2_ROOT}/Menu/BfEditData.cpp"       # complete edit-data family and descriptor

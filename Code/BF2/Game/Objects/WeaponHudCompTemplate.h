@@ -46,6 +46,9 @@ struct WeaponHudInfo
     bool unknownBool0; // [UNRESOLVED] ctor intentionally leaves these two bytes untouched.
     bool unknownBool1;
     int enablePostProcessingOnGuiIndex;
+    // [CHOSEN, not recovered] OpenBF2 extension, not in retail: weaponHud.ccip. 0 = off,
+    // 1 = publish the predicted impact point (CcipPosX/CcipPosY/CcipShow, Menu/HudCcip.cpp).
+    int ccip;
 };
 
 struct WeaponHudIcons
@@ -119,6 +122,10 @@ public:
     virtual void  setDisplaySelectOnActivation(bool);virtual bool getDisplaySelectOnActivation();
     virtual ~WeaponHudCompTemplate();
     virtual bool  makeScript(io::IStream*);
+
+    // [CHOSEN, not recovered] Nonvirtual so the retail vtable stays unchanged.
+    void setCcip(int);
+    int  getCcip();
 
 protected:
     friend class WeaponHudComp;

@@ -12,6 +12,7 @@
 
 namespace dice {
 namespace hfe {
+namespace hud { class HudCcip; }
 namespace world {
 
 class Material;      // Physics/Material.h - the +0x198 cache's pointee
@@ -44,6 +45,7 @@ class GenericProjectileTemplate : public BundleTemplate, public IProjectileObjec
 {
     // Runtime projectiles read configuration and maintain lazy caches directly.
     friend class GenericProjectile;
+    friend class hud::HudCcip;   // [CHOSEN, not recovered] OpenBF2 CCIP: lifetime, acceleration, maxSpeed
 
 public:
     GenericProjectileTemplate();                              // read in full

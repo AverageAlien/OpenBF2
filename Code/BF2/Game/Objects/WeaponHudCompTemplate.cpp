@@ -225,6 +225,7 @@ WeaponHudCompTemplate::WeaponHudCompTemplate()
     m_hudInfo.firstLockSound = "";
     m_hudInfo.secondLockSound = "";
     m_hudInfo.overheatSound = "";
+    m_hudInfo.ccip = 0;
 }
 
 WeaponHudCompTemplate::~WeaponHudCompTemplate() {}
@@ -372,6 +373,9 @@ bool WeaponHudCompTemplate::getDisplaySelectOnActivation()
     return m_hudInfo.displaySelectOnActivation;
 }
 
+void WeaponHudCompTemplate::setCcip(int value) { m_hudInfo.ccip = value; }
+int WeaponHudCompTemplate::getCcip() { return m_hudInfo.ccip; }
+
 bool WeaponHudCompTemplate::makeScript(io::IStream* stream)
 {
     std::ostringstream out;
@@ -429,6 +433,8 @@ bool WeaponHudCompTemplate::makeScript(io::IStream* stream)
     if (m_hudInfo.displaySelectOnActivation)
         out << "ObjectTemplate.weaponHud.displaySelectOnActivation "
             << m_hudInfo.displaySelectOnActivation << std::endl;
+    if (m_hudInfo.ccip)
+        out << "ObjectTemplate.weaponHud.ccip " << m_hudInfo.ccip << std::endl;
     if (m_hudInfo.enablePostProcessingOnGuiIndex != -1)
         out << "ObjectTemplate.weaponHud.enablePostProcessingOnGuiIndex "
             << m_hudInfo.enablePostProcessingOnGuiIndex << std::endl;

@@ -15,6 +15,7 @@
 namespace dice {
 namespace hfe {
 namespace ai { class AIObjectUnit; class WeaponObject; class BFCollisionHandler; class BFObjectEnvironment; }   // field readers, friended below
+namespace hud { class HudCcip; }
 namespace world {
 
 class ArtilleryHandler;
@@ -163,6 +164,8 @@ protected:
     friend class GenericFireArm;                 // m_aiTemplate (+296) - GenericFireArm::init
                                                 // looks its AI weapon template up by that name
     friend class ArtilleryHandler;               // projectile gravity modifier in ballistic solve
+    friend class hud::HudCcip;                   // [CHOSEN, not recovered] OpenBF2 CCIP: projectile drag,
+                                                // mass, gravity modifier and physics type
     friend class PreDestinedFollowComp;           // the shipped debug ballistic trace reads it
     friend class PhysicsNode;                   // m_floaterMod (+0x88), in updateRotationalPhysics'
                                                 // under-water damping branch

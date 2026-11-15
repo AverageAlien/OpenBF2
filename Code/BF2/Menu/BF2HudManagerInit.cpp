@@ -1,5 +1,6 @@
 // HUD initialization. [INFERRED] Source split from Menu/BF2HudManager.cpp.
 #include "BF2HudManager.h"
+#include "HudCcip.h"
 #include "HudAwardCatalogue.h"
 #if !DEDICATED
 #include "HudVoip.h"
@@ -243,6 +244,11 @@ bool BF2HudManager::registerHudData()
     static_cast<HudInformationLayer*>(g_hudInformationLayer)->registerFloat("CommanderRightNameColorGreen",&m_field358);
     static_cast<HudInformationLayer*>(g_hudInformationLayer)->registerFloat("CommanderRightNameColorBlue",&m_field354);
     static_cast<HudInformationLayer*>(g_hudInformationLayer)->registerBool("InvalidVehicleDropArea",&m_field35c);
+    // [CHOSEN, not recovered] OpenBF2 CCIP sight; registers once, a second registration aborts.
+    if (!hudCcip) {
+        hudCcip=new HudCcip;
+        hudCcip->registerData();
+    }
     return true;
 }
 } } }

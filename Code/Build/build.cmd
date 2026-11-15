@@ -169,6 +169,7 @@ for /r "%ROOT%" %%F in (*.cpp) do (
             if /i "%%~fF"=="%ROOT%\Menu\HudCommander.cpp" set "ENGINE_OBJECT=0"
             if /i "%%~fF"=="%ROOT%\Menu\HudSquad.cpp" set "ENGINE_OBJECT=0"
             if /i "%%~fF"=="%ROOT%\Menu\HudAmmo.cpp" set "ENGINE_OBJECT=0"
+            if /i "%%~fF"=="%ROOT%\Menu\HudCcip.cpp" set "ENGINE_OBJECT=0"
             if /i "%%~fF"=="%ROOT%\Menu\HudVehicleInformation.cpp" set "ENGINE_OBJECT=0"
             if /i "%%~fF"=="%ROOT%\Menu\BfEditData.cpp" set "ENGINE_OBJECT=0"
             if /i "%%~fF"=="%ROOT%\Menu\BfEditNode.cpp" set "ENGINE_OBJECT=0"

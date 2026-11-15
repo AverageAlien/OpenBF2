@@ -1283,6 +1283,8 @@ cl %FLAGS0% "%~dp0..\BF2\Menu\HudSquad.cpp"
 if errorlevel 1 set /a RC+=1
 cl %FLAGS0% "%~dp0..\BF2\Menu\HudAmmo.cpp"
 if errorlevel 1 set /a RC+=1
+cl %FLAGS0% "%~dp0..\BF2\Menu\HudCcip.cpp"
+if errorlevel 1 set /a RC+=1
 cl %FLAGS0% "%~dp0..\BF2\Menu\HudVehicleInformation.cpp"
 if errorlevel 1 set /a RC+=1
 cl %FLAGS0% "%~dp0..\BF2\Menu\HudVehicleFrontiers.cpp"

@@ -279,6 +279,8 @@ HUD_PROPERTY(weaponHud.enablePostProcessingOnGuiIndex, int, activeWeaponHud(), s
 HUD_PROPERTY(weaponHud.firstLockSound, std::string, activeWeaponHud(), setFirstLockSound, getFirstLockSound)
 HUD_PROPERTY(weaponHud.secondLockSound, std::string, activeWeaponHud(), setSecondLockSound, getSecondLockSound)
 HUD_PROPERTY(weaponHud.overheatSound, std::string, activeWeaponHud(), setOverheatSound, getOverheatSound)
+// [CHOSEN, not recovered] OpenBF2 extension: the CCIP switch read by Menu/HudCcip.cpp.
+HUD_PROPERTY(weaponHud.ccip, int, activeWeaponHud(), setCcip, getCcip)
 HUD_CAMERA_MODE_PROPERTY(weaponHud.showOnCamMode, activeWeaponHud(), setShowOnCamMode)
 HUD_METHOD_1_RET(weaponHud.getShowOnCamMode, activeWeaponHud()->getShowOnCamMode, bool, activeWeaponHud() != 0, int)
 HUD_METHOD_1_STATIC(weaponHud.addShowOnCamMode, activeWeaponHud()->addShowOnCamMode, activeWeaponHud() != 0, int)
