@@ -9,6 +9,9 @@
 #include <windows.h>
 
 #include <cstdio>
+#ifdef __MSVC_RUNTIME_CHECKS
+#include <rtcapi.h>
+#endif
 
 namespace renddx9abi {
 namespace {
@@ -253,6 +256,36 @@ LONG CALLBACK vectoredHandler(EXCEPTION_POINTERS* info)
 
 void* s_handle = 0;
 
+#ifdef __MSVC_RUNTIME_CHECKS
+// [TEMP] /RTCs diagnostics: logs each run-time check failure (ESP not preserved across a call)
+// with the call stack as module+RVA. Each distinct caller is reported once.
+int __cdecl rtcErrorHandler(int errorType, const wchar_t*, int, const wchar_t*, const wchar_t*, ...)
+{
+    static void* s_seen[64];
+    static int   s_seenCount = 0;
+
+    void* frames[10];
+    const USHORT count = ::RtlCaptureStackBackTrace(0, 10, frames, 0);
+    void* const key = count > 4 ? frames[4] : 0;
+    for (int i = 0; i < s_seenCount; ++i)
+    {
+        if (s_seen[i] == key)
+            return 0;
+    }
+    if (s_seenCount < 64)
+        s_seen[s_seenCount++] = key;
+
+    logf("[RTC] run-time check failure type %d", errorType);
+    for (USHORT i = 0; i < count; ++i)
+    {
+        char where[MAX_PATH + 32];
+        logf("[RTC]   frame %u: %p %s", static_cast<unsigned>(i), frames[i],
+             describe(frames[i], where, sizeof(where), true));
+    }
+    return 0;
+}
+#endif
+
 } // anonymous namespace
 
 void installCrashReporter()
@@ -263,6 +296,10 @@ void installCrashReporter()
     // First in the chain, so the report is written before anything else can unwind the stack out
     // from under it.
     s_handle = ::AddVectoredExceptionHandler(1, &vectoredHandler);
+#ifdef __MSVC_RUNTIME_CHECKS
+    _RTC_SetErrorFuncW(&rtcErrorHandler);
+    logf("crash reporter: /RTCs failure handler installed");
+#endif
     logf("crash reporter: %s", s_handle ? "installed (first-chance, report-only)"
                                         : "AddVectoredExceptionHandler FAILED");
 }
