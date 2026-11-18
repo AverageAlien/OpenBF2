@@ -43,6 +43,7 @@ GenericFireArmTemplate::GenericFireArmTemplate()
     m_cannotFireGuiIndex = 0;                        // +508
     m_cannotFireTimer = 1.0f;                        // +512
     m_crosshairFireTime = 3.0f;                      // +516
+    m_breechGroup = 0;                               // OpenBF2 extension
 }
 
 // Console setters that also update derived state.

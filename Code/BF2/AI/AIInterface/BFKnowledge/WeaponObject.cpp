@@ -355,6 +355,21 @@ int WeaponObject::getProjectileMaterial() const      { return m_template->m_proj
 world::IObject* WeaponObject::getProjectile() const  { return m_weaponObject->getProjectile(); }
 bool WeaponObject::hasTargetLocked() const           { return m_weaponObject->hasTargetLock(); }
 
+// [CHOSEN, not recovered] OpenBF2 extension: ObjectTemplate.breechGroup. GenericFireArm is the
+// only IWeaponObject implementation.
+int WeaponObject::getBreechGroup() const
+{
+    return static_cast<const world::GenericFireArm*>(m_weaponObject)->getBreechGroup();
+}
+bool WeaponObject::isBreechHolder() const
+{
+    return static_cast<const world::GenericFireArm*>(m_weaponObject)->isBreechHolder();
+}
+bool WeaponObject::isBreechLoaded() const
+{
+    return static_cast<const world::GenericFireArm*>(m_weaponObject)->isBreechLoaded();
+}
+
 // every current magazine's ammunition, summed.
 int WeaponObject::getCurrentAmmo() const
 {

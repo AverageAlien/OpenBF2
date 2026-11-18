@@ -120,6 +120,8 @@ GenericFireArm::GenericFireArm(const GenericFireArmTemplate* objectTemplate)
     , m_byte208(false)
     , m_enableTick(0)
     , m_byte210(false)
+    , m_breechHolder(0)
+    , m_breechCycleStartTick(0)
 {
     // m_fireButtons[3] default-construct here - the ELF runs FireButtonState::FireButtonState()
     // exactly three times over +0x1F8/+0x1FC/+0x200. m_projectiles and m_player likewise.
@@ -1997,6 +1999,77 @@ float GenericFireArm::getTimeToNotAllowChange() { return 1.0f; }       // fld1
 int GenericFireArm::getFireAtTick() const
 {
     return m_fireComp ? static_cast<int>(m_fireComp->getFireAtTick()) : 0;
+}
+
+// [CHOSEN, not recovered] OpenBF2 extension, not in retail: ObjectTemplate.breechGroup.
+// Firearms of one seat with the same nonzero group share one breech (tank APFSDS and HE).
+// PlayerControlObject::setActiveWeapon calls takeBreech when a member is selected. If another
+// member holds the breech, this one unloads its own round and runs a full load cycle: the fire
+// gate (60 / roundsPerMinute) through m_deployDoneTick, then the automatic reload with its sound
+// and HUD bar. If the holder was still loading, the cycle continues from the holder's start, so
+// switching during a reload costs nothing and switching back and forth never fires faster.
+int GenericFireArm::getBreechGroup() const
+{
+    return m_template->m_breechGroup;
+}
+
+void GenericFireArm::takeBreech(GenericFireArm* previousActive, std::vector<IObject*>* slotWeapons,
+                                int slotCount)
+{
+    const int group = getBreechGroup();
+    GenericFireArm* holder = m_breechHolder;
+    if (!holder && previousActive && previousActive->getBreechGroup() == group)
+        holder = previousActive;
+
+    if (holder && holder != this)
+    {
+        const unsigned int now = static_cast<unsigned int>(WorldPref::getTickCount());
+        unsigned int cycleStart = now;
+        if (holder->m_ammoComp && holder->m_ammoComp->getMag0Size() == 0)
+        {
+            cycleStart = static_cast<unsigned int>(holder->getFireAtTick());
+            if (holder->m_breechCycleStartTick > cycleStart)
+                cycleStart = holder->m_breechCycleStartTick;
+        }
+        m_breechCycleStartTick = cycleStart;
+
+        int gateTicks = 0;
+        if (m_fireComp && m_fireComp->getRoundsPerMinute() > 0)
+            gateTicks = 1800 / m_fireComp->getRoundsPerMinute();
+        m_deployDoneTick = static_cast<int>(cycleStart) + gateTicks;
+
+        if (m_ammoComp)
+            static_cast<AmmoComp*>(m_ammoComp)->unloadChamber();
+    }
+
+    for (int slot = 0; slot < slotCount; ++slot)
+    {
+        for (std::vector<IObject*>::iterator it = slotWeapons[slot].begin();
+             it != slotWeapons[slot].end(); ++it)
+        {
+            IWeaponObject* const weapon =
+                *it ? static_cast<IWeaponObject*>((*it)->queryInterface(IID_IWeaponObject)) : 0;
+            GenericFireArm* const member = static_cast<GenericFireArm*>(weapon);
+            if (member && member->getBreechGroup() == group)
+                member->m_breechHolder = this;
+        }
+    }
+    m_breechHolder = this;
+}
+
+bool GenericFireArm::isBreechHolder() const
+{
+    return m_breechHolder == this;
+}
+
+// Whether the group's breech has a round ready to fire. Without a holder yet, this firearm's own.
+bool GenericFireArm::isBreechLoaded() const
+{
+    const GenericFireArm* const holder = m_breechHolder ? m_breechHolder : this;
+    if (!holder->m_ammoComp || holder->m_ammoComp->getMag0Size() == 0)
+        return false;
+    return static_cast<unsigned int>(holder->m_deployDoneTick)
+           <= static_cast<unsigned int>(WorldPref::getTickCount());
 }
 
 bool GenericFireArm::isFiring() const

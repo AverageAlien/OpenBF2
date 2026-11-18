@@ -83,6 +83,13 @@ public:
     virtual bool hasTargetLocked() const = 0;                                   // +0x124
     virtual IAIObject* getLockedTarget() const = 0;                             // +0x128
     virtual const std::string& getName() const = 0;                             // +0x12C
+
+    // [CHOSEN, not recovered] OpenBF2 extension, appended slots: ObjectTemplate.breechGroup.
+    // The firearm's breech group (0 = none), whether it holds the group's breech, and whether the
+    // group's breech has a round ready to fire.
+    virtual int getBreechGroup() const = 0;                                     // +0x130
+    virtual bool isBreechHolder() const = 0;                                    // +0x134
+    virtual bool isBreechLoaded() const = 0;                                    // +0x138
 };
 
 } // namespace ai

@@ -993,7 +993,11 @@ int BBFire::chooseWeapon(Bot* bot, unsigned int target, float distance)
 
         // 0x20A9E1: an empty magazine that reloads slowly is nearly worthless.
         IWeapon* const iweapon = weapon->getWeapon();
-        if (iweapon->getAmmoInMag(0) == 0 && weapon->getReloadTime() > 1.9f && weapon->hasAutoReload())
+        // [CHOSEN, not recovered] OpenBF2 extension: members of a breech group (tank shells) share
+        // one breech, so their own magazines say nothing; they are scored below instead.
+        const bool sharesBreech = iweapon->getBreechGroup() != 0;
+        if (!sharesBreech && iweapon->getAmmoInMag(0) == 0 && weapon->getReloadTime() > 1.9f
+            && weapon->hasAutoReload())
         {
             static_cast<const IBFTimer*>(CommonSingletonServer::m_iBFTimer)->getGameTime();   // result unused
             if (iweapon->getWeaponGuidingSystem() == 0)
@@ -1020,8 +1024,19 @@ int BBFire::chooseWeapon(Bot* bot, unsigned int target, float distance)
                 score = (1.0f - excess * 0.9f) * score;
             }
         }
-        if (iweapon->getAmmoInMag(0) == 0)
+        if (!sharesBreech && iweapon->getAmmoInMag(0) == 0)
             score = score * 0.33f;
+        // [CHOSEN, not recovered] OpenBF2 extension. While the breech loads, every member drops
+        // far enough below any usable weapon (the coax MG) to be picked only when nothing else
+        // fits, but keeps its order by target, and switching then costs nothing. Once loaded,
+        // another member must score twice the loaded one, because switching costs a full cycle.
+        if (sharesBreech)
+        {
+            if (!iweapon->isBreechLoaded())
+                score = score * 0.001f;
+            else if (!iweapon->isBreechHolder())
+                score = score * 0.5f;
+        }
         if (score > bestScore)
         {
             bestScore = score;

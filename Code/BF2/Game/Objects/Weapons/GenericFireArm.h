@@ -250,6 +250,12 @@ public:
     void setLocalPredictedProjectile(IObject*);
     IObject* getLocalPredictedProjectile();
 
+    // [CHOSEN, not recovered] OpenBF2 extension, not in retail: ObjectTemplate.breechGroup.
+    int  getBreechGroup() const;
+    void takeBreech(GenericFireArm* previousActive, std::vector<IObject*>* slotWeapons, int slotCount);
+    bool isBreechHolder() const;
+    bool isBreechLoaded() const;
+
 
 private:
     // fields - every offset below is written by the recovered constructor at 0x824EEF0 and is
@@ -310,6 +316,11 @@ private:
     /* +0x20C */ int   m_enableTick;               // enableItem stamps WorldPref::getTickCount()
     /* +0x210 */ bool  m_byte210;                  // zipline placement HUD latch; doFire raises,
                                                    // handleUpdate clears after alt-fire ends
+
+    // OpenBF2 extension (breechGroup): the group member whose round is in the breech, as seen by
+    // every member of the group, and the tick this firearm's current load cycle began.
+    GenericFireArm* m_breechHolder;
+    unsigned int    m_breechCycleStartTick;
 };
 
 } // namespace world

@@ -154,6 +154,11 @@ public:
     // ... 1.0f here and 3.0f (0x40400000) below - all three are floats by ctor evidence.
     /* 512 */ float m_cannotFireTimer;               // was `_dword200`; ctor 1.0f
     /* 516 */ float m_crosshairFireTime;             // was `_dword204`; ctor 3.0f
+
+    // [CHOSEN, not recovered] OpenBF2 extension, not in retail: ObjectTemplate.breechGroup.
+    // 0 = none; firearms of one seat with the same nonzero id share one breech
+    // (GenericFireArm::takeBreech).
+    int   m_breechGroup;
 };
 
 } // namespace world

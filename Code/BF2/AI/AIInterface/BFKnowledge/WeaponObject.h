@@ -93,6 +93,9 @@ public:
     virtual bool hasTargetLocked() const;                       // +0x124
     virtual IAIObject* getLockedTarget() const;                 // +0x128
     virtual const std::string& getName() const;                 // +0x12C
+    virtual int getBreechGroup() const;                         // +0x130 OpenBF2 extension
+    virtual bool isBreechHolder() const;                        // +0x134 OpenBF2 extension
+    virtual bool isBreechLoaded() const;                        // +0x138 OpenBF2 extension
 
     // non-virtual
     WeaponGuidingSystem targetSystemToWeaponGuidingSystem(world::TargetSystem system) const;

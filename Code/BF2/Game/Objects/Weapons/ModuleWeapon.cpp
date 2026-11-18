@@ -399,6 +399,7 @@ void objTemplInheritHeatFromPrimarySet(bool v)  { activeFireArm()->m_inheritHeat
 void objTemplIsSelectableSet(bool v)            { activeFireArm()->m_isSelectable = v; }           // +492
 void objTemplForceSustainedFireSet(bool v)      { activeFireArm()->m_canInternalHandleMessage = v; } // +493
 void objTemplHideFirstPersonSet(bool v)         { activeFireArm()->m_setHideFirstPerson = v; }     // +424
+void objTemplBreechGroupSet(int v)              { activeFireArm()->m_breechGroup = v; }            // OpenBF2
 void objTemplBlockInputOnRotBundleSet(const std::string& v)
                                                 { activeFireArm()->m_blockInputOnRotBundle = v; }  // +500
 
@@ -477,6 +478,12 @@ BF2_CONSOLE_PROPERTY_FN(isSelectable, bool,
                         getActiveTemplate(CID_GenericFireArmTemplate) != 0,
                         activeFireArm()->m_isSelectable,
                         objTemplIsSelectableSet, kWeaponConsoleTag)
+
+// [CHOSEN, not recovered] OpenBF2 extension, not in retail.
+BF2_CONSOLE_PROPERTY_FN(breechGroup, int,
+                        getActiveTemplate(CID_GenericFireArmTemplate) != 0,
+                        activeFireArm()->m_breechGroup,
+                        objTemplBreechGroupSet, kWeaponConsoleTag)
 
 // The .con spelling and the member name differ - see the header's note on this field.
 BF2_CONSOLE_PROPERTY_FN(forceSustainedFire, bool,

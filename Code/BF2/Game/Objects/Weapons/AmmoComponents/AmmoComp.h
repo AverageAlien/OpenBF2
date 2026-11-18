@@ -123,6 +123,10 @@ public:
     virtual void reloadMag();
     virtual bool canReload() const;
 
+    // [CHOSEN, not recovered] OpenBF2 extension (breechGroup): empties the loaded magazine back
+    // into the spares and drops any reload in progress.
+    void unloadChamber();
+
     // Non-virtual internals. All five are called directly, never through a table.
     void reloadComplete();
     void doReload(unsigned int startTick);

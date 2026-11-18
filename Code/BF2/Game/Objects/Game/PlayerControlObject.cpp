@@ -42,6 +42,7 @@
 #include <cfloat>                                  // FLT_EPSILON - SprintState::handleUpdate
 #include <cmath>                                   // floor / sqrt - calcAmmoStatus, handleUpdate
 #include "../ICameraObject.h"
+#include "../Weapons/GenericFireArm.h"            // takeBreech - the OpenBF2 breechGroup switch
 #include "../../../Core/Debug.h"            // setActiveCamera's "TBM: No camera!" site                      // getActiveCamera()->getViewMode / queryInterface - handleUpdate
 #include "../ObjectLayoutAccess.h"                 // +0x44 physicsNode - handleUpdate
 #include "../../GameServer/ServerSettings.h"       // serverSettings->getNoVehicles - SprintState::handleUpdate
@@ -689,6 +690,16 @@ void PlayerControlObject::setActiveWeapon(IObject* newWeapon, int slot)
         void* const weaponObject =
             newWeapon ? newWeapon->queryInterface(world::IID_IWeaponObject) : 0;
         weaponObjectEnableWeapon(weaponObject);          // ELF +0x180 - unchecked in the ELF
+
+        // [CHOSEN, not recovered] OpenBF2 extension, not in retail: ObjectTemplate.breechGroup.
+        GenericFireArm* const fireArm =
+            static_cast<GenericFireArm*>(static_cast<IWeaponObject*>(weaponObject));
+        if (fireArm && fireArm->getBreechGroup())
+        {
+            GenericFireArm* const previous = static_cast<GenericFireArm*>(
+                static_cast<IWeaponObject*>(currentWeaponObject));
+            fireArm->takeBreech(previous, m_slotWeapons, 3);
+        }
 
         // the item-pickup HUD tail: the local human only - dead on a dedicated server
         void* const item = newWeapon->queryInterface(world::IID_IItemObject);

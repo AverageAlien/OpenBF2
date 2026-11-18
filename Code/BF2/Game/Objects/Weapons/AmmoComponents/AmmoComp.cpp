@@ -433,6 +433,34 @@ void AmmoComp::reloadMag()
         m_outOfAmmoNotified = false;
 }
 
+// [CHOSEN, not recovered] OpenBF2 extension, not in retail: the breechGroup switch
+// (GenericFireArm::takeBreech). A full magazine goes back to the spares, so no ammo is lost; a
+// partly used one is dropped (breech groups are meant for one-round magazines). The automatic
+// reload then refills the chamber once the firearm stops being busy.
+void AmmoComp::unloadChamber()
+{
+    if (m_magazines[0] > 0)
+    {
+        if (m_magazines[0] == m_template->getMagSize() && m_template->getNrOfMags() != -1)
+            m_magazines.push_back(m_magazines[0]);
+        m_magazines[0] = 0;
+        m_outOfAmmoNotified = true;
+    }
+
+    m_reloadState = kReloadIdle;
+    m_reloadStepsLeft = 0;
+    m_acceptFireAtTick = 0;
+    m_autoReloadStartTick = 0;
+    m_signalReload = false;
+    m_autoReloadPending = false;
+
+    if (m_linkedWeapon)
+    {
+        m_linkedWeapon->setCurrentNrOfMags(static_cast<int>(m_magazines.size()));
+        m_linkedWeapon->setAmmoInMag(0, m_magazines[0]);
+    }
+}
+
 // reloadComplete - 0x8257E30, 47 B. IT RE-arms itself. Shells still owed, or a first/middle shell
 // just finished, raise m_signalReload again - that loop is the entire shotgun reload cycle, and it
 // is why the last shell has its own state: state 6 is the only one that does NOT re-arm.
