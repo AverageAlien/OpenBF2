@@ -288,6 +288,9 @@ public:
     void updateStates(float* a, float* b);
     void prepareUpdate();
     void clearSpawnsToPoints();                      // PE inlined in prepareUpdate
+    // [CHOSEN, not recovered] Bots of this side that will use or just used the spawn group: dead
+    // bots with it as their spawn group, and live bots on foot within `radius` (XZ) of `position`.
+    int countBotsClaimingSpawn(int group, const Vec3& position, float radius) const;
     void handleTeleportingBot(int botId);            // named frontier
     bool updateStrategicObjects();
     void chooseStrategy();

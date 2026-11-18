@@ -37,6 +37,7 @@ SpawnPointTemplate::SpawnPointTemplate()
     m_onlyForHuman = false;
     m_onlyForAI = false;
     m_allowSpawnCloseToVehicle = false;
+    m_onlyForTeam = 0;
 
     updateFlags(0x50, 0);
 }
@@ -157,6 +158,7 @@ bool SpawnPointTemplate::makeScript(io::IStream* stream)
     if (m_onlyForHuman) out << "ObjectTemplate.setOnlyForHuman " << m_onlyForHuman << std::endl;
     if (m_onlyForAI) out << "ObjectTemplate.setOnlyForAI " << m_onlyForAI << std::endl;
     if (m_allowSpawnCloseToVehicle) out << "ObjectTemplate.setAllowSpawnCloseToVehicle " << m_allowSpawnCloseToVehicle << std::endl;
+    if (m_onlyForTeam) out << "ObjectTemplate.setOnlyForTeam " << m_onlyForTeam << std::endl;
     const std::string text = out.str();
     return stream->write(text.c_str(), static_cast<unsigned int>(text.size())) == text.size();
 }

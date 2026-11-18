@@ -54,6 +54,18 @@ public:
     virtual void setIsPrecaching(bool precaching) = 0;
     virtual bool getIsPrecaching() const = 0;
     virtual void enemySpottedByAI(world::IPlayer* player, world::IObject* object) const = 0;
+    // [CHOSEN, not recovered] OpenBF2 extension, appended after the retail slots: whether `team`
+    // may capture the control point now (not unableToChangeTeam, onlyTakeableByTeam allows it,
+    // and the point's live allowCaptureByTeam flag for that team is set). The ID must exist.
+    virtual bool isControlPointTakeableBy(unsigned int index, int team) const = 0;
+    // [CHOSEN, not recovered] OpenBF2 extension: in an extra bot game mode (isExtraBotGameMode), the
+    // XZ distance from the spawn group to the nearest control point that some team may capture
+    // now; 0 in every other mode, for an unknown group, or when no point can be captured.
+    virtual float getSpawnGroupFrontDistance(int groupId) const = 0;
+    // [CHOSEN, not recovered] OpenBF2 extension: the free seats (unoccupied unit positions) of the
+    // live, undestroyed mobile vehicles kept by object spawners whose XZ distance from `position` is
+    // at most `radius`. Read from the world, not from a side's sensed knowledge.
+    virtual int getFreeVehicleSeats(const Vec3& position, float radius) const = 0;
 };
 
 class BFGame : public IAIGame
@@ -88,6 +100,9 @@ public:
     virtual void setIsPrecaching(bool precaching);
     virtual bool getIsPrecaching() const;
     virtual void enemySpottedByAI(world::IPlayer* player, world::IObject* object) const;
+    virtual bool isControlPointTakeableBy(unsigned int index, int team) const;
+    virtual float getSpawnGroupFrontDistance(int groupId) const;
+    virtual int getFreeVehicleSeats(const Vec3& position, float radius) const;
 
 private:
     /* +0x00 */ // vptr

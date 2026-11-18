@@ -2418,10 +2418,23 @@ void as_general_getListEntries(const gameswf::fn_call& fn)
             for (unsigned int mi = 0; mi < mod->maps.size(); ++mi)
             {
                 const IModInfo::Map& map = mod->maps[mi];
+                // [CHOSEN, not recovered] The singleplayer page (bots on, filter gpm_cq) also lists
+                // each extra bot mode's AI sizes, after the map's conquest rows, under an alias path
+                // (see splitGameModeAlias). Retail listed the filter mode only.
+                const bool listExtraModes = useBots && ::_stricmp(gameMode.c_str(), "gpm_cq") == 0;
+                for (int pass = 0; pass < (listExtraModes ? 2 : 1); ++pass)
                 for (unsigned int gi = 0; gi < map.gameModes.size(); ++gi)
                 {
                     const IModInfo::GameMode& gm = map.gameModes[gi];
-                    if (::_stricmp(gm.name.c_str(), gameMode.c_str()) != 0) continue;
+                    if (pass == 0 && ::_stricmp(gm.name.c_str(), gameMode.c_str()) != 0) continue;
+                    if (pass == 1 && !isExtraBotGameMode(gm.name)) continue;
+                    std::string modeName;
+                    if (pass == 1)
+                    {
+                        modeName = modInfo->getNameFromGameMode(gm.name);
+                        if (modeName.empty())
+                            modeName = gm.name;
+                    }
                     for (unsigned int ti = 0; ti < gm.mapTypes.size(); ++ti)
                     {
                         const IModInfo::MapType& mt = gm.mapTypes[ti];
@@ -2429,11 +2442,15 @@ void as_general_getListEntries(const gameswf::fn_call& fn)
                         if (rowIndex >= start && rowIndex < end)
                         {
                             char text[320];
-                            ::_snprintf(text, sizeof(text) - 1, "%s - %d", map.name.c_str(), mt.players);
+                            if (pass == 0)
+                                ::_snprintf(text, sizeof(text) - 1, "%s - %d", map.name.c_str(), mt.players);
+                            else
+                                ::_snprintf(text, sizeof(text) - 1, "%s (%s) - %d", map.name.c_str(),
+                                            modeName.c_str(), mt.players);
                             text[sizeof(text) - 1] = 0;
                             r.beginRow((int) mi);
                             r.pushNarrow(text);
-                            r.setString("path", map.path.c_str());
+                            r.setString("path", pass == 0 ? map.path.c_str() : (map.path + "@" + gm.name).c_str());
                             r.setInt("mapSize", mt.players);
                             if (!selectedAssigned) { r.setInt("selected", 1); selectedAssigned = true; }
                         }
@@ -6591,7 +6608,18 @@ void as_multiplay_addMapToMapList(const gameswf::fn_call& fn)
         const std::string mode(fn.arg(1).to_string());
         const unsigned int size = (unsigned int) (int) fn.arg(2).to_number();
         IBase* gs = classManager->getSingleton(renddx9abi::HostString("GeneralSettings"));
-        if (static_cast<GeneralSettings*>(static_cast<IGeneralSettings*>(gs))->getUseBots())
+        // [CHOSEN, not recovered] An alias path names its own mode, and an extra bot mode keeps its
+        // name with bots on; retail turned every mode but gpm_coop into sp1..sp3.
+        std::string level, aliasMode;
+        if (splitGameModeAlias(path, level, aliasMode))
+        {
+            h->addServerEntry(level, aliasMode, (int) size);                               // +0x128
+        }
+        else if (isExtraBotGameMode(mode))
+        {
+            h->addServerEntry(path, mode, (int) size);                                     // +0x128
+        }
+        else if (static_cast<GeneralSettings*>(static_cast<IGeneralSettings*>(gs))->getUseBots())
         {
             std::string layer;
             if (size <= 32) layer = (size <= 16) ? "sp1" : "sp2";
@@ -6830,13 +6858,25 @@ void as_multiplay_getMapNameFromId(const gameswf::fn_call& fn)
 {
     SWF_AS_TRACE("as_multiplay_getMapNameFromId");
     ISwiffHost* h = g_swiffPlayerInstance->getSwiffHost();
-    const std::string id(fn.arg(0).to_string());
-    const IModInfo::Mod* mod = static_cast<IModInfo*>(h->getModInfo())->getCurrentMod();
+    std::string id(fn.arg(0).to_string());
+    // [CHOSEN, not recovered] An alias path answers "<map name> (<mode name>)".
+    std::string level, aliasMode;
+    const bool alias = splitGameModeAlias(id, level, aliasMode);
+    if (alias)
+        id = level;
+    IModInfo* modInfo = static_cast<IModInfo*>(h->getModInfo());
+    const IModInfo::Mod* mod = modInfo->getCurrentMod();
     for (unsigned int i = 0; i < mod->maps.size(); ++i)
     {
         if (mod->maps[i].path == id)
         {
-            fn.result->set_tu_string(tu_string(mod->maps[i].name.c_str()));
+            std::string name(mod->maps[i].name);
+            if (alias)
+            {
+                std::string modeName = modInfo->getNameFromGameMode(aliasMode);
+                name += " (" + (modeName.empty() ? aliasMode : modeName) + ")";
+            }
+            fn.result->set_tu_string(tu_string(name.c_str()));
             return;
         }
     }
@@ -6852,7 +6892,10 @@ void as_multiplay_getMapDescriptionFromId(const gameswf::fn_call& fn)
 {
     SWF_AS_TRACE("as_multiplay_getMapDescriptionFromId");
     ISwiffHost* h = g_swiffPlayerInstance->getSwiffHost();
-    const std::string id(fn.arg(0).to_string());
+    std::string id(fn.arg(0).to_string());
+    std::string level, aliasMode;
+    if (splitGameModeAlias(id, level, aliasMode))                // [CHOSEN, not recovered]
+        id = level;
     const IModInfo::Mod* mod = static_cast<IModInfo*>(h->getModInfo())->getCurrentMod();
     for (unsigned int i = 0; i < mod->maps.size(); ++i)
     {
@@ -9913,7 +9956,9 @@ gameswf::bitmap_info* SwiffRenderHandler::create_bitmap_info_rgba(image::rgba* i
 gameswf::bitmap_info* SwiffRenderHandler::create_bitmap_info_file(const char* path)
 {
     int w = 0, h = 0;
-    const int handle = rcLoadTexture(rhRc(this), path ? path : "", &w, &h);
+    // [CHOSEN, not recovered] an alias row's menu map reads its mode's own image
+    const std::string resolved = dice::hfe::resolveGameModeAliasPath(path ? path : "");
+    const int handle = rcLoadTexture(rhRc(this), resolved.c_str(), &w, &h);
     if (handle < 0)
     {
         ::renddx9abi::logf("[SwiffPlayer] create_bitmap_info_file(\"%s\") - loadTexture failed", path ? path : "");

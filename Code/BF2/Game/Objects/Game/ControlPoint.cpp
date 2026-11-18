@@ -19,6 +19,7 @@
 #include "../../Python/PythonHost.h"         // buildArgs<IObject*,int> + handleEvent(ScriptEvent) - event 25
 #include "../../Python/PyRef.h"
 #include "../IObjectSpawner.h"               // the spawners' setTeam through the interface
+#include "../SpawnPoint.h"                  // [CHOSEN] spawnGroupTeamFor reads getOnlyForTeam
 #include "../IPlayer.h"                      // getTeam / getId
 #include "../../../Math/LocalBoundingBox.h"  // reset's pole height
 #include <cmath>
@@ -228,7 +229,59 @@ bool ControlPoint::getAllowCaptureByTeam(int team)
 void ControlPoint::setAllowCaptureByTeam(int team, bool allow)
 {
     if (static_cast<unsigned int>(team - 1) <= 1u)
+    {
+        // [CHOSEN, not recovered] A change refreshes the 3D marker, which shows the locked icon
+        // when no team may capture the point.
+        const bool changed = m_allowCaptureByTeam[team - 1] != allow;
         m_allowCaptureByTeam[team - 1] = allow;
+        if (changed && SingletonServer::m_iNametagManager)
+            SingletonServer::m_iNametagManager->addTouchItem(this);
+    }
+}
+
+namespace {
+
+// [CHOSEN, not recovered] The team a control point's spawn group gets: the owner's, unless the group
+// is switched off (spawnEnabled) or every point in it is reserved for the other team
+// (ObjectTemplate.setOnlyForTeam). Then it gets team 0, so no team lists or spawns at it and the
+// spawn screen does not show it. Without those OpenBF2 settings this is the owner, as retail.
+int spawnGroupTeamFor(ISpawnGroup* group, int team)
+{
+    if (!static_cast<SpawnGroup*>(group)->getActiveFlag())
+        return 0;
+    const std::vector<ISpawnPoint*>& points = group->getSpawnPoints();
+    if (points.empty())
+        return team;
+    for (std::vector<ISpawnPoint*>::const_iterator it = points.begin(); it != points.end(); ++it)
+    {
+        const int only = static_cast<SpawnPoint*>(*it)->getOnlyForTeam();
+        if (only == 0 || only == team)
+            return team;
+    }
+    return 0;
+}
+
+} // namespace
+
+void ControlPoint::setSpawnEnabled(bool enabled)
+{
+    const std::map<int, ISpawnGroup*>& groups = static_cast<SpawnManager*>(spawnManager)->getSpawnGroups();
+    for (std::map<int, ISpawnGroup*>::const_iterator it = groups.begin(); it != groups.end(); ++it)
+    {
+        if (it->second->getControlPointId() == static_cast<unsigned int>(m_template->controlPointId))
+        {
+            it->second->setActive(enabled);
+            it->second->setTeam(spawnGroupTeamFor(it->second, m_team));
+        }
+    }
+    const std::map<unsigned int, IObject*>& spawners =
+        *static_cast<const std::map<unsigned int, IObject*>*>(gameLogic->getObjectSpawnerMap());
+    for (std::map<unsigned int, IObject*>::const_iterator it = spawners.begin(); it != spawners.end(); ++it)
+    {
+        IObjectSpawner* spawner = static_cast<IObjectSpawner*>(it->second->queryInterface(IID_IObjectSpawner));
+        if (spawner->getControlPointId() == m_template->controlPointId)
+            spawner->setActive(enabled);
+    }
 }
 
 // the template's byte at +0x1BC.
@@ -376,7 +429,7 @@ void ControlPoint::setTeam(unsigned int team)
     {
         ISpawnGroup* group = it->second;
         if (group->getControlPointId() == static_cast<unsigned int>(m_template->controlPointId))   // slot 19 vs +0x190
-            group->setTeam(m_team);                                          // slot 6
+            group->setTeam(spawnGroupTeamFor(group, m_team));                // slot 6, [CHOSEN] team
     }
     const std::map<unsigned int, IObject*>& spawners =
         *static_cast<const std::map<unsigned int, IObject*>*>(gameLogic->getObjectSpawnerMap());   // +0x19C

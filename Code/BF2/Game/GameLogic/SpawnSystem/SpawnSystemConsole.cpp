@@ -37,6 +37,7 @@ void consoleSetScatterSpawnPositions(bool v)             { activeSpawn()->setSca
 void consoleSetOnlyForAI(bool v)                         { activeSpawn()->setOnlyForAI(v); }
 void consoleSetOnlyForHuman(bool v)                      { activeSpawn()->setOnlyForHuman(v); }
 void consoleSetAllowSpawnCloseToVehicle(bool v)          { activeSpawn()->setAllowSpawnCloseToVehicle(v); }
+void consoleSetOnlyForTeam(int v)                        { activeSpawn()->setOnlyForTeam(v); }   // [CHOSEN, not recovered]
 
 } // namespace
 
@@ -70,6 +71,9 @@ BF2_CONSOLE_METHOD_1_ACTIVE(setOnlyForHuman, consoleSetOnlyForHuman,
                             world::getActiveTemplate(CID_SpawnPointTemplate) != 0, bool, kSpawnSystemConsoleTag)
 BF2_CONSOLE_METHOD_1_ACTIVE(setAllowSpawnCloseToVehicle, consoleSetAllowSpawnCloseToVehicle,
                             world::getActiveTemplate(CID_SpawnPointTemplate) != 0, bool, kSpawnSystemConsoleTag)
+// [CHOSEN, not recovered] OpenBF2 extension, appended after the retail rows.
+BF2_CONSOLE_METHOD_1_ACTIVE(setOnlyForTeam, consoleSetOnlyForTeam,
+                            world::getActiveTemplate(CID_SpawnPointTemplate) != 0, int, kSpawnSystemConsoleTag)
 
 // Handed to the console registry by SpawnSystemModule::init (Core/ModuleRegistry.cpp) beside the
 // TU's 0x8AD3A08 list.

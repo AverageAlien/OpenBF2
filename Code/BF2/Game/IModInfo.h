@@ -106,6 +106,62 @@ protected:
     ~IModInfo() {}
 };
 
+// [CHOSEN, not recovered] OpenBF2 extension: an extra bot game mode is any mode other than the
+// retail gpm_cq, gpm_coop and sp1..sp3. It keeps its name in bot games instead of becoming sp1..sp3,
+// and the singleplayer page lists its ai="1" map types next to conquest.
+inline bool isExtraBotGameMode(const std::string& gameMode)
+{
+    static const char* const retail[] = { "gpm_cq", "gpm_coop", "sp1", "sp2", "sp3" };
+    if (gameMode.empty())
+        return false;
+    for (unsigned int i = 0; i < sizeof(retail) / sizeof(retail[0]); ++i)
+    {
+        const char* a = gameMode.c_str();
+        const char* b = retail[i];
+        while (*a && *b && (*a | 0x20) == (*b | 0x20))
+            ++a, ++b;
+        if (!*a && !*b)
+            return false;
+    }
+    return true;
+}
+
+// [CHOSEN, not recovered] The singleplayer movie hands only a level path and a size back to the
+// engine, so its extra-mode rows carry the mode in an alias path "<level>@<mode>". The menu lookups
+// and addMapToMapList split it again; retail level paths never contain '@'.
+inline bool splitGameModeAlias(const std::string& path, std::string& level, std::string& gameMode)
+{
+    const std::string::size_type at = path.find('@');
+    if (at == std::string::npos || at == 0 || at + 1 >= path.size())
+        return false;
+    level = path.substr(0, at);
+    gameMode = path.substr(at + 1);
+    return true;
+}
+
+// [CHOSEN, not recovered] The singleplayer page builds an alias row's menu map path as
+// "...Levels/<level>@<mode>/Info/<x>_<size>_menuMap.png"; this rewrites it to that mode's own image,
+// "...Levels/<level>/Info/<mode>_<size>_menuMap.png". Other paths come back unchanged.
+inline std::string resolveGameModeAliasPath(const std::string& path)
+{
+    std::string result(path);
+    const std::string::size_type at = result.find('@');
+    if (at == std::string::npos)
+        return result;
+    const std::string::size_type slash = result.find('/', at);
+    if (slash == std::string::npos)
+        return result;
+    const std::string mode = result.substr(at + 1, slash - at - 1);
+    result.erase(at, slash - at);
+    const std::string::size_type file = result.rfind('/') + 1;
+    const std::string::size_type last = result.rfind('_');
+    const std::string::size_type sep =
+        (last != std::string::npos && last > file) ? result.rfind('_', last - 1) : std::string::npos;
+    if (!mode.empty() && sep != std::string::npos && sep >= file)
+        result.replace(file, sep - file, mode);
+    return result;
+}
+
 } // namespace hfe
 } // namespace dice
 

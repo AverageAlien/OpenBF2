@@ -92,6 +92,9 @@ public:
     virtual bool  getShowOnMinimap();                // the template's +0x1BC
     std::string   getName();                         // NON-virtual (not in either table),
                                                      // returns the template's name BY value (sret)
+    // [CHOSEN, not recovered] OpenBF2 extension (nonvirtual): switches every spawn group and
+    // object spawner of this control point on or off (Python cp_setParam 'spawnEnabled').
+    void          setSpawnEnabled(bool enabled);
 
     // The replication component reads the capture fields RAW (init/updateStateMask/setNetUpdate on
     // +0x14C/+0x154/+0x158/+0x168/+0x16C/+0x170/+0x171) - the SpawnGroup/SpawnManager arrangement.

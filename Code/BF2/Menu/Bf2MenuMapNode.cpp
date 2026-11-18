@@ -3385,8 +3385,12 @@ void Bf2MenuMapNode::collectControlPointIcons(bool supplyLine)
             }
 
             if (!supplyLine) {
+                // [CHOSEN, not recovered] A point no team may capture now (Invasion locks) uses
+                // the base icon like an unableToChangeTeam one.
+                const bool lockedForAll = !point->getAllowCaptureByTeam(1)
+                    && !point->getAllowCaptureByTeam(2);
                 populateControlPointMapIcon(
-                    &icon, team, !pointTemplate->getUnableToChangeTeam(),
+                    &icon, team, !pointTemplate->getUnableToChangeTeam() && !lockedForAll,
                     hfe::game->getCurrentMapGameMode(), false, false, false);
             } else {
                 bool missingSupplySide = false;

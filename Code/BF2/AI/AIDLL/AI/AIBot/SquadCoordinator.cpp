@@ -267,7 +267,8 @@ void SquadCoordinator::update(double time)
             if (m_strategicAreaAssignment &&
                 m_strategicAreaAssignment->getStatus(m_side + 1) != 0)
             {
-                if (!m_strategicAreaAssignment->isAreaTakeable())
+                // [CHOSEN, not recovered] Takeable by this side, not just unlocked for anyone.
+                if (!m_strategicAreaAssignment->isTakeableBy(m_side + 1))
                 {
                     // Both the main singleton and side are fresh after the area callback;
                     // the second side read is later still, after getSAI has returned.
@@ -281,6 +282,13 @@ void SquadCoordinator::update(double time)
             {
                 unAssignSquad();
             }
+        }
+        else if (m_i40 == 1 && m_strategicAreaAssignment &&
+                 m_strategicAreaAssignment->getStatus(m_side + 1) == 0
+                 && !m_strategicAreaAssignment->isTakeableBy(m_side == 0 ? 2 : 1))
+        {
+            // [CHOSEN, not recovered] Nothing to defend once the enemy cannot capture the area.
+            unAssignSquad();
         }
         else if (m_i40 == 1 && m_strategicAreaAssignment &&
                  m_strategicAreaAssignment->getStatus(m_side + 1) == 0)

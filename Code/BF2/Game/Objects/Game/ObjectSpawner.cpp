@@ -534,6 +534,18 @@ void ObjectSpawner::handleUpdate(float dt, unsigned int)
 // Creates the team's configured object and returns its id, or -1 when blocked or unavailable.
 // Repeated unoccupied blockers may be destroyed after the retry threshold.
 // Successful spawning applies placement, effects, lifetime and vehicle-spawner bookkeeping.
+const IObjectTemplate* ObjectSpawner::getImmediateSpawnTemplate()
+{
+    if (!m_active || m_spawnDelay > 0.0f || m_team < 0 || m_team > 2 || getHasUseButton())
+        return 0;
+    bool emptySlot = false;
+    for (unsigned int i = 0; i < m_spawnedObjectIds.size(); ++i)
+        emptySlot = emptySlot || m_spawnedObjectIds[i] == -1;
+    if (!emptySlot || m_template->m_objectTemplates[m_team].name.empty())
+        return 0;
+    return m_template->m_objectTemplates[m_team].resolved;
+}
+
 int ObjectSpawner::spawnObject()
 {
     const int team = m_team;                                     // +0x184

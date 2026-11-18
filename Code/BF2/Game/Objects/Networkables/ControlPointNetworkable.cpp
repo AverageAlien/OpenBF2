@@ -258,8 +258,10 @@ void ControlPointNetworkable::setNetUpdate(io::BitStream& stream, float /*update
             cp->m_takeOverCounter = rec.takeOverCounter;                         // +0x154 raw
             cp->setTakeOverChangePerSecond(rec.takeOverChangePerSecond);         // vcall +0x1B0
         }
-        if (mask & 0x08) cp->setAllowCaptureByTeam(0, rec.allowCaptureByTeam1);  // vcall +0x194 - team 0 [sic]
-        if (mask & 0x10) cp->setAllowCaptureByTeam(1, rec.allowCaptureByTeam2);
+        // [CHOSEN, not recovered] Retail passed teams 0 and 1 here, so a client dropped team 1's
+        // flag and stored team 2's in team 1's slot. Clients now mirror the server.
+        if (mask & 0x08) cp->setAllowCaptureByTeam(1, rec.allowCaptureByTeam1);  // vcall +0x194
+        if (mask & 0x10) cp->setAllowCaptureByTeam(2, rec.allowCaptureByTeam2);
         if (mask & 0x20) cp->setFlag(rec.flagTeam, false);                       // vcall +0x1BC
         if (mask & 0x40) cp->setCapturingState(rec.capturingState);              // vcall +0x1C4
         cp->updateFlagPosition();                                                // direct call

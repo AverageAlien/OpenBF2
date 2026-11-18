@@ -85,6 +85,9 @@ public:
     // ELF 0x338FF0 (added by ai-bot for SquadCoordinator::squadManeuverStaticFlank): the flanking
     // pair (+392 records: two Vec3) whose first position is closest to `position`; false when none.
     bool getClosestFlankingPositions(Vec3 position, Vec3& first, Vec3& second);
+    // [CHOSEN, not recovered] Whether the one-based side may capture the area now: a control point
+    // area asks IAIGame::isControlPointTakeableBy, any other area answers its setTakeable flag.
+    bool isTakeableBy(int side);
 
     // ELF 0x33EF80: answers the second position; the first and the waypoint list are unused.
     Vec3 getBotWaypoint(Vec3 from, Vec3 to, const std::vector<SAWayPoint*>& waypoints, int map);
@@ -228,7 +231,9 @@ public:
     /* +428 */ bool m_fromControlPoint;            // true
     // Raised by `initOrderPoses` and by nothing else; both constructors clear it. [INFERRED]
     /* +429 */ bool m_orderPosesInitialised;       // false
-    /* +430 */ char m_pad430[2];                   // tail padding to the observed 432
+    // [CHOSEN, not recovered] Was tail padding. Per side, the takeability update last saw:
+    // bit 0 = the side may capture the area, bit 1 = the enemy may; 0xFF until the first update.
+    /* +430 */ unsigned char m_takeableSeen[2];
 };
 
 } // namespace ai

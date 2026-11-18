@@ -58,6 +58,10 @@ public:
     virtual bool  getOnlyForAI() const;
     virtual void  setOnlyForHuman(bool);
     virtual bool  getOnlyForHuman() const;
+    // [CHOSEN, not recovered] OpenBF2 extension, nonvirtual so the retail vtable is unchanged:
+    // the only team that may spawn here (0 = any team), console ObjectTemplate.setOnlyForTeam.
+    void          setOnlyForTeam(int team)  { m_onlyForTeam = team; }
+    int           getOnlyForTeam() const    { return m_onlyForTeam; }
     virtual void  setAllowSpawnCloseToVehicle(bool);
     virtual bool  getAllowSpawnCloseToVehicle() const;
 
@@ -78,6 +82,7 @@ public:
     /* 0x59 */ bool  m_onlyForHuman;             // ctor false
     /* 0x5A */ bool  m_onlyForAI;                // ctor false
     /* 0x5B */ bool  m_allowSpawnCloseToVehicle; // ctor false
+    /* 0x5C */ int   m_onlyForTeam;              // [CHOSEN, not recovered] 0 = any team
 };
 
 } // namespace hfe

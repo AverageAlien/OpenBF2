@@ -1,4 +1,5 @@
 #include "BotSpawner.h"
+#include <algorithm>
 #include <cfloat>
 #include <cmath>
 // <iostream>'s ios_base::Init object, m_kitWeightVector and m_pointWeightVector, in that order, are
@@ -89,6 +90,55 @@ public:
 };
 }
 
+namespace {
+// [CHOSEN, not recovered] Rear spawns. In an extra bot game mode (Invasion) bots crowded the main
+// bases, far more than the vehicles there could carry. A spawn group whose front distance (see
+// IAIGame::getSpawnGroupFrontDistance) exceeds the side's nearest eligible group's by more than
+// kRearSpawnMargin is a rear spawn: bots pick it only while the free vehicle seats within
+// kRearSpawnRadius outnumber the bots already claiming it. In other modes every front distance is
+// 0, so no spawn is a rear spawn and bot spawning is unchanged.
+const float kRearSpawnMargin = 50.0f;
+const float kRearSpawnRadius = 50.0f;
+
+float nearestFrontDistance(IAIGame* game, int side, const std::list<int>& groups)
+{
+    float nearest = FLT_MAX;
+    for (std::list<int>::const_iterator it = groups.begin(); it != groups.end(); ++it)
+    {
+        if (game->isEligibleSpawnpoint(side, *it))
+            nearest = std::min(nearest, game->getSpawnGroupFrontDistance(*it));
+    }
+    return nearest;
+}
+
+bool isRearSpawnFull(IAIGame* game, int side, int group, float nearest)
+{
+    if (game->getSpawnGroupFrontDistance(group) <= nearest + kRearSpawnMargin)
+        return false;
+    const Vec3 position = game->getSpawnPointPosition(group);
+    const int seats = game->getFreeVehicleSeats(position, kRearSpawnRadius);
+    SAI* const sai = IAIMain::m_instance->getSAI(side);
+    // A pick sets the bot's spawn group at once, so dead bots already include this update's picks
+    // (SAI::getSpawnsToPoint would count them twice).
+    const int claims = sai->countBotsClaimingSpawn(group, position, kRearSpawnRadius);
+    return claims >= seats;
+}
+
+// isEligibleSpawnpoint plus the rear-spawn limit; `nearest` from nearestFrontDistance.
+bool isBotSpawnEligible(IAIGame* game, int side, int group, float nearest)
+{
+    return game->isEligibleSpawnpoint(side, group) && !isRearSpawnFull(game, side, group, nearest);
+}
+
+// The same for a single group, outside any walk of the borrowed spawn point list.
+bool isBotSpawnEligible(IAIGame* game, int side, int group)
+{
+    if (!game->isEligibleSpawnpoint(side, group))
+        return false;
+    return !isRearSpawnFull(game, side, group, nearestFrontDistance(game, side, game->getSpawnPointList(side)));
+}
+}
+
 // The primary/strategic/predicate callers and radius wrappers are recovered;
 // information forwarding, path and kit policies retain stops. Side/game/SAI
 // are captured at the shipped callback boundaries. The two spawn-point getters and improving position queries are
@@ -111,7 +161,7 @@ bool BotSpawner::findSuitableSpawnGroup(float* enemyStrengths, float* enemyCount
     if (random > 0.8f)
     {
         object = AIStrategicObjectManager::getInstance()->getStrategicObject(strategicObjectId);
-        if (game->isEligibleSpawnpoint(side, bot->getSpawnPoint()))
+        if (isBotSpawnEligible(game, side, bot->getSpawnPoint()))           // [CHOSEN] rear limit
         {
             sai->addSpawnToPoint(bot->getSpawnPoint());
             return true;
@@ -130,9 +180,10 @@ bool BotSpawner::findSuitableSpawnGroup(float* enemyStrengths, float* enemyCount
         const Vec2& target = object->getPosition(side);
         float best = 1.0e15f; // paired float bits
         bool found = false;
+        const float nearest = nearestFrontDistance(game, side, groups);
         for (std::list<int>::const_iterator it = groups.begin(); it != groups.end(); ++it)
         {
-            if (game->isEligibleSpawnpoint(side, *it))
+            if (isBotSpawnEligible(game, side, *it, nearest))                 // [CHOSEN] rear limit
             {
                 const Vec3& candidate = game->getSpawnPointPosition(*it);
                 const Vec2 xz = { candidate.x, candidate.z };
@@ -191,7 +242,7 @@ bool BotSpawner::findSuitableSpawnGroup(const Vec3& position, Bot* bot)
         return true;
 
     IAIGame* const game = static_cast<IAIGame*>(CommonSingletonServer::m_iaiGame);
-    if (game->isEligibleSpawnpoint(side, bot->getSpawnPoint()))
+    if (isBotSpawnEligible(game, side, bot->getSpawnPoint()))               // [CHOSEN] rear limit
     {
         sai->addSpawnToPoint(bot->getSpawnPoint());
         return true;
@@ -206,9 +257,10 @@ bool BotSpawner::findSuitableSpawnGroup(const Vec3& position, Bot* bot)
     const std::list<int>& groups = searchGame->getSpawnPointList(side);
     int group = 0;
     float best = 1.0e9f;
+    const float nearest = nearestFrontDistance(searchGame, side, groups);
     for (std::list<int>::const_iterator it = groups.begin(); it != groups.end(); ++it)
     {
-        if (searchGame->isEligibleSpawnpoint(side, *it))
+        if (isBotSpawnEligible(searchGame, side, *it, nearest))              // [CHOSEN] rear limit
         {
             const float distance = distXZSqr(searchGame->getSpawnPointPosition(*it), position);
             if (distance < best)
@@ -265,6 +317,7 @@ int BotSpawner::findSuitableSpawnGroup(int side, AIStrategicObject*& object, Bot
     member->getSquad()->getSquadPosition(squadPosition);
     const Vec2 squadXZ = { squadPosition.x, squadPosition.z };
     m_pointWeightVector.resize(0, SpawnChoice{});
+    const float nearest = nearestFrontDistance(game, side, groups);
 
     const double draw = static_cast<double>(AIRandom::m_instance->next()) * (1.0 / 4294967296.0);
     if ((draw > 0.3f || !member->getSquad()->getSquadLeader()->getPlayer()->getIsAIPlayer()) &&
@@ -280,7 +333,7 @@ int BotSpawner::findSuitableSpawnGroup(int side, AIStrategicObject*& object, Bot
         bool found = false;
         for (std::list<int>::const_iterator it = groups.begin(); it != groups.end(); ++it)
         {
-            if (game->isEligibleSpawnpoint(side, *it))
+            if (isBotSpawnEligible(game, side, *it, nearest))   // [CHOSEN] rear limit
             {
                 const Vec3& candidate = game->getSpawnPointPosition(*it);
 #if defined(_MSC_VER)
@@ -325,7 +378,7 @@ int BotSpawner::findSuitableSpawnGroup(int side, AIStrategicObject*& object, Bot
 #endif
     for (std::list<int>::const_iterator it = groups.begin(); it != groups.end(); ++it)
     {
-        if (game->isEligibleSpawnpoint(side, *it))
+        if (isBotSpawnEligible(game, side, *it, nearest))   // [CHOSEN] rear limit
         {
             const Vec3& position = game->getSpawnPointPosition(*it);
             if (game->getControlPointId(*it) != -1)

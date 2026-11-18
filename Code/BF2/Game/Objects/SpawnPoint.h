@@ -57,6 +57,8 @@ public:
     virtual bool  getProneOnSpawn();                 // +0x1B8 ORs the +0x156 byte in
     virtual bool  getOnlyForAI() const;              // +0x1BC forwards to the template
     virtual bool  getOnlyForHuman() const;           // +0x1C0 likewise
+    // [CHOSEN, not recovered] nonvirtual: the template's ObjectTemplate.setOnlyForTeam (0 = any team)
+    int           getOnlyForTeam() const;
 
     // Tests a candidate relative to base; candidate may be adjusted even on failure.
     bool findValidSpawnPos(const Vec3& base, Vec3& candidate);

@@ -78,6 +78,8 @@ public:
     void addSpawnPoint(ISpawnPoint* point);          // 149 B - (+ the aiOnly latch)
     void removeSpawnPoint(ISpawnPoint* point);       // 149 B -
     void calcNewPos();                               // 236 B - the average
+    // [CHOSEN, not recovered] the raw active flag (setActive), without getActive's point checks
+    bool getActiveFlag() const { return m_active; }
     void getUnsignedWorldPosition(unsigned char* outX, unsigned char* outZ);   // 517 B - the
                                                      //   8-bit map position the create event carries
 

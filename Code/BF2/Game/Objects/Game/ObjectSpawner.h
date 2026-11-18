@@ -38,6 +38,11 @@ public:
     virtual void  destroy(bool force);               // (one banked arm - see the .cpp)
     virtual void  handleUpdate(float dt, unsigned int);   // the spawn state machine
     virtual bool  makeScript(io::IStream*);
+    // [CHOSEN, not recovered] nonvirtual: the grid IDs of the objects this spawner keeps (-1 = empty slot)
+    const std::vector<int>& getSpawnedObjectIds() const { return m_spawnedObjectIds; }
+    // [CHOSEN, not recovered] nonvirtual: the template the spawner creates on its next update (active,
+    // no use button, an empty slot, countdown at or below 0), else null
+    const IObjectTemplate* getImmediateSpawnTemplate();
 
     // IObjectSpawner (slots 96..109 of the primary, 4..17 of the +0x138 table)
     virtual void setTeam(int team);                  // + the game-status-3 arm

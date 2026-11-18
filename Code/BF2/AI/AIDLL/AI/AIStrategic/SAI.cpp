@@ -1180,6 +1180,9 @@ bool SAI::haveAnyOwnedAndTakeableCps(int side)
         const unsigned int cp = static_cast<AIStrategicArea*>(object)->m_controlPointId;
         if (cp != static_cast<unsigned int>(-1))
             static_cast<IAIGame*>(CommonSingletonServer::m_iaiGame)->getControlPointInfo(cp, position, radius, active);
+        // [CHOSEN, not recovered] Takeable by the other side, not just unlocked for anyone.
+        if (active && cp != static_cast<unsigned int>(-1))
+            active = static_cast<IAIGame*>(CommonSingletonServer::m_iaiGame)->isControlPointTakeableBy(cp, side == 1 ? 2 : 1);
         if (active)
         {
             found = true;
@@ -1209,6 +1212,9 @@ bool SAI::ownAllTakeableCps(int side)
         const unsigned int cp = static_cast<AIStrategicArea*>(object)->m_controlPointId;
         if (cp != static_cast<unsigned int>(-1))
             static_cast<IAIGame*>(CommonSingletonServer::m_iaiGame)->getControlPointInfo(cp, position, radius, active);
+        // [CHOSEN, not recovered] Takeable by this side, not just unlocked for anyone.
+        if (active && cp != static_cast<unsigned int>(-1))
+            active = static_cast<IAIGame*>(CommonSingletonServer::m_iaiGame)->isControlPointTakeableBy(cp, side);
         if (active)
         {
             all = false;
@@ -1700,6 +1706,35 @@ void SAI::clearSpawnsToPoints()
 {
     for (std::map<int, int>::iterator it = m_map1D8.begin(); it != m_map1D8.end(); ++it)
         it->second = 0;
+}
+
+int SAI::countBotsClaimingSpawn(int group, const Vec3& position, float radius) const
+{
+    int count = 0;
+    for (std::vector<BotInfo*>::const_iterator it = m_bots.begin(); it != m_bots.end(); ++it)
+    {
+        if (!*it)
+            continue;
+        Bot* const bot = (*it)->m_bot;
+        if (bot->isDead())
+        {
+            if (bot->getPlayer()->getSpawnGroup() == group)
+                ++count;
+            continue;
+        }
+        const unsigned int handle = bot->getCurrentEquipment();
+        if ((handle & 0xffffu) == 0)
+            continue;
+        Information* const information = informationManager->getInformation(handle);
+        if (!information || !information->isOfType(ITSoldier))
+            continue;
+        const Vec3& at = information->getPosition();
+        const float dx = at.x - position.x;
+        const float dz = at.z - position.z;
+        if (dx * dx + dz * dz <= radius * radius)
+            ++count;
+    }
+    return count;
 }
 
 void SAI::BotInfo::remove(SAI* sai)

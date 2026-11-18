@@ -343,6 +343,7 @@ struct SupplyTemplateFieldAccess : world::SupplyObjectTemplate
 
 inline world::IObject* controlPointObject(world::ControlPoint* cp) { return cp; }
 inline int   controlPointTeam(world::ControlPoint* cp) { return cp->getTeam(); }   // IControlPoint +0x1C
+inline bool  controlPointAllowCapture(world::ControlPoint* cp, int team) { return cp->getAllowCaptureByTeam(team); }
 inline float controlPointFlagPoleHeight(world::ControlPoint* cp)
 {
     return ControlPointFieldAccess::flagPoleHeight(cp);
@@ -400,6 +401,11 @@ inline int controlPointTeam(world::ControlPoint* cp)
 {
     return reinterpret_cast<world::IControlPoint*>(
         reinterpret_cast<unsigned char*>(cp) + 0x154)->getTeam();          // +0x154 subobject, +0x1C
+}
+inline bool controlPointAllowCapture(world::ControlPoint* cp, int team)
+{
+    return reinterpret_cast<world::IControlPoint*>(
+        reinterpret_cast<unsigned char*>(cp) + 0x154)->getAllowCaptureByTeam(team);   // +0x2C
 }
 inline float controlPointFlagPoleHeight(world::ControlPoint* cp)
 {
@@ -1016,6 +1022,9 @@ bool NametagManager::addTouchItem(world::ControlPoint* controlPoint)
     world::IControlPointTemplate* const cpTemplate = static_cast<world::IControlPointTemplate*>(
         templateOf(object)->queryInterface(world::IID_IControlPointTemplate));
     if (cpTemplate && cpTemplate->getUnableToChangeTeam())               // +0x64
+        base = kIconControlPointBase;
+    // [CHOSEN, not recovered] Also a point that no team may capture now (Invasion locks).
+    if (!controlPointAllowCapture(controlPoint, 1) && !controlPointAllowCapture(controlPoint, 2))
         base = kIconControlPointBase;
 
     item->m_icon = controlPointTeam(controlPoint) + base;                // IControlPoint +0x1C

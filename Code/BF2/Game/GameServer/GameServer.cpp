@@ -665,14 +665,6 @@ bool GameServer::loadPath(const std::string& levelName)
     if (settings->boolGet("UseAI", false))
         bf2Engine->loadAI();                                // direct call, this = ds:0x8AACBD8
 
-    // NON-fatal (the correction): a failed game-mode init logs and the load continues.
-    // The mode handed to Python is the entry's mode, not the setting.
-    if (!python::pythonHost()->initializeGameMode(entry->gameMode))
-    {
-        Debug(DEBUGTYPE_6, "Game/GameServer/GameServer.cpp", 3822)
-            << "failed to initialize gamemode";
-    }
-
     // Fill the MapInfo from the entry; a zero entry size falls back to the settings clamp.
     int maxPlayers = entry->mapSize;                        // the word at entry+8
     if (!maxPlayers)
@@ -687,6 +679,16 @@ bool GameServer::loadPath(const std::string& levelName)
     int resolvedMax = m_mapInfo.getMaxNumberOfPlayers();
     settings->intSet("GSMaxNrOfPlayers", resolvedMax);      // +0x14, by pointer
     settings->stringSet("GSGameMode", m_mapInfo.getGameMode());
+
+    // [CHOSEN, not recovered] Retail initialised the game mode before filling the MapInfo, so
+    // ss_getParam('gameMode') and GSGameMode answered the previous map inside init().
+    // NON-fatal (the correction): a failed game-mode init logs and the load continues.
+    // The mode handed to Python is the entry's mode, not the setting.
+    if (!python::pythonHost()->initializeGameMode(entry->gameMode))
+    {
+        Debug(DEBUGTYPE_6, "Game/GameServer/GameServer.cpp", 3822)
+            << "failed to initialize gamemode";
+    }
 
     // The path handed to GameLogic::load: GSLevelDirectory + levelName + "/". this is why load()
     // strips min(7,len) leading chars ("levels/") plus the trailing slash to recover the name.

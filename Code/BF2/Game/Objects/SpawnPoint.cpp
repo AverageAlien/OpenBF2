@@ -207,6 +207,7 @@ void SpawnPoint::setProneOnSpawn(bool v)         { m_proneOnSpawn = v; }
 bool SpawnPoint::getProneOnSpawn()               { return m_proneOnSpawn || m_bool156; }
 bool SpawnPoint::getOnlyForAI() const            { return m_spawnTemplate->getOnlyForAI(); }
 bool SpawnPoint::getOnlyForHuman() const         { return m_spawnTemplate->getOnlyForHuman(); }
+int  SpawnPoint::getOnlyForTeam() const          { return m_spawnTemplate->getOnlyForTeam(); }
 
 // [FRONTIER] - the spawn-selection engine: getActive (862 B), getObjectToEnter (224 B),
 // getSpawnPosition (1,562 B), getSpawnRotation (649 B), findValidSpawnPos (1,283 B). One
@@ -268,6 +269,9 @@ bool SpawnPoint::getActive(bool isAI, int team)
 
     // 3. reserved for the other kind
     if (isAI ? m_spawnTemplate->m_onlyForHuman : m_spawnTemplate->m_onlyForAI)
+        return false;
+    // [CHOSEN, not recovered] reserved for the other team (ObjectTemplate.setOnlyForTeam)
+    if (m_spawnTemplate->getOnlyForTeam() != 0 && m_spawnTemplate->getOnlyForTeam() != team)
         return false;
 
     // 4. the armour it hangs off

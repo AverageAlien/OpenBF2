@@ -118,6 +118,8 @@ AIStrategicArea::AIStrategicArea(const std::string& name, Vec2 topLeft, Vec2 cen
     m_v416.z = 0.0f;
     m_fromControlPoint      = false;
     m_orderPosesInitialised = false;
+    m_takeableSeen[0] = 0xFF;
+    m_takeableSeen[1] = 0xFF;
     internalConstructorCall(topLeft, centre);
 }
 
@@ -148,6 +150,8 @@ AIStrategicArea::AIStrategicArea(const std::string& name, unsigned int controlPo
     m_v416.z = 0.0f;
     m_fromControlPoint      = true;    // the phase selector - see the header
     m_orderPosesInitialised = false;
+    m_takeableSeen[0] = 0xFF;
+    m_takeableSeen[1] = 0xFF;
 }
 
 // ELF 0x336F90 (D2; D1 0x337410, D0 0x337890; from AIStrategicObjectManager::reset/destructor):
@@ -680,6 +684,18 @@ void AIStrategicArea::update(int side, ISAI* sai, bool& changed)
             || (oldStatus == StatusMap::Hostile && m_status[side - 1] == StatusMap::Owned))
             changed = true;
     }
+    // [CHOSEN, not recovered] Retail re-planned only when an owner changed. A change in who may
+    // capture the area (Invasion opening or locking objectives) now marks it changed as well, and
+    // releases every squad of the side, including those close to their old target, which
+    // SquadManager::unAssignSquads(area, side) would keep.
+    const unsigned char takeable = static_cast<unsigned char>(
+        (isTakeableBy(side) ? 1 : 0) | (isTakeableBy(side == 1 ? 2 : 1) ? 2 : 0));
+    if (m_takeableSeen[side - 1] != 0xFF && m_takeableSeen[side - 1] != takeable)
+    {
+        changed = true;
+        SquadManager::m_instance->unAssignSquads(side);
+    }
+    m_takeableSeen[side - 1] = takeable;
     m_statusChanged = changed;
     m_statistics[side - 1]->sample(battle, battleCounts);
     m_statistics[side + 1]->sample(strategic, strategicCounts);
@@ -733,6 +749,9 @@ float AIStrategicArea::calculateDefenseNeed(int side)
 {
     if (getStatus(side) != StatusMap::Owned)
         return 0.0f;
+    // [CHOSEN, not recovered] An area the enemy cannot capture needs no defence.
+    if (!isTakeableBy(side == 1 ? 2 : 1))
+        return 0.0f;
     float need = (2.0f - SCurve::calculate(m_needCurveInput[side - 1]))
         * (m_enemyBattleStrength[side - 1] + m_f164[side - 1]);
     if (hasNeighbourWithStatus(StatusMap::Hostile, side))
@@ -748,6 +767,10 @@ float AIStrategicArea::calculateDefenseNeed(int side)
 // first position when that lies in (1, 100000), else 0; minus the attack cost.
 float AIStrategicArea::calculateAttackValue(int side)
 {
+    // [CHOSEN, not recovered] Retail scored areas the side cannot capture as well (and a cost
+    // below zero could leave them a positive value). They are now never attack targets.
+    if (getStatus(side) != StatusMap::Owned && !isTakeableBy(side))
+        return 0.0f;
     float value = 0.0f;
     if (getStatus(side) != StatusMap::Owned && hasNeighbourWithStatus(StatusMap::Owned, side))
     {
@@ -829,6 +852,13 @@ bool AIStrategicArea::hasObjectTypeFlags(int flags) const
 int AIStrategicArea::getTacticalStatus(int side) const
 {
     return side == 1 ? m_i320 : (side == 2 ? m_i324 : static_cast<int>(m_controlPointId));
+}
+
+bool AIStrategicArea::isTakeableBy(int side)
+{
+    if (m_controlPointId == static_cast<unsigned int>(-1))
+        return m_sideEnabled[side == 2 ? 1 : 0];
+    return static_cast<IAIGame*>(CommonSingletonServer::m_iaiGame)->isControlPointTakeableBy(m_controlPointId, side);
 }
 
 // ELF 0x339A30: the game reports the area's control point as active. The radius output is

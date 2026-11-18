@@ -16,6 +16,7 @@
 #include "../../../Game/GeneralSettings.h"                 // IGeneralSettings, the menu arm
 #include "../../../Game/LocalProfileManager.h"             // ILocalProfileManager, the menu arm
 #include "../../../Core/StringUtil.h"                      // compareIgnoreCase (0x431950)
+#include "../../../Game/IModInfo.h"                         // isExtraBotGameMode
 #include "../../../Core/ClassManager.h"
 #include "../../../Game/GameServer/ServerSettings.h"
 #include "../../../Game/IGame.h"       // the `game` global and queryInterface (+0x0C)
@@ -36,6 +37,14 @@
 #include "../../../IO/Network/INetworkable.h"                      // m_networkableId
 #include "../../../Math/Vec3.h"                                    // vec3ToVec2XZ, insideCentreBox
 #include "AIPlayer.h"
+#include <cmath>                                                   // getSpawnGroupFrontDistance
+#include "IAIObjectPlugIn.h"                                         // getFreeVehicleSeats: IAIObjectUnit
+#include "../../../Game/Objects/Game/ObjectSpawner.h"                // getFreeVehicleSeats
+#include "../../../Game/Objects/IObjectSpawner.h"
+#include "../../../Game/Objects/GameLogicComp/IArmorGLComp.h"
+#include "../../../Scene/Object/ObjectManager.h"
+#include "../../../Scene/Object/ObjectTypes/Base/ObjectTemplateManager.h"   // getFreeVehicleSeats: child templates
+#include "../../../Game/Objects/Base/BundleTemplate.h"
 #include "IAIObject.h"
 
 #include <algorithm>                                        // std::find over the ignore list
@@ -114,7 +123,9 @@ int BFGame::getAISettingsFromGame(int& a, bool& b, float& c) const
             return 0;
         const std::string gameMode(settings->stringGet(std::string("GSGameMode"),    // +0x40
                                                        std::string("gpm_cq")));
-        if (compareIgnoreCase(gameMode, std::string("sp1")) == 0)
+        // [CHOSEN, not recovered] Extra bot modes (see isExtraBotGameMode) take the singleplayer
+        // bot count like sp1; retail matched sp1 only.
+        if (compareIgnoreCase(gameMode, std::string("sp1")) == 0 || isExtraBotGameMode(gameMode))
         {
             int count = 16;
             const IAISettings* aiSettings =
@@ -305,6 +316,143 @@ bool BFGame::getControlPointInfo(unsigned int index, Vec3& position, float& radi
     active = !controlPointTemplate->getUnableToChangeTeam();
 
     return active;
+}
+
+// [CHOSEN, not recovered] Per-team takeability for the AI, see IAIGame.
+bool BFGame::isControlPointTakeableBy(unsigned int index, int team) const
+{
+    typedef std::map<unsigned int, world::IObject*> ControlPointMap;
+
+    ControlPointMap* const points = gameLogic->getControlPointMap();
+    const ControlPointMap::iterator found = points->find(index);
+    if (found == points->end())
+        return false;
+
+    world::ControlPoint* const point = static_cast<world::ControlPoint*>(found->second);
+    world::ControlPointTemplate* const controlPointTemplate = const_cast<world::ControlPointTemplate*>(
+        static_cast<const world::ControlPointTemplate*>(found->second->getTemplate()));
+    if (controlPointTemplate->getUnableToChangeTeam())
+        return false;
+    const int only = static_cast<int>(controlPointTemplate->getOnlyTakeableByTeam());
+    if (only != 0 && only != team)
+        return false;
+    return point->getAllowCaptureByTeam(team);
+}
+
+// [CHOSEN, not recovered] See IAIGame. Bots use it to keep from crowding rear spawns.
+float BFGame::getSpawnGroupFrontDistance(int groupId) const
+{
+    typedef std::map<unsigned int, world::IObject*> ControlPointMap;
+
+    if (!gameLogic || !isExtraBotGameMode(settings->stringGet(std::string("GSGameMode"), std::string(""))))
+        return 0.0f;
+    ISpawnGroup* const group = static_cast<SpawnManager*>(spawnManager)->getSpawnGroup(groupId);
+    if (!group)
+        return 0.0f;
+
+    const Vec3 position = group->getPos();
+    float best = -1.0f;
+    ControlPointMap* const points = gameLogic->getControlPointMap();
+    for (ControlPointMap::const_iterator it = points->begin(); it != points->end(); ++it)
+    {
+        if (!isControlPointTakeableBy(it->first, 1) && !isControlPointTakeableBy(it->first, 2))
+            continue;
+        const Vec3& point = it->second->getAbsolutePosition();
+        const float dx = point.x - position.x;
+        const float dz = point.z - position.z;
+        const float distance = std::sqrt(dx * dx + dz * dz);
+        if (best < 0.0f || distance < best)
+            best = distance;
+    }
+    return best < 0.0f ? 0.0f : best;
+}
+
+namespace {
+
+// [CHOSEN, not recovered] The seats of a vehicle template not spawned yet: the PlayerControlObject
+// templates in its tree. A tree without an engine is a stationary weapon and counts none.
+void countTemplateSeats(const world::IObjectTemplate* objectTemplate, int depth, int& seats, bool& engine)
+{
+    if (!objectTemplate || depth > 8)
+        return;
+    const unsigned int classId = objectTemplate->getClassID();
+    if (classId == world::CID_PlayerControlObjectTemplate)
+        ++seats;
+    else if (classId == world::CID_EngineTemplate)
+        engine = true;
+    world::IBundleTemplate* const bundle = static_cast<world::IBundleTemplate*>(
+        objectTemplate->queryInterface(world::IID_IBundleTemplate));
+    if (!bundle)
+        return;
+    const world::BundleTemplate* const parent = static_cast<world::BundleTemplate*>(bundle);
+    for (int i = 0; i < parent->getNoTemplates(); ++i)
+        countTemplateSeats(world::objectTemplateManager->getTemplate(parent->getTemplate(i)), depth + 1, seats, engine);
+}
+
+int templateSeats(const world::IObjectTemplate* objectTemplate)
+{
+    int seats = 0;
+    bool engine = false;
+    countTemplateSeats(objectTemplate, 0, seats, engine);
+    return engine ? seats : 0;
+}
+
+} // namespace
+
+// [CHOSEN, not recovered] See IAIGame. The AI's information grid only holds what a side's bots have
+// sensed, so at round start it knows no vehicles at all; this reads the world directly. A spawner
+// about to spawn (at round start the bots choose before any vehicle exists) counts its template's
+// seats.
+int BFGame::getFreeVehicleSeats(const Vec3& position, float radius) const
+{
+    typedef std::map<unsigned int, world::IObject*> SpawnerMap;
+
+    if (!gameLogic)
+        return 0;
+    int seats = 0;
+    const SpawnerMap& spawners = *static_cast<const SpawnerMap*>(gameLogic->getObjectSpawnerMap());
+    for (SpawnerMap::const_iterator it = spawners.begin(); it != spawners.end(); ++it)
+    {
+        world::ObjectSpawner* const spawner = static_cast<world::ObjectSpawner*>(
+            static_cast<world::IObjectSpawner*>(it->second->queryInterface(world::IID_IObjectSpawner)));
+        if (!spawner)
+            continue;
+        if (const world::IObjectTemplate* const pending = spawner->getImmediateSpawnTemplate())
+        {
+            const Vec3& at = it->second->getAbsolutePosition();
+            const float dx = at.x - position.x;
+            const float dz = at.z - position.z;
+            if (dx * dx + dz * dz <= radius * radius)
+                seats += templateSeats(pending);
+        }
+        const std::vector<int>& ids = spawner->getSpawnedObjectIds();
+        for (std::vector<int>::const_iterator id = ids.begin(); id != ids.end(); ++id)
+        {
+            if (*id == -1)
+                continue;
+            world::IObject* const object = world::objectManager->getObjectFromGrid(static_cast<unsigned int>(*id));
+            if (!object)
+                continue;
+            world::IObjectComponent* const armor = world::object_detail::LayoutAccess::armorComponent(object);
+            if (armor && static_cast<world::IArmorGLComp*>(armor)->isDestroyed())
+                continue;
+            const Vec3& at = object->getAbsolutePosition();
+            const float dx = at.x - position.x;
+            const float dz = at.z - position.z;
+            if (dx * dx + dz * dz > radius * radius)
+                continue;
+            IAIObject* const vehicle = static_cast<IAIObject*>(world::object_detail::LayoutAccess::aiObject(object));
+            if (!vehicle || !vehicle->isMobile() || !vehicle->isUnit())
+                continue;
+            int iterator = vehicle->getFirstSecondaryObjectIterator();
+            for (IAIObject* current = vehicle; current; current = vehicle->getSecondaryObject(iterator))
+            {
+                if (current->getUnit() && !current->getUnit()->isOccupied())
+                    ++seats;
+            }
+        }
+    }
+    return seats;
 }
 
 // bf2 0x83FF350. The id of the first control point (key order) whose XZ position lies in the box

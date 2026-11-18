@@ -25,6 +25,7 @@
 #include "../../Objects/IPlayer.h"
 #include "../../Objects/IControlPoint.h"
 #include "../../Objects/ControlPointTemplate.h"
+#include "../../Objects/Game/ControlPoint.h"                  // setSpawnEnabled
 #include "../../Objects/GameLogicComp/IArmorGLComp.h"
 #include "../../../Scene/Object/ObjectTypes/Game/IPlayerControlObject.h"
 #include <map>
@@ -1005,6 +1006,12 @@ PyObject* object_cp_setParam(PyObject*, PyObject* args)
         int state = 0;
         if (py_arg<int>(args, 2, state)) return 0;
         cp->setCapturingState(state);                                    // +0x54
+    }
+    else if (name.compare("spawnEnabled") == 0)                          // [CHOSEN, not recovered]
+    {
+        int enabled = 0;
+        if (py_arg<int>(args, 2, enabled)) return 0;
+        static_cast<world::ControlPoint*>(obj)->setSpawnEnabled(enabled > 0);
     }
     else
     {

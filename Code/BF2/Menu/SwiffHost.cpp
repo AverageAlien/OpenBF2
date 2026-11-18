@@ -795,6 +795,10 @@ bool SwiffHost::hostServer()
             if (compareIgnoreCase(getGameMode(), std::string("gpm_coop")) == 0)     // +0x164
                 gameMode = "gpm_coop";
         }
+        // [CHOSEN, not recovered] +gameMode with an extra bot mode (see isExtraBotGameMode) keeps it.
+        const std::string commandLineMode = settings->stringGet(std::string("GSGameMode"), std::string(""));
+        if (isExtraBotGameMode(commandLineMode))
+            gameMode = commandLineMode;
         mapList->appendEntry(level, gameMode, size, true);
         mapList->save();
         mapList->setCurrentMap(0, true);
@@ -1806,6 +1810,8 @@ std::string SwiffHost::resolveMenuPath(const std::string& path)
         relative.erase(0, 2);
         root = true;
     }
+    // [CHOSEN, not recovered] an alias row's menu map reads its mode's own image
+    relative = resolveGameModeAliasPath(relative);
     std::string resolved = io::fileManager->fileExistsEx2(relative);
     std::string result;
     std::string base(root ? "..\\..\\..\\..\\..\\" : "..\\..\\..\\..\\..\\Menu\\Extermal\\FlashMenu\\");
