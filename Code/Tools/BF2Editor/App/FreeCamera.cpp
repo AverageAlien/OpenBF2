@@ -5,10 +5,14 @@
 #include "App/ImGuiHost.h"
 #include "App/ShortcutKeys.h"
 
+#include "Math/Mat4.h"
 #include "RendMisc/IRenderView.h"
 
 #include "imgui.h"
 
+#include <windows.h>
+
+#include <algorithm>
 #include <cmath>
 
 namespace bf2editor
@@ -286,16 +290,43 @@ void FreeCamera::worldToView(float out[16]) const
     out[15] = 1.0f;
 }
 
+void FreeCamera::setViewRect(float x, float y, float width, float height)
+{
+    m_viewRect[0] = x;
+    m_viewRect[1] = y;
+    m_viewRect[2] = width;
+    m_viewRect[3] = height;
+}
+
+void FreeCamera::lens(int width, int height, float& scaleX, float& scaleY, float& centreX, float& centreY) const
+{
+    const float w = static_cast<float>(width > 0 ? width : 1), h = static_cast<float>(height > 0 ? height : 1);
+    const float tanHalf = std::tan(m_fov * 0.5f);
+    if (m_viewRect[2] < 16.0f || m_viewRect[3] < 16.0f)
+    {
+        scaleY = 1.0f / tanHalf;
+        scaleX = scaleY * h / w;
+        centreX = centreY = 0.0f;
+        return;
+    }
+    // The focal length in pixels that gives the free area's height the field of view.
+    const float focal = m_viewRect[3] * 0.5f / tanHalf;
+    scaleX = 2.0f * focal / w;
+    scaleY = 2.0f * focal / h;
+    centreX = 2.0f * (m_viewRect[0] + m_viewRect[2] * 0.5f) / w - 1.0f;
+    centreY = 1.0f - 2.0f * (m_viewRect[1] + m_viewRect[3] * 0.5f) / h;
+}
+
 void FreeCamera::rayThroughPixel(float x, float y, int width, int height, float origin[3], float direction[3]) const
 {
     float right[3], up[3], forward[3];
     basis(right, up, forward);
-    const float tanHalf = std::tan(m_fov * 0.5f);
+    float scaleX, scaleY, centreX, centreY;
+    lens(width, height, scaleX, scaleY, centreX, centreY);
     const float ndcX = width > 0 ? 2.0f * x / static_cast<float>(width) - 1.0f : 0.0f;
     const float ndcY = height > 0 ? 1.0f - 2.0f * y / static_cast<float>(height) : 0.0f;
-    const float aspect = height > 0 ? static_cast<float>(width) / static_cast<float>(height) : 1.0f;
-    const float viewX = ndcX * tanHalf * aspect;
-    const float viewY = ndcY * tanHalf;
+    const float viewX = (ndcX - centreX) / scaleX;
+    const float viewY = (ndcY - centreY) / scaleY;
     float length = 0.0f;
     for (int i = 0; i < 3; ++i)
     {
@@ -320,10 +351,10 @@ bool FreeCamera::worldToPixel(const float point[3], int width, int height, float
     const float viewZ = d[0] * forward[0] + d[1] * forward[1] + d[2] * forward[2];
     if (viewZ < 0.05f)
         return false;
-    const float tanHalf = std::tan(m_fov * 0.5f);
-    const float aspect = static_cast<float>(width) / static_cast<float>(height);
-    x = (viewX / (viewZ * tanHalf * aspect) + 1.0f) * 0.5f * static_cast<float>(width);
-    y = (1.0f - viewY / (viewZ * tanHalf)) * 0.5f * static_cast<float>(height);
+    float scaleX, scaleY, centreX, centreY;
+    lens(width, height, scaleX, scaleY, centreX, centreY);
+    x = (viewX / viewZ * scaleX + centreX + 1.0f) * 0.5f * static_cast<float>(width);
+    y = (1.0f - (viewY / viewZ * scaleY + centreY)) * 0.5f * static_cast<float>(height);
     return true;
 }
 
@@ -358,8 +389,26 @@ void FreeCamera::apply(dice::hfe::dx9rend::IRenderView* view, int width, int hei
     float matrix[16];
     cameraToWorld(matrix);
     view->setViewport(0.0f, 0.0f, static_cast<float>(width), static_cast<float>(height));
-    view->setFov(m_fov);
-    view->setAspect(static_cast<float>(height) / static_cast<float>(width));
+    float scaleX, scaleY, centreX, centreY;
+    lens(width, height, scaleX, scaleY, centreX, centreY);
+    // The renderer's frustum (culling) is symmetric round its fov: one wide enough for the whole window under the
+    // shifted lens, so nothing the window shows is culled. Its projection then takes the lens's own terms.
+    const float aspect = static_cast<float>(height) / static_cast<float>(width);
+    const float tanCull = std::max((1.0f + std::fabs(centreY)) / scaleY, aspect * (1.0f + std::fabs(centreX)) / scaleX);
+    view->setFov(2.0f * std::atan(tanCull));
+    view->setAspect(aspect);
+    // The renderer applies the lens on each projection rebuild (RendMisc/RenderView.cpp, editorSetProjectionLens).
+    typedef void (*SetLensFn)(const void* view, float scaleX, float scaleY, float centreX, float centreY);
+    static SetLensFn setLens = 0;
+    static bool looked = false;
+    if (!looked)
+    {
+        looked = true;
+        if (HMODULE renderer = GetModuleHandleA("RendDX9.dll"))
+            setLens = reinterpret_cast<SetLensFn>(GetProcAddress(renderer, "editorSetProjectionLens"));
+    }
+    if (setLens)
+        setLens(static_cast<const dice::hfe::dx9rend::IRenderView*>(view), scaleX, scaleY, centreX, centreY);
     view->setFarPlane(m_farPlane);
     view->setViewMatrix(matrix);
 }

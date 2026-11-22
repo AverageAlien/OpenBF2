@@ -7,6 +7,8 @@
 #include "App/ImGuiHost.h"
 #include "App/ResourceBrowser.h"
 #include "App/ShortcutKeys.h"
+#include "App/StrategicAreaTools.h"
+#include "App/WorldOverlay.h"
 #include "Framework/EditorConsole.h"
 #include "Framework/EditorLog.h"
 #include "Framework/Matrix4.h"
@@ -14,13 +16,17 @@
 #include "Core/Ids.h"
 #include "Game/Objects/IObject.h"
 #include "Game/Objects/IObjectTemplate.h"
+#include "Game/Objects/IPlayerControlObjectTemplate.h"
+#include "Game/Objects/SpawnPointTemplate.h"
 #include "Scene/Object/ObjectManager.h"
+#include "Scene/Object/ObjectTypes/Base/ObjectTemplateManager.h"
 #include "Math/LocalBoundingBox.h"
 #include "RendMisc/IRenderView.h"
 
 #include "imgui.h"
 #include "ImGuizmo.h"
 
+#include <algorithm>
 #include <cmath>
 #include <cstdio>
 #include <cstring>
@@ -94,6 +100,42 @@ bool project(const float viewProjection[16], const float p[3], float width, floa
     out.x = (x / w * 0.5f + 0.5f) * width;
     out.y = (0.5f - y / w * 0.5f) * height;
     return true;
+}
+
+// A convex world polygon to window pixels, cut where it passes behind a plane just in front of the camera (a
+// polygon reaching under the camera keeps its visible part); false when nothing of it is in front.
+bool projectClipped(const float viewProjection[16], const float (*points)[3], int count, float width, float height,
+                    std::vector<ImVec2>& out)
+{
+    struct Clip { float x, y, w; };
+    const float* m = viewProjection;
+    const float nearW = 0.05f;
+    Clip in[16];
+    if (count > 16)
+        count = 16;
+    for (int i = 0; i < count; ++i)
+    {
+        const float* p = points[i];
+        in[i].x = p[0] * m[0] + p[1] * m[4] + p[2] * m[8] + m[12];
+        in[i].y = p[0] * m[1] + p[1] * m[5] + p[2] * m[9] + m[13];
+        in[i].w = p[0] * m[3] + p[1] * m[7] + p[2] * m[11] + m[15];
+    }
+    out.clear();
+    for (int i = 0; i < count; ++i)
+    {
+        const Clip& a = in[i];
+        const Clip& b = in[(i + 1) % count];
+        const bool aIn = a.w >= nearW, bIn = b.w >= nearW;
+        if (aIn)
+            out.push_back(ImVec2((a.x / a.w * 0.5f + 0.5f) * width, (0.5f - a.y / a.w * 0.5f) * height));
+        if (aIn != bIn)
+        {
+            const float t = (nearW - a.w) / (b.w - a.w);
+            const float x = a.x + (b.x - a.x) * t, y = a.y + (b.y - a.y) * t;
+            out.push_back(ImVec2((x / nearW * 0.5f + 0.5f) * width, (0.5f - y / nearW * 0.5f) * height));
+        }
+    }
+    return out.size() >= 3;
 }
 
 // The object's local box (collision bounds and children, Object::getFullBoundingBox), or a cube of
@@ -214,11 +256,18 @@ void ViewportTools::draw(EditSession& session, const FreeCamera& camera, dice::h
     matrixMultiply(worldToView, projection->m, viewProjection);
 
     session.setGridStep(m_moveSnap);
+    session.updateFog();
+    session.updateControlPointFlags();
+    worldOverlay().begin(worldToView, projection->m);
     m_camera = &camera;
+    drawNavMesh(session, viewProjection);
     drawCombatAreas(session, viewProjection);
     drawSplines(session, viewProjection);
     drawCompareLayer(session, viewProjection);
     drawOverlays(session, viewProjection);
+    drawSpawnAids(session, viewProjection);
+    drawVehicleGhosts(session, viewProjection);
+    StrategicAreaTools::drawViewport(session, viewProjection);
     drawPreviewParts(session, viewProjection);
     drawMarkers(session, viewProjection);
     drawSounds(session, viewProjection);
@@ -299,9 +348,10 @@ void ViewportTools::draw(EditSession& session, const FreeCamera& camera, dice::h
         m_gizmoShown = false;
         m_pressed = false;
     }
-    // A combat area's point handle, then an ambient sound's marker, take a press before the gizmo and
-    // the pick do.
-    else if (handleCombatAreas(session, viewProjection) || handleSounds(session, viewProjection))
+    // The gameplay placing tool, then the AI's handles, a combat area's point handle and an ambient sound's marker
+    // take a press before the gizmo and the pick do.
+    else if (handlePlacement(session) || StrategicAreaTools::handleViewport(session, viewProjection)
+             || handleCombatAreas(session, viewProjection) || handleSounds(session, viewProjection))
     {
         m_gizmoShown = false;
         m_pressed = false;
@@ -544,12 +594,21 @@ bool ViewportTools::handleCombatAreas(EditSession& session, const float viewProj
     const ImGuiIO& io = ImGui::GetIO();
     const std::string name = session.activeCombatArea();
     LevelObjectFile::CombatAreaData area;
-    if (name.empty() || !session.combatAreasShown() || !EditSession::engineCombatArea(name, area))
+    if (!session.combatAreasShown())
     {
         m_areaDrag = false;
         return false;
     }
+    if (name.empty() || !EditSession::engineCombatArea(name, area))
+    {
+        m_areaDrag = false;
+        return pickCombatArea(session, viewProjection, std::string());
+    }
     char line[256];
+    if (!m_areaDrag)
+        ImGui::GetBackgroundDrawList()->AddText(ImVec2(12.0f, io.DisplaySize.y - 28.0f), IM_COL32(255, 230, 120, 230),
+                                                ("Combat area " + name + ": drag a square to move it, Alt+click an edge to add a "
+                                                 "point, Delete removes the selected point, Esc lets go").c_str());
     if (m_areaDrag)
     {
         if (ImGui::IsMouseDown(ImGuiMouseButton_Left))
@@ -603,9 +662,9 @@ bool ViewportTools::handleCombatAreas(EditSession& session, const float viewProj
         session.selection().clear();
         return true;
     }
-    // Alt+click on one of its edges puts a point there.
+    // Alt+click on one of its edges puts a point there; a plain click on another area's edge selects that one.
     if (!io.KeyAlt)
-        return false;
+        return pickCombatArea(session, viewProjection, name);
     const size_t n = area.points.size();
     int edge = -1;
     best = 6.0f * 6.0f;
@@ -633,6 +692,164 @@ bool ViewportTools::handleCombatAreas(EditSession& session, const float viewProj
     std::snprintf(line, sizeof(line), "EditorCombatArea.insertPoint %s %d %.3f %.3f", area.name.c_str(), edge + 1, at[0], at[2]);
     session.runCommand(line, "combat area");
     return true;
+}
+
+// A click near a combat area's boundary (other than `except`) selects that area. [CHOSEN, not recovered]: retail
+// selected areas from its list only.
+bool ViewportTools::pickCombatArea(EditSession& session, const float viewProjection[16], const std::string& except)
+{
+    const ImGuiIO& io = ImGui::GetIO();
+    if (!ImGui::IsMouseClicked(ImGuiMouseButton_Left) || pointerOverUi() || ImGui::GetDragDropPayload() || io.KeyCtrl
+        || io.KeyShift)
+        return false;
+    const std::vector<LevelObjectFile::CombatAreaData> areas = EditSession::combatAreas();
+    float best = 5.0f * 5.0f;
+    std::string hit;
+    for (size_t k = 0; k < areas.size(); ++k)
+    {
+        if (areas[k].name == except)
+            continue;
+        const size_t n = areas[k].points.size();
+        for (size_t i = 0; i < n && n >= 2; ++i)
+        {
+            ImVec2 a, b;
+            if (!areaPointOnScreen(session, areas[k].points[i], viewProjection, a)
+                || !areaPointOnScreen(session, areas[k].points[(i + 1) % n], viewProjection, b))
+                continue;
+            const float vx = b.x - a.x, vy = b.y - a.y;
+            const float lengthSquared = vx * vx + vy * vy;
+            float t = lengthSquared > 0.0f ? ((io.MousePos.x - a.x) * vx + (io.MousePos.y - a.y) * vy) / lengthSquared : 0.0f;
+            t = t < 0.0f ? 0.0f : (t > 1.0f ? 1.0f : t);
+            const float px = a.x + vx * t - io.MousePos.x, py = a.y + vy * t - io.MousePos.y;
+            if (px * px + py * py < best)
+            {
+                best = px * px + py * py;
+                hit = areas[k].name;
+            }
+        }
+    }
+    if (hit.empty())
+        return false;
+    session.runCommand("EditorCombatArea.select " + hit + " -1", "combat area");
+    return true;
+}
+
+bool ViewportTools::handlePlacement(EditSession& session)
+{
+    const std::string kind = session.placeKind();
+    if (kind.empty())
+        return false;
+    const ImGuiIO& io = ImGui::GetIO();
+    if (ImGui::IsKeyPressed(ImGuiKey_Escape) || ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+    {
+        session.setPlaceKind(std::string());
+        return true;
+    }
+    if (!pointerOverUi())
+        ImGui::GetForegroundDrawList()->AddText(ImVec2(io.MousePos.x + 16.0f, io.MousePos.y + 10.0f), IM_COL32(255, 230, 120, 240),
+                                                ("Click: place a " + kind + " (Esc or right click stops)").c_str());
+    if (!ImGui::IsMouseClicked(ImGuiMouseButton_Left) || pointerOverUi())
+        return true;
+    float at[3];
+    std::string detail;
+    if (!session.surfaceAt(io.MousePos.x, io.MousePos.y, at, detail))
+        return true;
+    const char* stem = kind == "ControlPoint" ? "CP" : kind == "SpawnPoint" ? "SpawnPoint" : "Spawner";
+    char line[256];
+    std::snprintf(line, sizeof(line), "EditorGameplay.create %s %s %.3f/%.3f/%.3f", kind.c_str(),
+                  session.freeTemplateName(stem).c_str(), at[0], at[1] + (kind == "SpawnPoint" ? 0.5f : 0.0f), at[2]);
+    session.runCommand(line, "gameplay");
+    // Shift keeps the tool for another one.
+    if (!io.KeyShift)
+        session.setPlaceKind(std::string());
+    return true;
+}
+
+void ViewportTools::drawVehicleGhosts(EditSession& session, const float viewProjection[16])
+{
+    using namespace dice::hfe::world;
+    if (!session.overlays().vehicleGhosts || !session.markersShown() || !session.overlays().spawners || !objectManager)
+        return;
+    const ImGuiIO& io = ImGui::GetIO();
+    ImDrawList* list = ImGui::GetBackgroundDrawList();
+    const FreeCamera& camera = session.camera();
+    const float reach = 250.0f;
+    const std::map<unsigned int, IObject*>& roots = objectManager->getAllObjectsFromGrid();
+    for (std::map<unsigned int, IObject*>::const_iterator it = roots.begin(); it != roots.end(); ++it)
+    {
+        IObject* object = it->second;
+        if (session.markerKind(object) != EditSession::MarkerSpawner || (object->getFlags() & IObject::OFIsVisible) == 0)
+            continue;
+        const Mat4& m = object->getAbsoluteTransformation();
+        const float dx = m.m[12] - camera.x(), dy = m.m[13] - camera.y(), dz = m.m[14] - camera.z();
+        const float distance = std::sqrt(dx * dx + dy * dy + dz * dz);
+        if (distance > reach)
+            continue;
+        const std::string first = EditSession::spawnerVehicle(object, 1);
+        const std::string second = EditSession::spawnerVehicle(object, 2);
+        if (first.empty())
+            continue;
+        // [CHOSEN, not recovered] the box: a typical size of the vehicle's VehicleType (width, height, length), since a
+        // template that is not spawned has no bounds to read.
+        float size[3] = { 3.0f, 2.5f, 5.0f };
+        IObjectTemplate* t = objectTemplateManager ? objectTemplateManager->getTemplate(first) : 0;
+        // A loaded vehicle stands there itself (EditSession::updateVehicleGhosts): its names only.
+        if (t)
+        {
+            float top[3] = { m.m[12], m.m[13] + 3.5f, m.m[14] };
+            ImVec2 at;
+            if (distance < 90.0f && project(viewProjection, top, io.DisplaySize.x, io.DisplaySize.y, at))
+            {
+                const std::string label = second.empty() || _stricmp(first.c_str(), second.c_str()) == 0 ? first : first + " / " + second;
+                list->AddText(ImVec2(at.x + 4.0f, at.y - 14.0f), IM_COL32(255, 160, 60, 220), label.c_str());
+            }
+            continue;
+        }
+        IPlayerControlObjectTemplate* pco =
+            t ? static_cast<IPlayerControlObjectTemplate*>(t->queryInterface(IID_IPlayerControlObjectTemplate)) : 0;
+        if (pco)
+        {
+            switch (pco->getVehicleType())
+            {
+            case 0: case 1: case 2: case 18: size[0] = 3.7f; size[1] = 3.0f; size[2] = 8.0f; break;
+            case 3: case 17: case 20: size[0] = 3.2f; size[1] = 2.8f; size[2] = 7.5f; break;
+            case 4: size[0] = 2.3f; size[1] = 2.2f; size[2] = 4.8f; break;
+            case 5: case 6: case 7: case 16: size[0] = 13.0f; size[1] = 5.0f; size[2] = 18.0f; break;
+            case 8: case 9: case 19: size[0] = 2.0f; size[1] = 2.0f; size[2] = 2.0f; break;
+            case 21: case 14: size[0] = 2.6f; size[1] = 1.8f; size[2] = 6.5f; break;
+            case 22: case 23: size[0] = 3.0f; size[1] = 4.5f; size[2] = 17.0f; break;
+            default: break;
+            }
+        }
+        const float fade = distance < reach * 0.6f ? 1.0f : 1.0f - (distance - reach * 0.6f) / (reach * 0.4f);
+        const ImU32 colour = IM_COL32(255, 160, 60, static_cast<int>(200.0f * fade));
+        float base = m.m[13];
+        session.groundHeight(m.m[12], m.m[14], base);
+        base = std::max(base, m.m[13] - 2.0f);
+        ImVec2 corner[8];
+        bool visible = true;
+        for (int c = 0; c < 8 && visible; ++c)
+        {
+            const float lx = (c & 1 ? 0.5f : -0.5f) * size[0], ly = (c & 2 ? 1.0f : 0.0f) * size[1],
+                        lz = (c & 4 ? 0.5f : -0.5f) * size[2];
+            const float p[3] = { m.m[12] + lx * m.m[0] + lz * m.m[8], base + ly, m.m[14] + lx * m.m[2] + lz * m.m[10] };
+            visible = project(viewProjection, p, io.DisplaySize.x, io.DisplaySize.y, corner[c]);
+        }
+        if (!visible)
+            continue;
+        for (int c = 0; c < 8; ++c)
+            for (int bit = 1; bit < 8; bit <<= 1)
+                if (!(c & bit))
+                    list->AddLine(corner[c], corner[c | bit], colour, 1.5f);
+        // The front: a cross on the front face (+z).
+        list->AddLine(corner[4], corner[7], colour, 1.5f);
+        list->AddLine(corner[5], corner[6], colour, 1.5f);
+        if (distance < 90.0f)
+        {
+            const std::string label = second.empty() || _stricmp(first.c_str(), second.c_str()) == 0 ? first : first + " / " + second;
+            list->AddText(ImVec2(corner[6].x + 4.0f, corner[6].y - 14.0f), colour, label.c_str());
+        }
+    }
 }
 
 // Splines and the road tool (App/RoadNetwork)
@@ -995,6 +1212,183 @@ void ViewportTools::drawMeasure(EditSession& session, const float viewProjection
     }
 }
 
+// The navmeshes as two lists per map (filled polygons, their edges), built once per loaded mesh and drawn whole, depth
+// tested (App/WorldOverlay).
+void ViewportTools::drawNavMesh(EditSession& session, const float viewProjection[16])
+{
+    (void)viewProjection;
+    const EditSession::OverlayOptions& overlays = session.overlays();
+    if (!overlays.navMeshInfantry && !overlays.navMeshVehicle)
+        return;
+    const NavMesh& mesh = session.navMesh();
+    static std::vector<WorldVertex> fills[NavMesh::KindCount], edges[NavMesh::KindCount];
+    static const void* builtFor[NavMesh::KindCount] = { 0, 0 };
+    static size_t builtCount[NavMesh::KindCount] = { 0, 0 };
+    for (int k = 0; k < NavMesh::KindCount; ++k)
+    {
+        const NavMesh::Kind kind = static_cast<NavMesh::Kind>(k);
+        if (!(kind == NavMesh::Infantry ? overlays.navMeshInfantry : overlays.navMeshVehicle) || !mesh.loaded(kind))
+            continue;
+        const std::vector<NavMesh::Polygon>& polygons = mesh.polygons(kind);
+        if (builtFor[k] != &polygons[0] || builtCount[k] != polygons.size())
+        {
+            builtFor[k] = &polygons[0];
+            builtCount[k] = polygons.size();
+            fills[k].clear();
+            edges[k].clear();
+            const bool infantry = kind == NavMesh::Infantry;
+            const unsigned fill = infantry ? worldColour(70, 230, 70, 45) : worldColour(255, 160, 40, 45);
+            const unsigned edge = infantry ? worldColour(70, 230, 70, 170) : worldColour(255, 160, 40, 170);
+            const float lift = infantry ? 0.10f : 0.20f;
+            for (size_t i = 0; i < polygons.size(); ++i)
+            {
+                const NavMesh::Polygon& polygon = polygons[i];
+                WorldVertex first = { 0.0f, 0.0f, 0.0f, fill };
+                for (unsigned c = 0; c < polygon.count; ++c)
+                {
+                    const float* v = mesh.vertex(kind, polygon.first + c);
+                    const float* w = mesh.vertex(kind, polygon.first + (c + 1) % polygon.count);
+                    const WorldVertex a = { v[0], v[1] + lift, v[2], fill };
+                    const WorldVertex b = { w[0], w[1] + lift, w[2], fill };
+                    if (c == 0)
+                        first = a;
+                    else if (c + 1 < polygon.count)
+                    {
+                        fills[k].push_back(first);
+                        fills[k].push_back(a);
+                        fills[k].push_back(b);
+                    }
+                    const WorldVertex ea = { a.x, a.y, a.z, edge }, eb = { b.x, b.y, b.z, edge };
+                    edges[k].push_back(ea);
+                    edges[k].push_back(eb);
+                }
+            }
+        }
+        worldOverlay().triangles(&fills[k]);
+        worldOverlay().lines(&edges[k]);
+    }
+}
+
+// A soldier's capsule standing at `base` (radius 0.35 m, 1.8 m tall), as triangles.
+static void addCapsule(const float base[3], float radius, float height, unsigned colour)
+{
+    const int sides = 12, cap = 4;
+    // Rows of rings from the bottom pole to the top pole: the lower hemisphere, then the upper one.
+    std::vector<float> ringY, ringR;
+    for (int i = 0; i <= cap; ++i)
+    {
+        const float a = -1.5707963f + 1.5707963f * static_cast<float>(i) / cap;
+        ringY.push_back(base[1] + radius + std::sin(a) * radius);
+        ringR.push_back(std::cos(a) * radius);
+    }
+    for (int i = 0; i <= cap; ++i)
+    {
+        const float a = 1.5707963f * static_cast<float>(i) / cap;
+        ringY.push_back(base[1] + height - radius + std::sin(a) * radius);
+        ringR.push_back(std::cos(a) * radius);
+    }
+    for (size_t r = 0; r + 1 < ringY.size(); ++r)
+        for (int s = 0; s < sides; ++s)
+        {
+            const float a0 = 6.2831853f * static_cast<float>(s) / sides, a1 = 6.2831853f * static_cast<float>(s + 1) / sides;
+            const float p00[3] = { base[0] + std::cos(a0) * ringR[r], ringY[r], base[2] + std::sin(a0) * ringR[r] };
+            const float p01[3] = { base[0] + std::cos(a1) * ringR[r], ringY[r], base[2] + std::sin(a1) * ringR[r] };
+            const float p10[3] = { base[0] + std::cos(a0) * ringR[r + 1], ringY[r + 1], base[2] + std::sin(a0) * ringR[r + 1] };
+            const float p11[3] = { base[0] + std::cos(a1) * ringR[r + 1], ringY[r + 1], base[2] + std::sin(a1) * ringR[r + 1] };
+            worldOverlay().triangle(p00, p01, p11, colour);
+            worldOverlay().triangle(p00, p11, p10, colour);
+        }
+}
+
+void ViewportTools::drawSpawnAids(EditSession& session, const float viewProjection[16])
+{
+    (void)viewProjection;
+    session.updateVehicleGhosts();
+    const EditSession::OverlayOptions& overlays = session.overlays();
+    if (!session.markersShown() || !dice::hfe::world::objectManager || (!overlays.spawnChecks && !overlays.soldierFigures))
+        return;
+    const FreeCamera& camera = session.camera();
+    const float reach = 600.0f;
+    const std::map<unsigned int, IObject*>& roots = dice::hfe::world::objectManager->getAllObjectsFromGrid();
+    for (std::map<unsigned int, IObject*>::const_iterator it = roots.begin(); it != roots.end(); ++it)
+    {
+        IObject* object = it->second;
+        const EditSession::MarkerKind kind = session.markerKind(object);
+        if ((kind != EditSession::MarkerSpawnPoint && kind != EditSession::MarkerSpawner) || !session.markerShown(kind)
+            || (object->getFlags() & IObject::OFIsVisible) == 0)
+            continue;
+        const Mat4& m = object->getAbsoluteTransformation();
+        const float dx = m.m[12] - camera.x(), dy = m.m[13] - camera.y(), dz = m.m[14] - camera.z();
+        if (dx * dx + dy * dy + dz * dz > reach * reach)
+            continue;
+        const bool selected = session.selection().contains(it->first);
+        float meshHeight = m.m[13];
+        const EditSession::SpawnCheck check = session.spawnCheck(object, &meshHeight);
+        float ground = m.m[13];
+        if (check == EditSession::SpawnOnMesh)
+            ground = meshHeight;
+        else
+            session.groundHeight(m.m[12], m.m[14], ground);
+        if (overlays.spawnChecks && check != EditSession::SpawnUnchecked)
+        {
+            const unsigned colour = check == EditSession::SpawnOnMesh ? worldColour(60, 255, 60, 255)
+                                  : check == EditSession::SpawnOffMesh ? worldColour(255, 50, 40, 255)
+                                                                       : worldColour(170, 170, 170, 200);
+            const float radius = kind == EditSession::MarkerSpawnPoint ? 0.6f : 2.5f;
+            // Two rings a little apart, so the line reads thicker.
+            for (int ring = 0; ring < 2; ++ring)
+            {
+                const float r = radius + 0.05f * ring;
+                for (int s = 0; s < 32; ++s)
+                {
+                    const float a0 = 6.2831853f * static_cast<float>(s) / 32.0f, a1 = 6.2831853f * static_cast<float>(s + 1) / 32.0f;
+                    const float p[3] = { m.m[12] + std::cos(a0) * r, ground + 0.08f, m.m[14] + std::sin(a0) * r };
+                    const float q[3] = { m.m[12] + std::cos(a1) * r, ground + 0.08f, m.m[14] + std::sin(a1) * r };
+                    worldOverlay().line(p, q, colour);
+                }
+            }
+        }
+        if (overlays.soldierFigures && kind == EditSession::MarkerSpawnPoint)
+        {
+            // Coloured by the team the point is only for (setOnlyForTeam): 1 red, 2 blue, either white.
+            int team = 0;
+            dice::hfe::world::IObjectTemplate* t = const_cast<dice::hfe::world::IObjectTemplate*>(object->getTemplate());
+            if (t && t->getClassID() == dice::hfe::CID_SpawnPointTemplate)
+                if (dice::hfe::SpawnPointTemplate* sp = static_cast<dice::hfe::SpawnPointTemplate*>(
+                        t->queryImplementation(dice::hfe::CID_SpawnPointTemplate)))
+                    team = sp->getOnlyForTeam();
+            const unsigned colour = selected ? worldColour(255, 170, 40, 190)
+                                  : team == 1 ? worldColour(235, 80, 70, 130)
+                                  : team == 2 ? worldColour(80, 140, 245, 130) : worldColour(235, 235, 235, 120);
+            const float base[3] = { m.m[12], m.m[13], m.m[14] };
+            addCapsule(base, 0.35f, 1.8f, colour);
+            // The facing: an arrow at chest height.
+            float forward[2] = { m.m[8], m.m[10] };
+            const float length = std::sqrt(forward[0] * forward[0] + forward[1] * forward[1]);
+            if (length > 1e-4f)
+            {
+                forward[0] /= length;
+                forward[1] /= length;
+            }
+            else
+            {
+                forward[0] = 0.0f;
+                forward[1] = 1.0f;
+            }
+            const float side[2] = { forward[1], -forward[0] };
+            const float chest = m.m[13] + 1.3f;
+            const float from[3] = { m.m[12] + forward[0] * 0.36f, chest, m.m[14] + forward[1] * 0.36f };
+            const float to[3] = { m.m[12] + forward[0] * 1.2f, chest, m.m[14] + forward[1] * 1.2f };
+            const float left[3] = { to[0] - forward[0] * 0.25f + side[0] * 0.15f, chest, to[2] - forward[1] * 0.25f + side[1] * 0.15f };
+            const float right[3] = { to[0] - forward[0] * 0.25f - side[0] * 0.15f, chest, to[2] - forward[1] * 0.25f - side[1] * 0.15f };
+            const unsigned arrow = worldColour(255, 220, 80, 255);
+            worldOverlay().line(from, to, arrow);
+            worldOverlay().line(to, left, arrow);
+            worldOverlay().line(to, right, arrow);
+        }
+    }
+}
+
 void ViewportTools::drawOverlays(EditSession& session, const float viewProjection[16])
 {
     const EditSession::OverlayOptions& overlays = session.overlays();
@@ -1119,29 +1513,18 @@ void ViewportTools::drawOverlays(EditSession& session, const float viewProjectio
     float seaLevel = 0.0f;
     if (overlays.seaLevel && session.terrain().seaLevel(seaLevel))
     {
-        // A grid at the sea level around the camera, every 25 m, fading towards its edge.
-        const float step = 25.0f, half = 300.0f;
-        const float cx = std::floor(camera.x() / step) * step, cz = std::floor(camera.z() / step) * step;
-        for (int axis = 0; axis < 2; ++axis)
-            for (float line = -half; line <= half; line += step)
-            {
-                ImVec2 previous;
-                bool previousVisible = false;
-                for (float t = -half; t <= half; t += 10.0f)
-                {
-                    const float x = axis == 0 ? cx + line : cx + t;
-                    const float z = axis == 0 ? cz + t : cz + line;
-                    const float p[3] = { x, seaLevel, z };
-                    const float dx = x - camera.x(), dz = z - camera.z();
-                    const float distance = std::sqrt(dx * dx + dz * dz);
-                    ImVec2 at;
-                    const bool visible = distance < half && project(viewProjection, p, io.DisplaySize.x, io.DisplaySize.y, at);
-                    if (visible && previousVisible)
-                        list->AddLine(previous, at, IM_COL32(70, 160, 255, static_cast<int>(150.0f * (1.0f - distance / half))), 1.0f);
-                    previous = at;
-                    previousVisible = visible;
-                }
-            }
+        // [CHOSEN, not recovered] the water, as the editable terrain does not draw it: a sheet at the sea level round
+        // the camera, depth tested, so the ground above the sea hides it.
+        {
+            const float half = 6000.0f;
+            const unsigned colour = worldColour(40, 110, 170, 120);
+            const float a[3] = { camera.x() - half, seaLevel, camera.z() - half };
+            const float b[3] = { camera.x() + half, seaLevel, camera.z() - half };
+            const float c[3] = { camera.x() + half, seaLevel, camera.z() + half };
+            const float d[3] = { camera.x() - half, seaLevel, camera.z() + half };
+            worldOverlay().triangle(a, b, c, colour);
+            worldOverlay().triangle(a, c, d, colour);
+        }
     }
     if (overlays.boundingSpheres)
     {
@@ -1909,6 +2292,23 @@ void ViewportTools::drawToolbar(EditSession& session, const ImVec2& viewPos)
         ImGui::SameLine();
         if (ImGui::RadioButton("Paint (B)", painting) && !painting)
             session.runCommand("EditorBrush.tool 1", "brush");
+
+        // The gameplay placing tool: one object per click (Shift+click keeps the tool).
+        static const char* const placeKinds[3][2] = { { "ControlPoint", "+Flag" }, { "SpawnPoint", "+Spawn" },
+                                                      { "ObjectSpawner", "+Vehicle" } };
+        for (int i = 0; i < 3; ++i)
+        {
+            ImGui::SameLine(0.0f, i == 0 ? 16.0f : -1.0f);
+            const bool armed = session.placeKind() == placeKinds[i][0];
+            if (armed)
+                ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
+            if (ImGui::SmallButton(placeKinds[i][1]))
+                session.setPlaceKind(armed ? std::string() : std::string(placeKinds[i][0]));
+            if (armed)
+                ImGui::PopStyleColor();
+            ImGui::SetItemTooltip("Click in the view to place a new %s there (Shift+click places more). Ctrl+drag a "
+                                  "selected one copies it with all its settings.", i == 0 ? "control point" : i == 1 ? "spawn point" : "vehicle spawner");
+        }
 
         ImGui::SameLine(0.0f, 16.0f);
         int space = static_cast<int>(session.gizmoSpace());

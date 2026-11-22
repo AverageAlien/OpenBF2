@@ -143,7 +143,10 @@ void claimViewMouse(bool claimed)
 
 bool pointerOverUi()
 {
-    return g_viewMouseClaimed || ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow)
+    // AllowWhenBlockedByActiveItem: a press on a panel's button or row makes that item active in the same frame, and
+    // the plain test then answered "no window", so the press went on into the view behind it.
+    return g_viewMouseClaimed
+        || ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow | ImGuiHoveredFlags_AllowWhenBlockedByActiveItem)
         || ImGui::IsPopupOpen("", ImGuiPopupFlags_AnyPopupId | ImGuiPopupFlags_AnyPopupLevel);
 }
 

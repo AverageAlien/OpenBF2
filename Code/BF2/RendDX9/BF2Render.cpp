@@ -62,6 +62,19 @@
 
 #include <cstring>
 
+#if defined(BF2_IMAGE_EDITOR) && BF2_IMAGE_EDITOR
+// [CHOSEN, not recovered] editor-only: a callback the editor sets (editorSetWorldDrawCallback) to draw its own world
+// geometry - water, navmeshes, spawn aids - with the world's depth buffer, right after the world's transparent pass
+// and before the first-person pass clears the depth.
+namespace {
+void (*g_editorWorldDraw)(void* device) = 0;
+}
+extern "C" __declspec(dllexport) void editorSetWorldDrawCallback(void (*draw)(void* device))
+{
+    g_editorWorldDraw = draw;
+}
+#endif
+
 namespace dice {
 namespace hfe {
 
@@ -2270,6 +2283,13 @@ bool Renderer::renderFrame(double time, float deltaTime)
                 geom::asParticleSystemManager(geom::g_ParticleSystemManager)->onPathDraw(false, false);
             }
             renderQueueFlush(0x40, 1);                       // RSMTFogTransparentPass
+#if defined(BF2_IMAGE_EDITOR) && BF2_IMAGE_EDITOR
+            if (g_editorWorldDraw)
+            {
+                flushRenderTargetsSeam();
+                g_editorWorldDraw(*reinterpret_cast<IDirect3DDevice9**>(static_cast<unsigned char*>(g_rendererBase) + 0x0C));
+            }
+#endif
             if (m_weatherManager && self[1695])
             {
                 typedef void (__fastcall* Fn)(void*, void*);

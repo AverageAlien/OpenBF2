@@ -47,6 +47,16 @@ private:
     // The view overlays: the control point connections and
     // radii, the sea-level plane, the selection's bounding spheres and the light source markers.
     void drawOverlays(EditSession& session, const float viewProjection[16]);
+    // The AI navigation meshes round the camera (OverlayOptions::navMeshInfantry / navMeshVehicle).
+    void drawNavMesh(EditSession& session, const float viewProjection[16]);
+    // The spawn aids: each spawn point's and spawner's navmesh ring (green on, red off, grey without a mesh) and
+    // a soldier-sized capsule on each spawn point, facing its way.
+    void drawSpawnAids(EditSession& session, const float viewProjection[16]);
+    // Each spawner's vehicle (OverlayOptions::vehicleGhosts): a box of its kind's size where it spawns, facing the
+    // spawner's way, and its name.
+    void drawVehicleGhosts(EditSession& session, const float viewProjection[16]);
+    // The gameplay placing tool (EditSession::placeKind): a click makes the kind's object on the ground under it.
+    bool handlePlacement(EditSession& session);
     // The measure tool: its clicks and keys, and the line through its points.
     void handleMeasure(EditSession& session);
     void drawMeasure(EditSession& session, const float viewProjection[16]);
@@ -57,6 +67,7 @@ private:
     bool handleSounds(EditSession& session, const float viewProjection[16]);
     // The selected combat area's point handles; true when they took the mouse this frame.
     bool handleCombatAreas(EditSession& session, const float viewProjection[16]);
+    bool pickCombatArea(EditSession& session, const float viewProjection[16], const std::string& except);
     bool areaPointOnScreen(EditSession& session, const std::pair<float, float>& point, const float viewProjection[16],
                            ImVec2& out) const;
     void handleGizmo(EditSession& session, const float view[16], const float projection[16],

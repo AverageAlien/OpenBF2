@@ -492,6 +492,7 @@ int EditorApp::runInteractive()
             logLine(LogLevel::Warning, "settings: %s", problems[i].c_str());
     }
     shell.loadSettings(settings);
+    shell.setModName(m_options.mod);
     camera.setSpeed(settings.getFloat("camera.speed", camera.speed()));
     camera.setFarPlane(shell.options().viewDistance);
 
@@ -611,7 +612,11 @@ int EditorApp::runInteractive()
         {
             std::string report;
             if (session.editableTerrain().open(level.name(), report))
+            {
                 logLine(LogLevel::Info, "terrain: %s", report.c_str());
+                if (shell.options().terrainLook >= 0)
+                    runConsoleLine("EditorTerrain.technique " + std::to_string(shell.options().terrainLook));
+            }
             else
                 logLine(LogLevel::Warning, "terrain: the compiled terrain stays: %s", report.c_str());
         }
@@ -827,7 +832,9 @@ int EditorApp::runInteractive()
             if (!playerView)
             {
                 camera.update(dt);
-                // Before the UI is built, so the gizmo and the outlines use this frame's matrices.
+                // Before the UI is built, so the gizmo and the outlines use this frame's matrices; centred on the
+                // area the panels leave free (last frame's).
+                camera.setViewRect(shell.viewX(), shell.viewY(), shell.viewWidth(), shell.viewHeight());
                 camera.apply(view, m_window.clientWidth(), m_window.clientHeight());
             }
             session.setViewSize(m_window.clientWidth(), m_window.clientHeight());
@@ -841,6 +848,8 @@ int EditorApp::runInteractive()
         shell.draw(status);
         if (level.isOpen() && playTest && playTest->active())
         {
+            // The spawners' vehicles are the editor's: gone while the level plays (the spawners make the real ones).
+            session.clearVehicleGhosts();
             // Soldier mode: the editor's overlays, gizmo and picking follow the editor camera, not the player's, so the
             // view shows only the game's picture and how to leave.
             const char* const hint = m_window.mouseCaptured()
@@ -1012,11 +1021,16 @@ int EditorApp::runInteractive()
     logLine(LogLevel::Info, "interactive: %u frames, leaving the frame loop", frame);
     // A layer switch: the editor again, with the same switches, on the other layer (the camera comes
     // back from the settings just saved).
-    if (session.relaunchRequested())
+    // Or File > Open level, chosen with no level open: the editor again on that level and layer.
+    std::string openLevel, openMode;
+    int openSize = 0;
+    const bool openChosen = !level.isOpen() && shell.openRequested(openLevel, openMode, openSize);
+    if (session.relaunchRequested() || openChosen)
     {
-        const std::string commandLine = relaunchCommandLine(m_options.commandLine, session.relaunchMode(),
-                                                            session.relaunchSize(), session.relaunchLevel(),
-                                                            session.relaunchMod());
+        const std::string commandLine =
+            openChosen ? relaunchCommandLine(m_options.commandLine, openMode, openSize, openLevel, std::string())
+                       : relaunchCommandLine(m_options.commandLine, session.relaunchMode(), session.relaunchSize(),
+                                             session.relaunchLevel(), session.relaunchMod());
         char exe[MAX_PATH];
         const DWORD length = GetModuleFileNameA(0, exe, MAX_PATH);
         std::string line = "\"" + std::string(exe, length) + "\" " + commandLine;

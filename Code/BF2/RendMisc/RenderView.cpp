@@ -538,6 +538,27 @@ Mat4* RenderView::getProjectionMatrixPtr()
     return &m_matrix[4];
 }
 
+#if defined(BF2_IMAGE_EDITOR) && BF2_IMAGE_EDITOR
+// [CHOSEN, not recovered] editor-only: the editor draws the scene over its whole window with panels over the sides,
+// so it centres the projection of its view on the area the panels leave free. The lens replaces the perspective's
+// scale (m0, m5) and centre (m8, m9) for that one view, on every rebuild (the game's frame sets the far plane and so
+// rebuilds every frame). The view's own fov stays wide enough for the frustum to cover the window.
+namespace {
+const void* g_editorLensView = 0;
+float g_editorLens[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+}
+
+extern "C" __declspec(dllexport) void editorSetProjectionLens(const void* view, float scaleX, float scaleY, float centreX,
+                                                               float centreY)
+{
+    g_editorLensView = view;
+    g_editorLens[0] = scaleX;
+    g_editorLens[1] = scaleY;
+    g_editorLens[2] = centreX;
+    g_editorLens[3] = centreY;
+}
+#endif
+
 // Rebuilds projection when dirty. Far distance is measured from near, and aspect is height/width.
 // Viewport-only changes do not dirty projection.
 void RenderView::rebuildProjection()
@@ -565,6 +586,15 @@ void RenderView::rebuildProjection()
         m[11] = 1.0f;
         m[14] = -(q * m_nearPlane);
         m[15] = 0.0f;
+#if defined(BF2_IMAGE_EDITOR) && BF2_IMAGE_EDITOR
+        if (g_editorLensView == static_cast<const dx9rend::IRenderView*>(this) && g_editorLens[0] > 0.0f)
+        {
+            m[0] = g_editorLens[0];
+            m[5] = g_editorLens[1];
+            m[8] = g_editorLens[2];
+            m[9] = g_editorLens[3];
+        }
+#endif
     }
 
     m_dirty428 &= ~1u;

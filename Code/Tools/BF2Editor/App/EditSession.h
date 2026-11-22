@@ -29,6 +29,8 @@
 #include "App/EditableTerrain.h"
 #include "Framework/LevelEditorDefs.h"
 #include "App/MaterialDocuments.h"
+#include "App/NavMesh.h"
+#include "App/StrategicAreas.h"
 #include "App/ObjectWizard.h"
 #include "App/RoadNetwork.h"
 #include "App/TemplateDocuments.h"
@@ -145,8 +147,10 @@ public:
     // The surface point under window pixel (x, y): the nearer of the collision surface the pick ray
     // meets (hidden and locked objects left out) and the terrain; false when it meets neither.
     // With `ignoreSelection`, the selected objects are looked through (a drag slides them over what is
-    // under them).
-    bool surfaceAt(float x, float y, float out[3], std::string& detail, bool ignoreSelection = false) const;
+    // under them). With `anyObject`, locked layers and unpickable classes count as surfaces too (what is
+    // placed is not an object of theirs).
+    bool surfaceAt(float x, float y, float out[3], std::string& detail, bool ignoreSelection = false,
+                   bool anyObject = false) const;
     // The terrain height under (x, z) (EditorLevel::groundHeight); false off the heightmap.
     bool groundHeight(float x, float z, float& height) const;
     // pick() applied to the selection; `result` says what happened. Locked layers are skipped by pick.
@@ -249,6 +253,8 @@ public:
     void setClassPickable(unsigned classId, bool pickable);
     // Picking's filter on a root object: drawn, its layer not locked, its class pickable.
     bool canPick(dice::hfe::world::IObject* root) const;
+    // A level object to place things on: drawn, not the template preview or a spawner's vehicle.
+    bool isLevelSurface(dice::hfe::world::IObject* root) const;
     // The template class name ("SimpleObject", "Bundle", ...) or "UnknownTemplateClass".
     static std::string className(unsigned classId);
     static int layerOf(dice::hfe::world::IObject* object);     // the root's layer
@@ -409,6 +415,12 @@ public:
         bool hoverBox;              // a yellow box round the object under the cursor (retail's Draw Selection Box)
         bool supplyLines;           // control points of one supply group joined, and each one's lines to the groups
                                     // it needs (team 1 red, team 2 blue; retail's SetDrawSupplyLine)
+        bool navMeshInfantry, navMeshVehicle;   // the AI's navigation meshes round the camera
+        bool spawnChecks;           // a ring under each spawn point and spawner: green on its navmesh, red off it
+        bool soldierFigures;        // a soldier-sized capsule standing on each spawn point, facing its way
+        bool vehicleGhosts;         // each spawner's vehicle as its bounding box, where and how it spawns
+        bool noFog;                 // the level's fog cleared in the view (never saved; Sky.con keeps it)
+        bool strategicAreas;        // the AI's strategic areas, links, order positions and waypoints (StrategicAreaTools)
         int  soundMarkers;          // 0 off, 1 small, 2 medium, 3 large
         int  soundReach;            // 0 none, 1 the selected sound's, 2 every sound's
         OverlayOptions();
@@ -422,6 +434,41 @@ public:
     // kind: 0 a spawn point's or spawner's line to its control point, 1 two control points of one supply group,
     // 2 / 3 a control point's line to a group team 1 / team 2 needs.
     struct OverlayLink { unsigned from; unsigned to; int kind = 0; };
+    // The navigation meshes, read on first use (NavMesh::load); reloadNavMesh reads them again.
+    const NavMesh& navMesh();
+    bool reloadNavMesh(std::string& result);
+    // Where a spawn point or spawner stands against the navmesh its spawns use: spawn points the infantry
+    // mesh, land vehicle spawners the vehicle mesh. Unchecked for sea and air vehicles and for other objects.
+    enum SpawnCheck { SpawnUnchecked = 0, SpawnOnMesh, SpawnOffMesh, SpawnNoMesh };
+    SpawnCheck spawnCheck(dice::hfe::world::IObject* object, float* meshHeight = 0);
+    // A spawner's vehicle template for a team (1 or 2; the other team's when that one has none), or "".
+    static std::string spawnerVehicle(dice::hfe::world::IObject* spawner, int team);
+    // The spawners' vehicles (OverlayOptions::vehicleGhosts): a real object of each spawner's vehicle (its team 1 one,
+    // else team 2's) standing where it spawns, made and moved each frame for the spawners near the camera. They are not
+    // part of the level: never saved, not picked themselves - a click on one picks its spawner. [CHOSEN, not recovered]
+    void updateVehicleGhosts();
+    void clearVehicleGhosts();
+    // The spawn point whose soldier capsule, or the spawner whose vehicle, the ray through window pixel (x, y) meets
+    // first; 0 when none.
+    unsigned spawnShapeAt(float x, float y, std::string& detail) const;
+    // The fog override (OverlayOptions::noFog), applied each frame: cleared while on, the level's back after.
+    void updateFog();
+    // Shows each control point's flag for its template's team (see the definition), each frame.
+    void updateControlPointFlags();
+    // The open layer's AI strategic areas, read on first use. recordStrategicEdit commits the model as it now stands
+    // and records it in the history as one edit from snapshot `before` (EditorAI.restore replays either side).
+    StrategicAreas& strategicAreas();
+    void recordStrategicEdit(const std::string& label, int before);
+    bool strategicRestore(int snapshot, std::string& result);
+    // A template line taken out of the level file as one undoable edit (EditorTemplate.remove, undone by
+    // EditorTemplate.apply with the old value). `key` is LevelObjectFile::templateKey's.
+    bool clearTemplateProperty(const std::string& name, const std::string& key, std::string& result);
+    // The gameplay placing tool: a kind (EditSession::gameplayKind's names) arms it, and a click in the view makes one
+    // there (EditorGameplay.create); "" disarms it.
+    const std::string& placeKind() const { return m_placeKind; }
+    void setPlaceKind(const std::string& kind) { m_placeKind = kind; }
+    // The first free template name <stem>_<n> (n from 1), or <stem> itself with `bare`.
+    std::string freeTemplateName(const std::string& stem) const;
     struct OverlayCircle { unsigned id; float radius; };
     void overlayGeometry(std::vector<OverlayLink>& links, std::vector<OverlayCircle>& circles);
 
@@ -1155,6 +1202,18 @@ private:
     bool makePreview(const std::string& name, const float at[3], float yaw, std::string& result);
     bool clearPreview(std::string& result);
     OverlayOptions             m_overlays;
+    NavMesh                    m_navMesh;
+    struct VehicleGhost
+    {
+        unsigned    object = 0;
+        std::string vehicle;
+    };
+    std::map<unsigned, VehicleGhost> m_ghosts;      // spawner id -> its vehicle's object
+    std::set<unsigned>               m_ghostObjects;
+    StrategicAreas             m_strategicAreas;
+    bool                       m_strategicTried = false;
+    std::string                m_placeKind;
+    bool                       m_fogCleared = false;
     bool                       m_overlayCached = false;
     unsigned                   m_overlayRevision = 0;
     size_t                     m_overlayCount = 0;
@@ -1181,8 +1240,15 @@ private:
     bool replaceCombatArea(const LevelObjectFile::CombatAreaData& before, const LevelObjectFile::CombatAreaData& after,
                            const std::string& label, std::string& result);
     // createGameplayObject and createEffectArea: `effect` only for an effect area.
+    // With `copied`, the new template takes those lines (a duplicate) instead of the kind's stock ones, the object
+    // that transform, and a spawner object `copiedControlPoint` (-1 none).
     bool makeLevelObject(const std::string& kind, const std::string& name, const std::string& effect,
-                         const dice::hfe::Vec3& position, std::string& result);
+                         const dice::hfe::Vec3& position, std::string& result,
+                         const std::vector<std::pair<std::string, std::string> >* copied = 0,
+                         const dice::hfe::Mat4* copiedTransform = 0, int copiedControlPoint = -1);
+    // duplicateSelection for gameplay objects (spawners, spawn points, control points): each a new template copied
+    // from its own, under a free name, standing where the original does.
+    bool duplicateGameplay(std::string& result);
     // Whether a copy of the object can be made and saved: it belongs to StaticObjects.con.
     bool copyable(unsigned id, std::string& error) const;
     // Objects made as one recorded edit (duplicate, paste, replace's new half); they become the selection.

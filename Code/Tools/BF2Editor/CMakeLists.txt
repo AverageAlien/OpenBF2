@@ -215,6 +215,18 @@ set(bf2_editor_app_sources
     "${BF2_EDITOR_ROOT}/App/LevelSettings.h"
     "${BF2_EDITOR_ROOT}/App/SessionPanels.cpp"
     "${BF2_EDITOR_ROOT}/App/SessionPanels.h"
+    "${BF2_EDITOR_ROOT}/App/GameplayFields.cpp"
+    "${BF2_EDITOR_ROOT}/App/GameplayFields.h"
+    "${BF2_EDITOR_ROOT}/App/LayerChecks.cpp"
+    "${BF2_EDITOR_ROOT}/App/LayerChecks.h"
+    "${BF2_EDITOR_ROOT}/App/NavMesh.cpp"
+    "${BF2_EDITOR_ROOT}/App/StrategicAreas.cpp"
+    "${BF2_EDITOR_ROOT}/App/StrategicAreas.h"
+    "${BF2_EDITOR_ROOT}/App/StrategicAreaTools.cpp"
+    "${BF2_EDITOR_ROOT}/App/StrategicAreaTools.h"
+    "${BF2_EDITOR_ROOT}/App/WorldOverlay.cpp"
+    "${BF2_EDITOR_ROOT}/App/WorldOverlay.h"
+    "${BF2_EDITOR_ROOT}/App/NavMesh.h"
     "${BF2_EDITOR_ROOT}/App/MinimapPanel.cpp"
     "${BF2_EDITOR_ROOT}/App/MinimapPanel.h"
     "${BF2_EDITOR_ROOT}/App/TestHarness.cpp"
@@ -249,6 +261,7 @@ set(bf2_editor_app_sources
 #   Physics/HeightmapCluster.cpp  - addHeightmap makes HeightmapEditable tiles (WP8).
 #   Physics/HeightmapConsole.cpp  - heightmapCluster.create resolves the editable class (WP8).
 #   Menu/Bf2TransformNode.cpp     - tells the HUD editor where each script-made HUD node stands (App/HudEditor).
+#   Game/GameLogic/GameLogic.cpp  - a level load keeps its destroyable and dynamic objects (no respawner conversion).
 set(bf2_editor_shared_sources
     "${BF2_ROOT}/Game/Main/BF2Engine.cpp"
     "${BF2_ROOT}/Core/ModuleRegistry.cpp"
@@ -256,10 +269,11 @@ set(bf2_editor_shared_sources
     "${BF2_ROOT}/Physics/HeightmapCluster.cpp"
     "${BF2_ROOT}/Physics/HeightmapConsole.cpp"
     "${BF2_ROOT}/Menu/Bf2TransformNode.cpp"
+    "${BF2_ROOT}/Game/GameLogic/GameLogic.cpp"
 )
 # Matches the object path of each shared TU inside $<TARGET_OBJECTS:bf2_client_objects>.
 set(bf2_editor_shared_object_regex
-    "(Game[/\\\\]Main[/\\\\]BF2Engine|Core[/\\\\]ModuleRegistry|Game[/\\\\]Main[/\\\\]BF2EngineSetup|Physics[/\\\\]HeightmapCluster|Physics[/\\\\]HeightmapConsole|Menu[/\\\\]Bf2TransformNode)\\.cpp\\.obj")
+    "(Game[/\\\\]Main[/\\\\]BF2Engine|Core[/\\\\]ModuleRegistry|Game[/\\\\]Main[/\\\\]BF2EngineSetup|Physics[/\\\\]HeightmapCluster|Physics[/\\\\]HeightmapConsole|Menu[/\\\\]Bf2TransformNode|Game[/\\\\]GameLogic[/\\\\]GameLogic)\\.cpp\\.obj")
 
 # Dear ImGui (docking) and ImGuizmo are vendored under Code/BF2/External.
 # Only the Win32 and D3D9 backends are built.

@@ -774,6 +774,12 @@ std::string gameplayApplyRename(const std::string& from, const std::string& to)
     return outcome(g_commands->applyTemplateRename(from, to, error), error);
 }
 
+std::string strategicRestoreLine(int snapshot)
+{
+    std::string result;
+    return outcome(g_commands->strategicRestore(snapshot, result), result);
+}
+
 std::string gameplayCreateHere(const std::string& kind, const std::string& name)
 {
     std::string result;
@@ -2974,6 +2980,9 @@ BF2_CONSOLE_METHOD_3_RET_ACTIVE(createEffectArea, gameplayCreateEffectArea, std:
 BF2_CONSOLE_METHOD_2_RET_ACTIVE(createEffectAreaHere, gameplayCreateEffectAreaHere, std::string, g_commands != 0, std::string, std::string, kEditorConsoleTag)
 BF2_CONSOLE_METHOD_2_RET_ACTIVE(rename, gameplayRename, std::string, g_commands != 0, std::string, std::string, kEditorConsoleTag)
 BF2_CONSOLE_METHOD_2_RET_ACTIVE(applyRename, gameplayApplyRename, std::string, g_commands != 0, std::string, std::string, kEditorConsoleTag)
+
+BF2_CONSOLE_OBJECT("EditorAI", 2, 0)
+BF2_CONSOLE_METHOD_1_RET_ACTIVE(restore, strategicRestoreLine, std::string, g_commands != 0, int, kEditorConsoleTag)
 
 BF2_CONSOLE_OBJECT("EditorCombatArea", 2, 0)
 BF2_CONSOLE_METHOD_0_RET_ACTIVE(list, combatList, std::string, g_commands != 0, kEditorConsoleTag)

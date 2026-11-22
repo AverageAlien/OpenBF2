@@ -3,7 +3,10 @@
 #include "App/SessionPanels.h"
 
 #include "App/EditSession.h"
+#include "App/GameplayFields.h"
+#include "App/LayerChecks.h"
 #include "App/LevelDocument.h"
+#include "App/StrategicAreaTools.h"
 #include "App/LevelSettings.h"
 #include "Framework/ConsoleCompletion.h"
 #include "Framework/EditorConsole.h"
@@ -173,6 +176,21 @@ void SessionPanels::draw(EditSession& session)
         m_animationPanel.draw(session, &m_showAnimations);
     if (m_showMod)
         drawMod(session);
+    if (m_showStrategicAreas)
+    {
+        dockBeside("Properties");
+        StrategicAreaTools::drawPanel(session, &m_showStrategicAreas);
+    }
+    if (m_showInvasion)
+    {
+        dockBeside("Properties");
+        LayerChecks::drawInvasion(session, &m_showInvasion);
+    }
+    if (m_showChecks)
+    {
+        dockBeside("Properties");
+        LayerChecks::drawChecks(session, &m_showChecks);
+    }
     // Edit > Snap all objects to the ground asks first, as retail did.
     if (m_confirmSnapAll)
     {
@@ -333,6 +351,9 @@ std::vector<std::string> SessionPanels::openPanels() const
     if (m_showMaterials) open.push_back("Materials");
     if (m_showAnimations) open.push_back("Animations");
     if (m_showMod) open.push_back("Mod");
+    if (m_showStrategicAreas) open.push_back("AI strategic areas");
+    if (m_showInvasion) open.push_back("Invasion groups");
+    if (m_showChecks) open.push_back("Layer checks");
     return open;
 }
 
@@ -342,6 +363,9 @@ bool SessionPanels::setPanelVisible(const std::string& name, bool visible)
     const Panel panels[] = {
         { "Selection", &m_showSelection }, { "Objects", &m_showObjects }, { "History", &m_showHistory },
         { "Console", &m_showConsole }, { "Layers", &m_showLayers }, { "Properties", &m_showProperties },
+        { "AI strategic areas", &m_showStrategicAreas }, { "StrategicAreas", &m_showStrategicAreas },
+        { "Invasion groups", &m_showInvasion }, { "Invasion", &m_showInvasion },
+        { "Layer checks", &m_showChecks }, { "Checks", &m_showChecks },
         { "CombatAreas", &m_showCombatAreas }, { "Combat areas", &m_showCombatAreas }, { "Sounds", &m_showSounds },
         { "LevelSettings", &m_showLevelSettings }, { "Level settings", &m_showLevelSettings },
         { "GameplayLayers", &m_showGameplayLayers }, { "Gameplay layers", &m_showGameplayLayers },
@@ -374,6 +398,9 @@ void SessionPanels::viewMenuItems()
     ImGui::MenuItem("Console", 0, &m_showConsole);
     ImGui::MenuItem("Layers", 0, &m_showLayers);
     ImGui::MenuItem("Combat areas", 0, &m_showCombatAreas);
+    ImGui::MenuItem("AI strategic areas", 0, &m_showStrategicAreas);
+    ImGui::MenuItem("Invasion groups", 0, &m_showInvasion);
+    ImGui::MenuItem("Layer checks", 0, &m_showChecks);
     ImGui::MenuItem("Sounds", 0, &m_showSounds);
     ImGui::MenuItem("Level settings", 0, &m_showLevelSettings);
     ImGui::MenuItem("Gameplay layers", 0, &m_showGameplayLayers);
@@ -989,8 +1016,17 @@ void SessionPanels::drawLevelTemplate(EditSession& session, LevelDocument& docum
             }
         }
     }
+    if (hasGameplayFields(className))
+    {
+        ImGui::SeparatorText("Settings");
+        drawGameplayFields(session, document, file, name, className);
+        // The raw lines stay below, folded: everything the fields do not cover.
+        if (!ImGui::CollapsingHeader("All lines in the file"))
+            return;
+    }
     const std::vector<LevelObjectFile::TemplateLine> lines = document.templateLines(file, name);
-    ImGui::BeginChild("levelTemplate", ImVec2(0, -ImGui::GetFrameHeightWithSpacing() * 1.2f), ImGuiChildFlags_Borders);
+    ImGui::BeginChild("levelTemplate", ImVec2(0, hasGameplayFields(className) ? 260.0f : -ImGui::GetFrameHeightWithSpacing() * 1.2f),
+                      ImGuiChildFlags_Borders);
     for (size_t i = 0; i < lines.size(); ++i)
     {
         const LevelObjectFile::TemplateLine& line = lines[i];

@@ -46,9 +46,10 @@ namespace
 class PickPredicator : public dice::hfe::world::ObjectPredicator
 {
 public:
-    explicit PickPredicator(const EditSession& session, bool ignoreSelection = false)
+    explicit PickPredicator(const EditSession& session, bool ignoreSelection = false, bool anyObject = false)
         : m_session(session)
         , m_ignoreSelection(ignoreSelection)
+        , m_anyObject(anyObject)
     {
     }
     virtual bool predicate(IObject* object)
@@ -60,7 +61,7 @@ public:
             root = object;
         if (m_ignoreSelection && m_session.selection().contains(root->getObjectId()))
             return false;
-        return m_session.canPick(root);
+        return m_anyObject ? m_session.isLevelSurface(root) : m_session.canPick(root);
     }
     virtual unsigned int getFlags() const { return 0; }
     virtual bool performCulling(IObject*) { return true; }
@@ -69,6 +70,27 @@ private:
     PickPredicator& operator=(const PickPredicator&);
     const EditSession& m_session;
     bool               m_ignoreSelection;
+    bool               m_anyObject;
+};
+
+// Only the spawners' vehicles (EditSession::spawnShapeAt).
+class GhostPredicator : public dice::hfe::world::ObjectPredicator
+{
+public:
+    explicit GhostPredicator(const std::set<unsigned>& ghosts) : m_ghosts(ghosts) {}
+    virtual bool predicate(IObject* object)
+    {
+        IObject* root = dice::hfe::world::getRootParent(object);
+        if (!root)
+            root = object;
+        return m_ghosts.count(root->getObjectId()) != 0;
+    }
+    virtual unsigned int getFlags() const { return 0; }
+    virtual bool performCulling(IObject*) { return true; }
+
+private:
+    GhostPredicator& operator=(const GhostPredicator&);
+    const std::set<unsigned>& m_ghosts;
 };
 
 // Where the ray first enters the object's bounds, in world units along the (unit) ray: its local box
@@ -600,6 +622,49 @@ bool EditSession::setTemplateProperty(const std::string& name, const std::string
     return true;
 }
 
+bool EditSession::clearTemplateProperty(const std::string& name, const std::string& key, std::string& result)
+{
+    size_t file = 0;
+    std::string className;
+    if (!m_document || !m_document->templateFile(name, file, className))
+    {
+        result = "no level file this editor writes defines a template '" + name + "'";
+        return false;
+    }
+    const std::vector<LevelObjectFile::TemplateLine> lines = m_document->templateLines(file, name);
+    for (size_t i = 0; i < lines.size(); ++i)
+    {
+        if (lines[i].key != key)
+            continue;
+        HistoryEntry entry;
+        entry.doScript = "EditorTemplate.remove " + name + " \"" + key + "\"\n";
+        entry.undoScript = "EditorTemplate.apply " + name + " " + lines[i].property + " \"" + unquoted(lines[i].value) + "\"\n";
+        entry.label = "Remove " + lines[i].property + " of " + name;
+        if (!m_history.execute(entry, result))
+            return false;
+        logLine(LogLevel::Info, "edit: %s", entry.label.c_str());
+        result = entry.label;
+        return true;
+    }
+    result = name + " has no line " + key;
+    return false;
+}
+
+std::string EditSession::freeTemplateName(const std::string& stem) const
+{
+    for (int n = 1; n < 100000; ++n)
+    {
+        const std::string name = stem + "_" + std::to_string(n);
+        size_t file = 0;
+        std::string className;
+        if ((m_document && m_document->templateFile(name, file, className))
+            || (dice::hfe::world::objectTemplateManager && dice::hfe::world::objectTemplateManager->getTemplate(name)))
+            continue;
+        return name;
+    }
+    return stem;
+}
+
 bool EditSession::snapSurface(float x, float z, float& height) const
 {
     float terrain = 0.0f, water = 0.0f;
@@ -710,7 +775,10 @@ unsigned EditSession::markerAt(float x, float y, float radius) const
         float px = 0.0f, py = 0.0f;
         if (!m_camera.worldToPixel(p, m_width, m_height, px, py))
             continue;
-        const float d = (px - x) * (px - x) + (py - y) * (py - y);
+        float d = (px - x) * (px - x) + (py - y) * (py - y);
+        // A control point's marker is a flag standing 16 pixels over its point: its pole and pennant count too.
+        if (markerKind(o) == MarkerControlPoint && x >= px - 4.0f && x <= px + 12.0f && y >= py - 18.0f && y <= py)
+            d = 0.0f;
         if (d <= bestDistance)
         {
             bestDistance = d;
@@ -728,13 +796,15 @@ unsigned EditSession::pick(float x, float y, std::string& detail) const
         return 0;
     }
     // A marker under the cursor wins: markers are drawn over everything, and their objects have no
-    // geometry for the line test below to meet.
+    // geometry for the line test below to meet. Then a spawn point's soldier or a spawner's vehicle.
     const unsigned marked = markerAt(x, y, 9.0f);
     if (marked)
     {
         detail = std::string("its ") + markerName(markerKind(object(marked))) + " marker";
         return marked;
     }
+    if (const unsigned shape = spawnShapeAt(x, y, detail))
+        return shape;
     float origin[3], direction[3];
     m_camera.rayThroughPixel(x, y, m_width, m_height, origin, direction);
     const float reach = m_camera.farPlane();
@@ -984,6 +1054,8 @@ bool EditSession::planLevelSave(SavePlan& plan, bool everything, std::string& er
     // The HUD scripts edited with the level (the HUD editor).
     if (m_hudDocument)
         m_hudDocument->planSave(plan);
+    // The open layer's AI strategic areas.
+    m_strategicAreas.planSave(plan);
     // Every part written: the history's saved point is now.
     plan.part("history").onWritten([this, planned]() {
         if (!planned->anyRefused())
@@ -1047,7 +1119,8 @@ bool EditSession::hasUnsavedChanges()
     if (m_terrain.changedSinceSave() || !m_templateDocuments.modified().empty() || undergrowthChanged()
         || m_materials.modified() || m_descriptions.modified() || animationsModified()
         || (m_layerModel.active() && m_layerModel.layersChanged()) || m_editableTerrain.groundChanged()
-        || m_editableTerrain.painted() || m_editableTerrain.overgrowthPainted() || m_roads.changed())
+        || m_editableTerrain.painted() || m_editableTerrain.overgrowthPainted() || m_roads.changed()
+        || m_strategicAreas.modified())
         return true;
     if (!m_document || !m_document->isOpen())
         return m_history.isDirty();
@@ -2080,7 +2153,8 @@ bool EditSession::createEffectAreaHere(const std::string& name, const std::strin
 }
 
 bool EditSession::makeLevelObject(const std::string& kind, const std::string& name, const std::string& effect,
-                                  const Vec3& position, std::string& result)
+                                  const Vec3& position, std::string& result, const TemplateLines* copied,
+                                  const Mat4* copiedTransform, int copiedControlPoint)
 {
     const GameplayKind* chosen = gameplayKind(kind);
     if (!chosen)
@@ -2147,7 +2221,23 @@ bool EditSession::makeLevelObject(const std::string& kind, const std::string& na
     // The lines every stock template of the kind has (the stock files' own, minus modifiedByUser: the
     // retail editor wrote the user's account name there, and a new object needs none).
     TemplateLines lines;
-    if (spawner)
+    if (copied)
+    {
+        // A duplicate: the original's lines, a control point with an id and a name of its own.
+        for (size_t i = 0; i < copied->size(); ++i)
+        {
+            const std::string& property = (*copied)[i].first;
+            if (_stricmp(property.c_str(), "modifiedByUser") == 0)
+                continue;
+            if (cls == "ControlPoint" && _stricmp(property.c_str(), "controlPointId") == 0)
+                addLine(lines, "controlPointId", newId);
+            else if (cls == "ControlPoint" && _stricmp(property.c_str(), "setControlPointName") == 0)
+                addLine(lines, "setControlPointName", name);
+            else
+                lines.push_back((*copied)[i]);
+        }
+    }
+    else if (spawner)
     {
         addLine(lines, "isNotSaveable", "1");
         addLine(lines, "hasMobilePhysics", "0");
@@ -2227,6 +2317,8 @@ bool EditSession::makeLevelObject(const std::string& kind, const std::string& na
     Mat4 transform;
     for (int i = 0; i < 16; ++i)
         transform.m[i] = (i % 5 == 0) ? 1.0f : 0.0f;
+    if (copiedTransform)
+        transform = *copiedTransform;
     transform.m[12] = position.x;
     transform.m[13] = position.y;
     transform.m[14] = position.z;
@@ -2234,9 +2326,14 @@ bool EditSession::makeLevelObject(const std::string& kind, const std::string& na
     unsigned id = 0;
     if (!makeObject(name, transform, layer, id, result))
         return false;
-    // A spawner belongs to its control point by a line of its record; the new object is still active.
-    if (spawner && nearest)
+    // A spawner belongs to its control point by a line of its record; the new object is still active. A duplicate
+    // keeps the original's.
+    std::string spawnerPoint = nearest ? ownerId : std::string();
+    if (copied)
+        spawnerPoint = copiedControlPoint >= 0 ? std::to_string(copiedControlPoint) : std::string();
+    if (spawner && !spawnerPoint.empty())
     {
+        const std::string ownerId = spawnerPoint;
         answer = engineLine("Object.setControlPointId " + ownerId);
         if (!answer.empty())
             logLine(LogLevel::Warning, "gameplay: Object.setControlPointId %s answered: %s", ownerId.c_str(), answer.c_str());
@@ -3450,7 +3547,8 @@ bool EditSession::groundHeight(float x, float z, float& height) const
     return m_level.groundHeight(x, z, height);
 }
 
-bool EditSession::surfaceAt(float x, float y, float out[3], std::string& detail, bool ignoreSelection) const
+bool EditSession::surfaceAt(float x, float y, float out[3], std::string& detail, bool ignoreSelection,
+                            bool anyObject) const
 {
     if (m_width <= 0 || m_height <= 0 || !dice::hfe::world::objectManager)
     {
@@ -3461,7 +3559,7 @@ bool EditSession::surfaceAt(float x, float y, float out[3], std::string& detail,
     m_camera.rayThroughPixel(x, y, m_width, m_height, origin, direction);
     const float reach = m_camera.farPlane();
     // The collision surface first (pick()'s line test and filter), then the terrain up to it.
-    PickPredicator predicator(*this, ignoreSelection);
+    PickPredicator predicator(*this, ignoreSelection, anyObject);
     IObject* hit = 0;
     Vec3 point = makeVec3(0.0f, 0.0f, 0.0f);
     Vec3 normal = makeVec3(0.0f, 0.0f, 0.0f);
@@ -3653,6 +3751,9 @@ bool EditSession::duplicateSelection(std::string& result)
         result = "nothing is selected";
         return false;
     }
+    // Gameplay objects are copied with templates of their own.
+    if (markerKind(object(m_selection.primary())) != MarkerNone)
+        return duplicateGameplay(result);
     // Every object first: a copy goes into StaticObjects.con, so only objects of that file are copied.
     const std::vector<unsigned> originals = m_selection.ids();
     std::vector<NewObject> copies;
@@ -3679,6 +3780,57 @@ bool EditSession::duplicateSelection(std::string& result)
         m_selection.add(made[i]);
     logLine(LogLevel::Info, "edit: %s", entry.label.c_str());
     result = entry.label + " -> " + describe(made.back());
+    return true;
+}
+
+bool EditSession::duplicateGameplay(std::string& result)
+{
+    const std::vector<unsigned> originals = m_selection.ids();
+    std::vector<unsigned> made;
+    for (size_t i = 0; i < originals.size(); ++i)
+    {
+        IObject* original = object(originals[i]);
+        const MarkerKind kind = markerKind(original);
+        if (kind != MarkerSpawner && kind != MarkerSpawnPoint && kind != MarkerControlPoint)
+        {
+            result = describe(originals[i]) + " is no spawner, spawn point or control point: only those are duplicated "
+                     "with the gameplay objects";
+            return false;
+        }
+        const std::string templateName = original->getTemplate()->getName();
+        size_t file = 0;
+        std::string className;
+        if (!m_document || !m_document->templateFile(templateName, file, className))
+        {
+            result = describe(originals[i]) + "'s template is in no level file this editor writes: refused";
+            return false;
+        }
+        TemplateLines lines;
+        const std::vector<LevelObjectFile::TemplateLine> source = m_document->templateLines(file, templateName);
+        for (size_t k = 0; k < source.size(); ++k)
+            lines.push_back(std::make_pair(source[k].property, source[k].value));
+        // <name>_<n>: the original's name without its own number.
+        std::string stem = templateName;
+        const size_t underscore = stem.find_last_of('_');
+        if (underscore != std::string::npos && underscore + 1 < stem.size()
+            && stem.find_first_not_of("0123456789", underscore + 1) == std::string::npos)
+            stem = stem.substr(0, underscore);
+        const std::string name = freeTemplateName(stem);
+        const Mat4& transform = original->getAbsoluteTransformation();
+        const ObjectProperties properties = propertiesOf(original);
+        std::string made1;
+        if (!makeLevelObject(className, name, std::string(), makeVec3(transform.m[12], transform.m[13], transform.m[14]),
+                             made1, &lines, &transform, properties.isSpawner ? properties.controlPointId : -1))
+        {
+            result = "duplicating " + describe(originals[i]) + ": " + made1;
+            return false;
+        }
+        made.push_back(m_selection.primary());
+    }
+    m_selection.clear();
+    for (size_t i = 0; i < made.size(); ++i)
+        m_selection.add(made[i]);
+    result = made.size() == 1 ? "Duplicate -> " + describe(made[0]) : countLabel("Duplicate", made.size(), "gameplay objects");
     return true;
 }
 
@@ -4077,10 +4229,21 @@ bool EditSession::canPick(IObject* root) const
         return false;
     if (m_preview && root->getObjectId() == m_preview)
         return false;                               // the template preview is the viewer's, not the level's
+    if (m_ghostObjects.count(root->getObjectId()))
+        return false;                               // a spawner's vehicle: its spawner is picked instead
     if (isLayerLocked(static_cast<int>(root->getLayer())))
         return false;
     const dice::hfe::world::IObjectTemplate* objectTemplate = root->getTemplate();
     return !objectTemplate || isClassPickable(objectTemplate->getClassID());
+}
+
+bool EditSession::isLevelSurface(IObject* root) const
+{
+    if (!root || (root->getFlags() & IObject::OFIsVisible) == 0)
+        return false;
+    if (m_preview && root->getObjectId() == m_preview)
+        return false;
+    return m_ghostObjects.count(root->getObjectId()) == 0;
 }
 
 void EditSession::setClassPickable(unsigned classId, bool pickable)
@@ -4344,6 +4507,253 @@ bool EditSession::setSelectionLayer(int layer, std::string& error)
     }
     logLine(LogLevel::Info, "edit: %s", entry.label.c_str());
     return true;
+}
+
+// Spawner vehicles and spawn shapes
+
+namespace
+{
+
+// Where a spawner's vehicle stands: the spawner's matrix, raised so the vehicle's bounds rest on the spawner's point
+// (a vehicle's origin is near its middle; the game drops it there and it settles). Objects without mobile physics
+// (artillery, radars, stationary weapons) stay at the spawner's point, as in the game.
+Mat4 ghostMatrix(const Mat4& spawner, IObject* vehicle)
+{
+    Mat4 m = spawner;
+    if (!vehicle || (vehicle->getFlags() & IObject::OFHasMobilePhysics) == 0)
+        return m;
+    dice::hfe::LocalBoundingBox* box = vehicle->getFullBoundingBox();
+    if (box && box->m_min.y < 0.0f && box->m_max.y > box->m_min.y)
+        m.m[13] -= box->m_min.y;
+    return m;
+}
+
+} // namespace
+
+void EditSession::clearVehicleGhosts()
+{
+    for (std::map<unsigned, VehicleGhost>::iterator it = m_ghosts.begin(); it != m_ghosts.end(); ++it)
+        if (IObject* o = object(it->second.object))
+            o->forceDestroy();
+    if (!m_ghosts.empty() && dice::hfe::world::objectManager)
+        dice::hfe::world::objectManager->destroyObjects();
+    m_ghosts.clear();
+    m_ghostObjects.clear();
+}
+
+void EditSession::updateVehicleGhosts()
+{
+    using namespace dice::hfe::world;
+    if (!m_overlays.vehicleGhosts || !m_markersShown || !m_overlays.spawners || !objectManager || !objectTemplateManager
+        || !dice::hfe::io::mainConsole)
+    {
+        if (!m_ghosts.empty())
+            clearVehicleGhosts();
+        return;
+    }
+    const float reach = 400.0f, drop = 480.0f;
+    // The spawners, near ones first wanted.
+    std::map<unsigned, IObject*> spawners;
+    const std::map<unsigned int, IObject*>& roots = objectManager->getAllObjectsFromGrid();
+    for (std::map<unsigned int, IObject*>::const_iterator it = roots.begin(); it != roots.end(); ++it)
+        if (it->second && markerKind(it->second) == MarkerSpawner)
+            spawners[it->first] = it->second;
+    bool destroyed = false;
+    // Ghosts whose spawner went, went far, or now spawns another vehicle.
+    for (std::map<unsigned, VehicleGhost>::iterator it = m_ghosts.begin(); it != m_ghosts.end();)
+    {
+        std::map<unsigned, IObject*>::const_iterator spawner = spawners.find(it->first);
+        bool keep = spawner != spawners.end() && object(it->second.object);
+        if (keep)
+        {
+            const Mat4& m = spawner->second->getAbsoluteTransformation();
+            const float dx = m.m[12] - m_camera.x(), dz = m.m[14] - m_camera.z();
+            const std::string vehicle = spawnerVehicle(spawner->second, 1);
+            keep = dx * dx + dz * dz < drop * drop && _stricmp(vehicle.c_str(), it->second.vehicle.c_str()) == 0
+                && (spawner->second->getFlags() & IObject::OFIsVisible) != 0;
+        }
+        if (keep)
+        {
+            ++it;
+            continue;
+        }
+        if (IObject* o = object(it->second.object))
+        {
+            o->forceDestroy();
+            destroyed = true;
+        }
+        m_ghostObjects.erase(it->second.object);
+        m_ghosts.erase(it++);
+    }
+    if (destroyed)
+        objectManager->destroyObjects();
+    // New ones (a few a frame), and every ghost kept where its spawner stands.
+    int made = 0;
+    for (std::map<unsigned, IObject*>::const_iterator it = spawners.begin(); it != spawners.end(); ++it)
+    {
+        IObject* spawner = it->second;
+        const Mat4& m = spawner->getAbsoluteTransformation();
+        std::map<unsigned, VehicleGhost>::iterator ghost = m_ghosts.find(it->first);
+        if (ghost == m_ghosts.end())
+        {
+            const float dx = m.m[12] - m_camera.x(), dz = m.m[14] - m_camera.z();
+            if (made >= 3 || dx * dx + dz * dz > reach * reach || (spawner->getFlags() & IObject::OFIsVisible) == 0)
+                continue;
+            const std::string vehicle = spawnerVehicle(spawner, 1);
+            IObjectTemplate* t = vehicle.empty() ? 0 : objectTemplateManager->getTemplate(vehicle);
+            if (!t)
+                continue;
+            ++made;
+            IObject* previous = objectManager->getActiveObject();
+            engineLine("Object.create " + t->getName());
+            IObject* ghostObject = objectManager->getActiveObject();
+            if (!ghostObject || ghostObject == previous || ghostObject->getTemplate() != t)
+            {
+                objectManager->setActiveObject(previous);
+                // Remembered without an object, so it is not tried every frame.
+                VehicleGhost none;
+                none.vehicle = vehicle;
+                m_ghosts[it->first] = none;
+                continue;
+            }
+            engineLine("Object.absoluteTransformation " + matrixText(ghostMatrix(m, ghostObject)));
+            engineLine("Object.layer " + std::to_string(spawner->getLayer()));
+            objectManager->setActiveObject(previous);
+            VehicleGhost entry;
+            entry.object = ghostObject->getObjectId();
+            entry.vehicle = vehicle;
+            m_ghosts[it->first] = entry;
+            m_ghostObjects.insert(entry.object);
+            continue;
+        }
+        // Moved with its spawner (or by the physics): put back.
+        IObject* ghostObject = object(ghost->second.object);
+        if (!ghostObject)
+            continue;
+        const Mat4 wanted = ghostMatrix(m, ghostObject);
+        const Mat4& g = ghostObject->getAbsoluteTransformation();
+        float difference = 0.0f;
+        for (int k = 0; k < 16; ++k)
+            difference = std::max(difference, std::fabs(g.m[k] - wanted.m[k]));
+        if (difference > 0.01f)
+        {
+            IObject* previous = objectManager->getActiveObject();
+            objectManager->setActiveObject(ghostObject);
+            engineLine("Object.absoluteTransformation " + matrixText(wanted));
+            objectManager->setActiveObject(previous);
+        }
+    }
+}
+
+unsigned EditSession::spawnShapeAt(float x, float y, std::string& detail) const
+{
+    if (!m_markersShown || m_width <= 0 || m_height <= 0 || !dice::hfe::world::objectManager)
+        return 0;
+    float origin[3], direction[3];
+    m_camera.rayThroughPixel(x, y, m_width, m_height, origin, direction);
+    float best = FLT_MAX;
+    unsigned found = 0;
+    // Soldier capsules: a vertical cylinder of the capsule's radius and height (close enough to pick).
+    if (m_overlays.soldierFigures && m_overlays.spawnPoints)
+    {
+        const float radius = 0.35f, height = 1.8f;
+        const std::map<unsigned int, IObject*>& roots = dice::hfe::world::objectManager->getAllObjectsFromGrid();
+        for (std::map<unsigned int, IObject*>::const_iterator it = roots.begin(); it != roots.end(); ++it)
+        {
+            IObject* o = it->second;
+            if (!o || markerKind(o) != MarkerSpawnPoint || !canPick(o))
+                continue;
+            const Mat4& m = o->getAbsoluteTransformation();
+            const float ox = origin[0] - m.m[12], oz = origin[2] - m.m[14];
+            const float a = direction[0] * direction[0] + direction[2] * direction[2];
+            const float b = 2.0f * (ox * direction[0] + oz * direction[2]);
+            const float c = ox * ox + oz * oz - radius * radius;
+            float t = -1.0f;
+            if (a > 1e-8f)
+            {
+                const float disc = b * b - 4.0f * a * c;
+                if (disc >= 0.0f)
+                    t = (-b - std::sqrt(disc)) / (2.0f * a);
+                if (t < 0.0f && c < 0.0f)
+                    t = 0.0f;
+            }
+            if (t < 0.0f)
+            {
+                // Straight down (or up) through its top or bottom.
+                if (c <= 0.0f && std::fabs(direction[1]) > 1e-6f)
+                    t = ((direction[1] < 0.0f ? m.m[13] + height : m.m[13]) - origin[1]) / direction[1];
+                if (t < 0.0f)
+                    continue;
+            }
+            const float hy = origin[1] + direction[1] * t;
+            if (hy < m.m[13] || hy > m.m[13] + height || t >= best)
+                continue;
+            best = t;
+            found = it->first;
+            detail = "its soldier";
+        }
+    }
+    // Control points: a cylinder round the flagpole (1 m round, 9 m tall).
+    if (m_overlays.controlPoints)
+    {
+        const float radius = 1.0f, height = 9.0f;
+        const std::map<unsigned int, IObject*>& roots = dice::hfe::world::objectManager->getAllObjectsFromGrid();
+        for (std::map<unsigned int, IObject*>::const_iterator it = roots.begin(); it != roots.end(); ++it)
+        {
+            IObject* o = it->second;
+            if (!o || markerKind(o) != MarkerControlPoint || !canPick(o))
+                continue;
+            const Mat4& m = o->getAbsoluteTransformation();
+            const float ox = origin[0] - m.m[12], oz = origin[2] - m.m[14];
+            const float a = direction[0] * direction[0] + direction[2] * direction[2];
+            const float b = 2.0f * (ox * direction[0] + oz * direction[2]);
+            const float c = ox * ox + oz * oz - radius * radius;
+            if (a < 1e-8f)
+                continue;
+            const float disc = b * b - 4.0f * a * c;
+            if (disc < 0.0f)
+                continue;
+            float t = (-b - std::sqrt(disc)) / (2.0f * a);
+            if (t < 0.0f)
+                t = (-b + std::sqrt(disc)) / (2.0f * a);
+            const float hy = origin[1] + direction[1] * t;
+            if (t < 0.0f || hy < m.m[13] - 1.0f || hy > m.m[13] + height || t >= best)
+                continue;
+            best = t;
+            found = it->first;
+            detail = "its flagpole";
+        }
+    }
+    // Spawner vehicles: the engine's own line test against their collision meshes (their bounds were too coarse - a
+    // commander tower's box held the camera and took every click).
+    if (!m_ghosts.empty())
+    {
+        GhostPredicator predicator(m_ghostObjects);
+        IObject* hit = 0;
+        Vec3 point = makeVec3(0.0f, 0.0f, 0.0f);
+        Vec3 normal = makeVec3(0.0f, 0.0f, 0.0f);
+        int part = 0;
+        const float reach = m_camera.farPlane();
+        const Vec3 from = makeVec3(origin[0], origin[1], origin[2]);
+        const Vec3 delta = makeVec3(direction[0] * reach, direction[1] * reach, direction[2] * reach);
+        if (dice::hfe::world::objectManager->intersectLine(hit, point, normal, part, from, delta, &predicator, true, false,
+                                                           false, false, kExcludeNothing) && hit)
+        {
+            IObject* root = dice::hfe::world::getRootParent(hit);
+            if (!root)
+                root = hit;
+            const float dx = point.x - origin[0], dy = point.y - origin[1], dz = point.z - origin[2];
+            const float t = std::sqrt(dx * dx + dy * dy + dz * dz);
+            for (std::map<unsigned, VehicleGhost>::const_iterator it = m_ghosts.begin(); it != m_ghosts.end(); ++it)
+                if (it->second.object == root->getObjectId() && t < best && canPick(object(it->first)))
+                {
+                    best = t;
+                    found = it->first;
+                    detail = "its vehicle (" + it->second.vehicle + ")";
+                }
+        }
+    }
+    return found;
 }
 
 } // namespace bf2editor

@@ -97,6 +97,9 @@ private:
     bool m_showAnimations;
     AnimationPanel m_animationPanel;
     bool m_showMod;
+    bool m_showStrategicAreas = false;
+    bool m_showInvasion = false;
+    bool m_showChecks = false;
     std::string m_descriptionEditing;   // "mod.title": the field whose buffer holds the user's typing
     char m_descriptionBuffer[1024];
     bool m_confirmSnapAll;          // Edit > Snap all objects to the ground: the confirmation is open

@@ -6,6 +6,7 @@
 #include "App/FrozenFrame.h"
 #include "App/ImGuiHost.h"
 #include "App/ViewRecorder.h"
+#include "App/WorldOverlay.h"
 #include "Framework/EditorLog.h"
 
 #include "Core/EventManager.h"
@@ -47,6 +48,9 @@ bool SceneOverlay::attach()
         return false;
     }
     m_attached = true;
+    if (!installWorldOverlayHook())
+        logLine(LogLevel::Warning, "overlay: the renderer has no world draw hook; the editor's world overlay is drawn "
+                                   "over the scene, not depth tested");
     return true;
 }
 
@@ -82,6 +86,8 @@ void SceneOverlay::handleEvent(dice::hfe::EventCategory category, unsigned int i
         viewRecorder().frame(m_device);
     if (m_device)
         m_device->SetRenderState(D3DRS_FILLMODE, D3DFILL_SOLID);   // View > Wireframe ends with the world
+    // The editor's world geometry (water, navmeshes, spawn aids), depth tested against the world just drawn.
+    worldOverlay().render(m_device);
     if (m_drawUi)
         m_imgui.renderDrawData();
     if (!m_screenshotPath.empty())

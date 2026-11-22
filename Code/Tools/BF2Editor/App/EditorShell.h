@@ -67,6 +67,9 @@ struct ShellOptions
     // saves a level keeps (0: every one).
     bool        previewSave = true;
     int         backupsKept = 10;
+    // [CHOSEN, not recovered] how the editable terrain is drawn when a level opens (EditorTerrain.technique; 3 = its
+    // detail layers, closest to the game's ground), or -1 for the renderer's default. View > Terrain look sets it.
+    int         terrainLook = 3;
     ShellOptions() : rememberCamera(true), viewDistance(1500.0f), style(0), logToFile(false), mouseSensitivity(1.0f),
                      pauseOnFocusLoss(false) {}
 };
@@ -81,6 +84,16 @@ public:
 
     // The user chose File > Exit.
     bool quitRequested() const { return m_quit; }
+    // File > Open level (no level open): the mod whose levels it lists, and the choice it made - the editor leaves
+    // and starts again on that level and layer. [CHOSEN, not recovered]
+    void setModName(const std::string& mod) { m_modName = mod; }
+    bool openRequested(std::string& level, std::string& gameMode, int& layerSize) const
+    {
+        level = m_openLevel;
+        gameMode = m_openMode;
+        layerSize = m_openSize;
+        return !m_openLevel.empty();
+    }
     // File > Gameplay layer: the level's layers (a switch starts the editor again on one) and copies of
     // the open one as a new size of its mode.
     void drawLayerMenu();
@@ -238,6 +251,10 @@ private:
     std::string m_capturing;        // the action whose new key the Keyboard shortcuts window waits for
     int  m_captureCooldown;         // frames left in which shortcuts stay off after a capture
     bool m_quit;
+    void drawOpenLevelMenu();
+    std::string m_modName;
+    std::string m_openLevel, m_openMode;
+    int         m_openSize = 0;
     bool m_logAutoScroll;
     // The full view: the panels that were open when every panel was hidden.
     std::vector<std::string> m_hiddenForFullView;

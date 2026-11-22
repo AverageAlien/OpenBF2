@@ -55,6 +55,10 @@ public:
     // direction is unit length. Matches the renderer's projection: RenderView::rebuildProjection
     // scales view y by cot(fov / 2) and view x by cot(fov / 2) * height / width.
     void rayThroughPixel(float x, float y, int width, int height, float origin[3], float direction[3]) const;
+    // The part of the window the panels leave free (x, y, width, height in window pixels). [CHOSEN, not recovered]
+    // The scene is still drawn over the whole window, but apply() centres the projection on this rectangle and gives
+    // it the camera's field of view, so the view's centre is where the free area's centre is. Empty: the window.
+    void setViewRect(float x, float y, float width, float height);
     // The inverse: the window pixel a world point projects to; false when it lies behind the camera.
     bool worldToPixel(const float point[3], int width, int height, float& x, float& y) const;
 
@@ -90,6 +94,9 @@ private:
     float m_pitch;          // radians; positive looks up
     float m_speed;          // metres per second
     float m_fov;            // radians
+    float m_viewRect[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+    // The projection's scale (m0, m5) and centre (m8, m9) for a width x height window: RenderView's terms.
+    void lens(int width, int height, float& scaleX, float& scaleY, float& centreX, float& centreY) const;
     float m_farPlane;       // metres
     bool  m_looking;        // the right button went down over the 3D view
     bool  m_wheelReserved;  // setModifiedWheelReserved

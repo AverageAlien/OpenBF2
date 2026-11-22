@@ -21,7 +21,12 @@
 
 #include "imgui.h"
 
+#include <windows.h>
+
+#include <algorithm>
 #include <cctype>
+#include <cstdlib>
+#include <vector>
 #include "imgui_internal.h"     // the DockBuilder API (docking branch)
 
 #include <cstdio>
@@ -241,10 +246,90 @@ void EditorShell::draw(const ShellStatus& status)
         ImGui::ShowDemoWindow(&m_showDemo);
 }
 
+namespace
+{
+
+// The sub-folders of `folder` (a game-folder relative path), sorted.
+std::vector<std::string> subFolders(const std::string& folder)
+{
+    std::vector<std::string> names;
+    WIN32_FIND_DATAA found;
+    const HANDLE h = FindFirstFileA((folder + "/*").c_str(), &found);
+    if (h == INVALID_HANDLE_VALUE)
+        return names;
+    do
+    {
+        const std::string name = found.cFileName;
+        if ((found.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && name != "." && name != "..")
+            names.push_back(name);
+    } while (FindNextFileA(h, &found));
+    FindClose(h);
+    std::sort(names.begin(), names.end(), [](const std::string& a, const std::string& b) { return _stricmp(a.c_str(), b.c_str()) < 0; });
+    return names;
+}
+
+bool exists(const std::string& path)
+{
+    return GetFileAttributesA(path.c_str()) != INVALID_FILE_ATTRIBUTES;
+}
+
+} // namespace
+
+void EditorShell::drawOpenLevelMenu()
+{
+    const std::string mod = m_modName.empty() ? std::string("bf2") : m_modName;
+    if (!ImGui::BeginMenu("Open level"))
+        return;
+    const std::string levels = "mods/" + mod + "/Levels";
+    const std::vector<std::string> names = subFolders(levels);
+    if (names.empty())
+        ImGui::TextDisabled("no levels in %s", levels.c_str());
+    for (size_t i = 0; i < names.size(); ++i)
+    {
+        const std::string folder = levels + "/" + names[i];
+        // Only an unpacked level opens (its Init.con loose beside the archives).
+        if (!exists(folder + "/Init.con"))
+        {
+            if (exists(folder + "/server.zip"))
+            {
+                ImGui::MenuItem((names[i] + "  (packed)").c_str(), 0, false, false);
+                ImGui::SetItemTooltip("Only an unpacked level opens: its server.zip and client.zip extracted into its folder.");
+            }
+            continue;
+        }
+        if (!ImGui::BeginMenu(names[i].c_str()))
+            continue;
+        // Its gameplay layers: GameModes/<mode>/<size>.
+        const std::vector<std::string> modes = subFolders(folder + "/GameModes");
+        for (size_t m = 0; m < modes.size(); ++m)
+        {
+            const std::vector<std::string> sizes = subFolders(folder + "/GameModes/" + modes[m]);
+            for (size_t s = 0; s < sizes.size(); ++s)
+            {
+                const int size = std::atoi(sizes[s].c_str());
+                if (size <= 0)
+                    continue;
+                if (ImGui::MenuItem((modes[m] + " " + sizes[s]).c_str()))
+                {
+                    m_openLevel = names[i];
+                    m_openMode = modes[m];
+                    m_openSize = size;
+                    m_quit = true;
+                }
+            }
+        }
+        if (modes.empty())
+            ImGui::TextDisabled("no GameModes folder (unpack server.zip too)");
+        ImGui::EndMenu();
+    }
+    ImGui::EndMenu();
+}
+
 void EditorShell::loadSettings(const EditorSettings& settings)
 {
     installShortcutKeys();
     m_options.rememberCamera = settings.getBool("options.rememberCamera", m_options.rememberCamera);
+    m_options.terrainLook = settings.getInt("options.terrainLook", m_options.terrainLook);
     m_options.viewDistance = settings.getFloat("options.viewDistance", m_options.viewDistance);
     m_options.startupCommand = settings.get("options.startupCommand", m_options.startupCommand);
     m_options.rawDataPath = settings.get("options.rawDataPath", m_options.rawDataPath);
@@ -294,6 +379,7 @@ void EditorShell::saveSettings(EditorSettings& settings) const
     m_resources.saveSettings(settings);
     shortcuts().save(settings);
     settings.setBool("options.rememberCamera", m_options.rememberCamera);
+    settings.setInt("options.terrainLook", m_options.terrainLook);
     settings.setFloat("options.viewDistance", m_options.viewDistance);
     settings.set("options.startupCommand", m_options.startupCommand);
     settings.set("options.rawDataPath", m_options.rawDataPath);
@@ -579,6 +665,8 @@ void EditorShell::drawMenu()
             ImGui::SetItemTooltip("Editor/ObjectList.txt and Editor/MaterialList.txt in the level's folder.");
             ImGui::Separator();
         }
+        if (!m_session)
+            drawOpenLevelMenu();
         if (ImGui::MenuItem("Exit", "Alt+F4"))
             m_quit = true;
         ImGui::EndMenu();
@@ -613,6 +701,23 @@ void EditorShell::drawMenu()
         ImGui::SetItemTooltip("Effects and animations stop; the view keeps drawing and edits still show.");
         ImGui::MenuItem("The level's view distance", 0, &m_levelViewDistance, m_session != 0);
         ImGui::MenuItem("Wireframe", 0, &m_wireframe, m_session != 0);
+        if (m_session && ImGui::BeginMenu("Terrain look"))
+        {
+            static const char* const looks[] = { "Colormap and lightmap", "Grid", "Topographic grid",
+                                                 "Detail layers (like the game)" };
+            for (int t = 0; t < 4; ++t)
+                if (ImGui::MenuItem(looks[t], 0, m_options.terrainLook == t))
+                {
+                    m_options.terrainLook = t;
+                    m_session->runCommand("EditorTerrain.technique " + std::to_string(t), "terrain");
+                }
+            ImGui::EndMenu();
+        }
+        if (ImGui::MenuItem("No fog", 0, m_session && m_session->overlays().noFog, m_session != 0))
+            m_session->runCommand(m_session->overlays().noFog ? "EditorView.overlay noFog 0" : "EditorView.overlay noFog 1",
+                                  "overlay");
+        ImGui::SetItemTooltip("Clears the level's fog in the view only; Sky.con keeps it. Raise the view distance too\n"
+                              "(Options) to see far.");
         ImGui::SetItemTooltip("The world drawn as lines (the editor's panels stay solid).");
         ImGui::SetItemTooltip("The camera draws as far as the level's own view distance (Init.con) instead of Options'.");
         if (m_session && ImGui::BeginMenu("Snap"))
@@ -644,19 +749,31 @@ void EditorShell::drawMenu()
                 { "Lines to each one's control point", "connections", o.connections },
                 { "Control point radius", "controlPointRadius", o.controlPointRadius },
                 { "Supply lines and groups", "supplyLines", o.supplyLines },
-                { "Sea level", "seaLevel", o.seaLevel },
+                { "Water (where the ground is under the sea level)", "seaLevel", o.seaLevel },
                 { "Bounding spheres of the selection", "boundingSpheres", o.boundingSpheres },
                 { "Light sources", "lightSources", o.lightSources },
                 { "Selection boxes", "selectionBoxes", o.selectionBoxes },
                 { "Box round the object under the cursor", "hoverBox", o.hoverBox },
+                { "Navmesh: infantry", "navMeshInfantry", o.navMeshInfantry },
+                { "Navmesh: vehicles", "navMeshVehicle", o.navMeshVehicle },
+                { "Spawn checks (green on navmesh, red off)", "spawnChecks", o.spawnChecks },
+                { "Soldier on each spawn point", "soldierFigures", o.soldierFigures },
+                { "Vehicle at each spawner", "vehicleGhosts", o.vehicleGhosts },
+                { "AI strategic areas, order positions, waypoints", "strategicAreas", o.strategicAreas },
             };
             for (size_t i = 0; i < sizeof(flags) / sizeof(flags[0]); ++i)
             {
-                if (i == 4 || i == 7 || i == 10)
+                if (i == 4 || i == 7 || i == 10 || i == 12)
                     ImGui::Separator();
                 if (ImGui::MenuItem(flags[i].label, 0, flags[i].on))
                     m_session->runCommand(std::string("EditorView.overlay ") + flags[i].name + (flags[i].on ? " 0" : " 1"), "overlay");
             }
+            if (ImGui::MenuItem("Reload the navmesh"))
+            {
+                std::string report;
+                m_session->reloadNavMesh(report);
+            }
+            ImGui::SetItemTooltip("Reads AIPathFinding/Infantry.qtr and Vehicle.qtr again (the level folder's, else the archive's).");
             ImGui::Separator();
             static const char* const sizes[] = { "Sound markers: off", "Sound markers: small", "Sound markers: medium",
                                                  "Sound markers: large" };

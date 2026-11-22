@@ -125,6 +125,8 @@ public:
     virtual bool createGameplayObject(const std::string& kind, const std::string& name,
                                       const dice::hfe::Vec3& position, std::string& result) = 0;
     virtual bool createGameplayObjectHere(const std::string& kind, const std::string& name, std::string& result) = 0;
+    // The AI strategic areas as the history's snapshot `snapshot` has them (App/StrategicAreas).
+    virtual bool strategicRestore(int snapshot, std::string& result) = 0;
     // An effect area, with its effect (a Bundle or EffectBundle template).
     virtual bool createEffectArea(const std::string& name, const std::string& effect, const dice::hfe::Vec3& position,
                                   std::string& result) = 0;

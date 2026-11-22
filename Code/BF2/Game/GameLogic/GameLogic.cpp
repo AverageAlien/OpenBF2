@@ -591,8 +591,16 @@ bool GameLogic::load(const std::string& levelPath)
     //      then StaticObjects -> convert -> GamePlayObjects -> score
     world::objectManager->destroyObjects();                    // +0x98
     runScript(levelPath + "StaticObjects.con");
+#if defined(BF2_IMAGE_EDITOR) && BF2_IMAGE_EDITOR
+    // [CHOSEN, not recovered] editor-only: the destroyable and dynamic objects stay as StaticObjects.con made them.
+    // The game turns each into a server-side respawner and destroys it; the editor is no server, so nothing came
+    // back in its place (bridges, barrels and wagons were missing), and the level file must keep them as they are.
+    if (m_byte1B0)
+        return false;
+#else
     if (m_byte1B0 || !convertDynamicObjects())
         return false;
+#endif
 
     const std::string sizeDir = formatString("GameModes/%s/%d/", gameMode.c_str(), chosenSize);
     const bool gpoLoaded = runScriptArg1(levelPath + sizeDir + "GamePlayObjects.con",
