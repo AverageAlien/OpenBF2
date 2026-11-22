@@ -198,6 +198,10 @@ public:
     /* +200 */ Vec3 m_v200;                    // zeroed twice, like m_v108; getSquadLeaderGotoPos
     /* +212 */ double m_needOrderMessageTimer; // = IBFTimer::getGameTime at construction
     /* +220 */ bool m_b220;                    // = false; get/setRogerThatPositionMessage
+    // [CHOSEN, not recovered] OpenBF2 (Invasion squad stickiness, SquadManager::getClosestAvailableSquad):
+    // the area index unAssignSquad last cleared (-1 for none) and the game time it did.
+    int m_lastAreaIndex;
+    double m_lastAreaTime;
 };
 
 } // namespace ai

@@ -19,6 +19,8 @@ namespace hfe {
 namespace ai {
 
 class AIStrategicObject;
+class AIStrategicArea;
+class IBFCommander;
 class Bot;
 class SAI;
 class SquadCoordinator;
@@ -411,6 +413,32 @@ private:
 
     /* +0x1F4 */ int m_int1F4;                       // = 0; state buffer selector, toggled with !value
     /* +0x1F8 */ CommanderInterface* m_commander;    // owned; deleted by ~SAI
+
+    // [CHOSEN, not recovered] OpenBF2 extension: the AI commander's artillery in the Invasion
+    // mode (updateInvasionArtillery). Per control point ID: the attackers' stall clock and limit,
+    // the last owner seen, and the defenders' pending answer to a neutralized point; whether
+    // that strike may land near friendlies is rolled once per clock or per neutralization.
+    struct InvasionPoint
+    {
+        double stallSince;
+        double stallLimit;
+        int lastOwner;
+        bool strike;
+        double strikeAt;
+        bool allowNearFriendlies;
+    };
+    int invasionDefenceSquadBudget();
+    void updateInvasionArtillery(double now, IBFCommander* commander);
+    bool invasionStrike(AIStrategicArea* area, bool allowNearFriendlies, IBFCommander* commander);
+    std::map<unsigned int, InvasionPoint> m_invasionPoints;
+    int m_invasionDefenders;                         // the defending side once known, else 0
+    int m_invasionDesperateTickets;                  // attackers' desperate-strike threshold, 0 until rolled; rerolled after each desperate strike
+    double m_invasionCheckTime;
+    double m_invasionAttackTime;
+
+public:
+    // [CHOSEN, not recovered] OpenBF2: the game mode is gpm_invasion (any case).
+    bool isInvasionGame() const;
 };
 
 } // namespace ai

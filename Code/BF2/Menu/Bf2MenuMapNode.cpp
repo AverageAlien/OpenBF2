@@ -598,6 +598,10 @@ void rasterizeCombatArea(hfe::geom::IMemeTexture* texture,
             canvas.push_back(hfe::geom::IMemeTexture::CanvasPoint(mappedX, mappedY));
         }
     }
+    // 77D9E9..77DA2F: the first point again, closing the outline (without it the even-odd fill
+    // ran on to the row's end on every row the missing last edge crosses).
+    if (!measureOnly && !canvas.empty())
+        canvas.push_back(canvas.front());
     if (!measureOnly) {
         // hand over A buffer the callee may free. plotAndFill releases `first` itself, so it
         // must not be `canvas`'s own storage - that would be freed twice. The span layout is the
@@ -1936,6 +1940,366 @@ void Bf2MenuMapNode::drawCombatAreaTexture(int texture, const Rect* adjusted,
     drawContextTexture(context, system, texture, &quad);
 }
 
+namespace {
+struct RegionSite
+{
+    float x, z;
+    int key;        // the supplyGroupId, or -1 - id for a point without a group (a main base)
+};
+
+bool insidePolygon(const std::vector<hfe::Vec2>& polygon, float x, float z)
+{
+    bool inside = false;
+    for (std::size_t i = 0, j = polygon.size() - 1; i < polygon.size(); j = i++) {
+        const hfe::Vec2& a = polygon[i];
+        const hfe::Vec2& b = polygon[j];
+        if ((a.y > z) != (b.y > z) && x < (b.x - a.x) * (z - a.y) / (b.y - a.y) + a.x)
+            inside = !inside;
+    }
+    return inside;
+}
+
+// The parts of segment a-b inside the polygon, as parameter ranges along it.
+std::vector<std::pair<float, float> > insideParts(const std::vector<hfe::Vec2>& polygon,
+                                                   float ax, float az, float bx, float bz)
+{
+    std::vector<float> cuts;
+    cuts.push_back(0.0f);
+    cuts.push_back(1.0f);
+    const float dx = bx - ax, dz = bz - az;
+    for (std::size_t i = 0, j = polygon.size() - 1; i < polygon.size(); j = i++) {
+        const float ex = polygon[i].x - polygon[j].x, ez = polygon[i].y - polygon[j].y;
+        const float denominator = dx * ez - dz * ex;
+        if (std::fabs(denominator) < 1e-9f)
+            continue;
+        const float wx = polygon[j].x - ax, wz = polygon[j].y - az;
+        const float t = (wx * ez - wz * ex) / denominator;
+        const float u = (wx * dz - wz * dx) / denominator;
+        if (t > 0.0f && t < 1.0f && u >= 0.0f && u <= 1.0f)
+            cuts.push_back(t);
+    }
+    std::sort(cuts.begin(), cuts.end());
+    std::vector<std::pair<float, float> > parts;
+    for (std::size_t i = 0; i + 1 < cuts.size(); ++i) {
+        const float middle = (cuts[i] + cuts[i + 1]) * 0.5f;
+        if (cuts[i + 1] - cuts[i] > 1e-5f && insidePolygon(polygon, ax + dx * middle, az + dz * middle))
+            parts.push_back(std::make_pair(cuts[i], cuts[i + 1]));
+    }
+    return parts;
+}
+} // namespace
+
+void Bf2MenuMapNode::drawInvasionRegions(const Rect* bounds, System* system, RenderContext* context)
+{
+    hfe::world::IPlayer* const local = hfe::world::playerManager->getLocalHumanPlayer();
+    if (!local || !hfe::gameLogic)
+        return;
+
+    // The flags, and which side each group's region belongs to: a group the attackers took (theirs,
+    // nobody may capture it) is theirs, every other group the defenders'.
+    typedef std::map<unsigned int, hfe::world::IObject*> ControlPointMap;
+    ControlPointMap& controlPoints = *hfe::gameLogic->getControlPointMap();
+    std::vector<RegionSite> sites;
+    std::map<int, std::vector<hfe::world::IControlPoint*> > members;
+    int attackers = 0, defenders = 0, lastGroup = 0;
+    for (ControlPointMap::iterator it = controlPoints.begin(); it != controlPoints.end(); ++it) {
+        hfe::world::IObject* const object = it->second;
+        hfe::world::IControlPoint* const point = object
+            ? static_cast<hfe::world::IControlPoint*>(object->queryInterface(hfe::world::IID_IControlPoint)) : 0;
+        if (!point || !point->getShowOnMinimap())
+            continue;
+        hfe::world::IControlPointTemplate* const pointTemplate =
+            static_cast<hfe::world::IControlPointTemplate*>(
+                object->getTemplate()->queryInterface(hfe::world::IID_IControlPointTemplate));
+        if (!pointTemplate)
+            continue;
+        const int group = pointTemplate->getGroupId();
+        RegionSite site;
+        site.x = object->getAbsolutePosition().x;
+        site.z = object->getAbsolutePosition().z;
+        site.key = group > 0 ? group : -1 - static_cast<int>(it->first);
+        sites.push_back(site);
+        members[site.key].push_back(point);
+        if (group <= 0 && pointTemplate->getUnableToChangeTeam() && (point->getTeam() == 1 || point->getTeam() == 2))
+            attackers = point->getTeam();
+        if (group > lastGroup) {
+            lastGroup = group;
+            defenders = point->getTeam();
+        }
+    }
+    if (sites.size() < 2)
+        return;
+    if (attackers)
+        defenders = 3 - attackers;
+    else if (defenders == 1 || defenders == 2)
+        attackers = 3 - defenders;
+    else
+        return;
+    std::map<int, int> keyTeam;
+    for (std::map<int, std::vector<hfe::world::IControlPoint*> >::iterator it = members.begin();
+         it != members.end(); ++it) {
+        if (it->first < 0) {
+            keyTeam[it->first] = it->second.front()->getTeam();
+            continue;
+        }
+        bool taken = true;
+        for (std::size_t i = 0; i < it->second.size(); ++i) {
+            hfe::world::IControlPoint* const point = it->second[i];
+            if (point->getTeam() != attackers || point->getAllowCaptureByTeam(1) || point->getAllowCaptureByTeam(2))
+                taken = false;
+        }
+        keyTeam[it->first] = taken ? attackers : defenders;
+    }
+
+    // The combat area: the largest one active for the local player, else the whole map.
+    std::vector<hfe::Vec2> area;
+    float largest = 0.0f;
+    if (hfe::CombatAreaManager* const manager = hfe::CombatAreaManager::getInstance()) {
+        for (std::vector<hfe::CombatArea*>::const_iterator it = manager->m_areas.begin();
+             it != manager->m_areas.end(); ++it) {
+            const std::vector<hfe::Vec2>& points = (*it)->m_points;
+            if (points.size() < 3 || !(*it)->checkIfActiveToPlayer(local))
+                continue;
+            float twice = 0.0f;
+            for (std::size_t i = 0, j = points.size() - 1; i < points.size(); j = i++)
+                twice += points[j].x * points[i].y - points[i].x * points[j].y;
+            if (std::fabs(twice) > largest) {
+                largest = std::fabs(twice);
+                area = points;
+            }
+        }
+    }
+    if (area.empty()) {
+        const float halfX = 0.5f / m_worldToMapScale, halfZ = 0.5f / m_field088;
+        const hfe::Vec2 corners[4] = { {-halfX, -halfZ}, {halfX, -halfZ}, {halfX, halfZ}, {-halfX, halfZ} };
+        area.assign(corners, corners + 4);
+    }
+
+    const int localTeam = local->getTeam();
+    const int friendly = localTeam == 1 || localTeam == 2 ? localTeam : attackers;
+    const float alpha = m_field708[2] * 0.9f;
+    const Color friendlyColor = {0.25f, 0.6f, 1.0f, alpha};
+    const Color enemyColor = {1.0f, 0.25f, 0.2f, alpha};
+    const float center[2] = { bounds->x + bounds->width * 0.5f, bounds->y + bounds->height * 0.5f };
+    const auto toScreen = [&](float x, float z) {
+        hfe::Vec2 map{0.0f, 0.0f};
+        projectWorldPosition(hfe::Vec3{x, 0.0f, z}, &map);
+        return hfe::Vec2{(map.x - 1.0f) * m_fieldb5c.width + m_fieldb5c.width * 0.5f + m_fieldb5c.x,
+                         (map.y + 1.0f) * m_fieldb5c.height + m_fieldb5c.height * 0.5f + m_fieldb5c.y};
+    };
+    // Every region's border as pieces with the region on their left (x right, z up): the stretches
+    // of the bisector of two flags of different groups where those two are the nearest flags, and
+    // the combat area's edge split by nearest flag. Chained, they close into one outline a region.
+    struct Piece
+    {
+        float ax, az, bx, bz;
+        int key;
+    };
+    std::vector<Piece> pieces;
+    const auto addPiece = [&](float ax, float az, float bx, float bz, int key) {
+        const Piece piece = { ax, az, bx, bz, key };
+        pieces.push_back(piece);
+    };
+    for (std::size_t i = 0; i < sites.size(); ++i)
+        for (std::size_t j = i + 1; j < sites.size(); ++j) {
+            const RegionSite& p = sites[i];
+            const RegionSite& q = sites[j];
+            if (p.key == q.key || std::fabs(p.x - q.x) + std::fabs(p.z - q.z) < 0.01f)
+                continue;
+            const float mx = (p.x + q.x) * 0.5f, mz = (p.z + q.z) * 0.5f;
+            float dx = p.z - q.z, dz = q.x - p.x;
+            const float length = std::sqrt(dx * dx + dz * dz);
+            dx /= length;
+            dz /= length;
+            float low = -100000.0f, high = 100000.0f;
+            for (std::size_t k = 0; k < sites.size() && low < high; ++k) {
+                if (k == i || k == j)
+                    continue;
+                // Nearer to p than to site k: 2 x.(k - p) <= |k|^2 - |p|^2, along x = m + t d.
+                const float ex = sites[k].x - p.x, ez = sites[k].z - p.z;
+                const float limit = sites[k].x * sites[k].x + sites[k].z * sites[k].z - p.x * p.x - p.z * p.z
+                    - 2.0f * (mx * ex + mz * ez);
+                const float slope = 2.0f * (dx * ex + dz * ez);
+                if (std::fabs(slope) < 1e-6f) {
+                    if (limit < 0.0f)
+                        high = low;
+                } else if (slope > 0.0f) {
+                    high = std::min(high, limit / slope);
+                } else {
+                    low = std::max(low, limit / slope);
+                }
+            }
+            if (!(low < high))
+                continue;
+            const float ax = mx + dx * low, az = mz + dz * low;
+            const float bx = mx + dx * high, bz = mz + dz * high;
+            const std::vector<std::pair<float, float> > parts = insideParts(area, ax, az, bx, bz);
+            for (std::size_t n = 0; n < parts.size(); ++n) {
+                const float sx = ax + (bx - ax) * parts[n].first, sz = az + (bz - az) * parts[n].first;
+                const float ex = ax + (bx - ax) * parts[n].second, ez = az + (bz - az) * parts[n].second;
+                if ((ex - sx) * (p.z - sz) - (ez - sz) * (p.x - sx) > 0.0f) {
+                    addPiece(sx, sz, ex, ez, p.key);
+                    addPiece(ex, ez, sx, sz, q.key);
+                } else {
+                    addPiece(ex, ez, sx, sz, p.key);
+                    addPiece(sx, sz, ex, ez, q.key);
+                }
+            }
+        }
+    float twiceArea = 0.0f;
+    for (std::size_t i = 0, j = area.size() - 1; i < area.size(); j = i++)
+        twiceArea += area[j].x * area[i].y - area[i].x * area[j].y;
+    if (twiceArea < 0.0f)
+        std::reverse(area.begin(), area.end());      // counter-clockwise: the inside on the left
+    const auto nearest = [&](float x, float z) {
+        std::size_t best = 0;
+        float bestDistance = std::numeric_limits<float>::max();
+        for (std::size_t k = 0; k < sites.size(); ++k) {
+            const float distance = (sites[k].x - x) * (sites[k].x - x) + (sites[k].z - z) * (sites[k].z - z);
+            if (distance < bestDistance) {
+                bestDistance = distance;
+                best = k;
+            }
+        }
+        return best;
+    };
+    for (std::size_t i = 0; i < area.size(); ++i) {
+        const hfe::Vec2& a = area[i];
+        const hfe::Vec2& b = area[(i + 1) % area.size()];
+        const float dx = b.x - a.x, dz = b.y - a.y;
+        float from = 0.0f;
+        std::size_t owner = nearest(a.x, a.y);
+        while (from < 1.0f) {
+            // The next point along the edge where another flag becomes the nearest.
+            float to = 1.0f;
+            std::size_t next = owner;
+            for (std::size_t k = 0; k < sites.size(); ++k) {
+                if (k == owner)
+                    continue;
+                // |x - k|^2 - |x - owner|^2 along x = a + s d is linear in s.
+                const float cx = a.x - sites[k].x, cz = a.y - sites[k].z;
+                const float ox = a.x - sites[owner].x, oz = a.y - sites[owner].z;
+                const float base = cx * cx + cz * cz - ox * ox - oz * oz;
+                const float slope = 2.0f * (dx * (sites[owner].x - sites[k].x) + dz * (sites[owner].z - sites[k].z));
+                if (slope >= 0.0f)
+                    continue;
+                const float s = -base / slope;
+                if (s > from + 1e-6f && s < to) {
+                    to = s;
+                    next = k;
+                }
+            }
+            addPiece(a.x + dx * from, a.y + dz * from, a.x + dx * to, a.y + dz * to, sites[owner].key);
+            from = to;
+            owner = next;
+        }
+    }
+
+    // Each outline is drawn inset by `gap`, `thickness` wide with its edges faded over `feather`,
+    // its corners mitred, on screen.
+    const float gap = 1.5f, thickness = 2.0f, feather = 1.0f;
+    const float offsets[4] = { gap - feather * 0.5f, gap + feather * 0.5f,
+                               gap + thickness - feather * 0.5f, gap + thickness + feather * 0.5f };
+    const auto strip = [&](const hfe::Vec2& a, const hfe::Vec2& b, const hfe::Vec2& ma, const hfe::Vec2& mb,
+                           float in, float out, const Color& color, float alphaIn, float alphaOut) {
+        hfe::Vec2 corner[4] = {
+            {a.x + ma.x * in, a.y + ma.y * in}, {b.x + mb.x * in, b.y + mb.y * in},
+            {b.x + mb.x * out, b.y + mb.y * out}, {a.x + ma.x * out, a.y + ma.y * out}
+        };
+        float alpha[4] = { alphaIn, alphaIn, alphaOut, alphaOut };
+        // The HUD renderer culls counter-clockwise triangles: the corners go screen-clockwise.
+        float twice = 0.0f;
+        for (int i = 0; i < 4; ++i)
+            twice += corner[i].x * corner[(i + 1) % 4].y - corner[(i + 1) % 4].x * corner[i].y;
+        if (twice < 0.0f) {
+            std::swap(corner[1], corner[3]);
+            std::swap(alpha[1], alpha[3]);
+        }
+        Quad quad;
+        quad.clip = bounds;
+        colorQuad(&quad, &color);
+        // The minimap's round mask, as on the map's other layers.
+        if (shouldUseSecondaryIconTexture())
+            quad.texture2 = m_field928[1];
+        for (int i = 0; i < 4; ++i) {
+            quad.corners[i].x = corner[i].x;
+            quad.corners[i].y = corner[i].y;
+            quad.corners[i].z = 0.0f;
+            quad.corners[i].color.a = alpha[i];
+        }
+        rotateQuad(&quad, center, m_field76c);
+        drawContextTexture(context, system, 0, &quad);
+    };
+    std::vector<bool> used(pieces.size(), false);
+    for (std::size_t first = 0; first < pieces.size(); ++first) {
+        if (used[first])
+            continue;
+        used[first] = true;
+        const int key = pieces[first].key;
+        std::vector<hfe::Vec2> outline(1, toScreen(pieces[first].ax, pieces[first].az));
+        std::size_t current = first;
+        for (;;) {
+            const float ex = pieces[current].bx, ez = pieces[current].bz;
+            std::size_t best = pieces.size();
+            float bestDistance = 0.05f * 0.05f;
+            for (std::size_t k = 0; k < pieces.size(); ++k) {
+                if (used[k] || pieces[k].key != key)
+                    continue;
+                const float distance = (pieces[k].ax - ex) * (pieces[k].ax - ex) + (pieces[k].az - ez) * (pieces[k].az - ez);
+                if (distance < bestDistance) {
+                    bestDistance = distance;
+                    best = k;
+                }
+            }
+            if (best == pieces.size())
+                break;
+            used[best] = true;
+            const hfe::Vec2 point = toScreen(pieces[best].ax, pieces[best].az);
+            const hfe::Vec2& last = outline.back();
+            if (std::fabs(point.x - last.x) + std::fabs(point.y - last.y) > 0.2f)
+                outline.push_back(point);
+            current = best;
+        }
+        while (outline.size() > 2 && std::fabs(outline.front().x - outline.back().x)
+                                      + std::fabs(outline.front().y - outline.back().y) <= 0.2f)
+            outline.pop_back();
+        const std::size_t count = outline.size();
+        if (count < 3)
+            continue;
+        float twice = 0.0f;
+        for (std::size_t i = 0, j = count - 1; i < count; j = i++)
+            twice += outline[j].x * outline[i].y - outline[i].x * outline[j].y;
+        const float side = twice > 0.0f ? 1.0f : -1.0f;
+        std::vector<hfe::Vec2> normals(count), mitres(count);
+        for (std::size_t i = 0; i < count; ++i) {
+            const hfe::Vec2& a = outline[i];
+            const hfe::Vec2& b = outline[(i + 1) % count];
+            const float dx = b.x - a.x, dy = b.y - a.y;
+            const float length = std::sqrt(dx * dx + dy * dy);
+            normals[i] = hfe::Vec2{-dy / length * side, dx / length * side};
+        }
+        for (std::size_t i = 0; i < count; ++i) {
+            const hfe::Vec2& n = normals[(i + count - 1) % count];
+            const hfe::Vec2& m = normals[i];
+            const float divisor = std::max(1.0f + n.x * m.x + n.y * m.y, 0.125f);
+            hfe::Vec2 mitre = {(n.x + m.x) / divisor, (n.y + m.y) / divisor};
+            const float length = std::sqrt(mitre.x * mitre.x + mitre.y * mitre.y);
+            if (length > 4.0f) {
+                mitre.x *= 4.0f / length;
+                mitre.y *= 4.0f / length;
+            }
+            mitres[i] = mitre;
+        }
+        const Color& color = keyTeam[key] == friendly ? friendlyColor : enemyColor;
+        for (std::size_t i = 0; i < count; ++i) {
+            const std::size_t j = (i + 1) % count;
+            strip(outline[i], outline[j], mitres[i], mitres[j], offsets[0], offsets[1], color, 0.0f, color.a);
+            strip(outline[i], outline[j], mitres[i], mitres[j], offsets[1], offsets[2], color, color.a, color.a);
+            strip(outline[i], outline[j], mitres[i], mitres[j], offsets[2], offsets[3], color, color.a, 0.0f);
+        }
+    }
+}
+
 // Four submissions in top/right/bottom/left order, all reusing one
 // default Quad exactly as the PE does.
 void Bf2MenuMapNode::drawMapBorder(const Rect* adjusted, const Rect* bounds,
@@ -2097,6 +2461,8 @@ void Bf2MenuMapNode::paintSelf(System* system, const NodeState* state,
     if (m_field708[2] > 0.01f && isMapFilterEnabled(1)
             && m_fieldb70 && m_field93c[2])
         drawCombatAreaTexture(m_field93c[2], &m_fieldb5c, bounds, system, context);
+    if (m_field708[2] > 0.01f && isMapFilterEnabled(1) && gameMode == "gpm_invasion")
+        drawInvasionRegions(bounds, system, context);
 
     drawMapBorder(&m_fieldb5c, bounds, system, context);
     clearMapIcons();
@@ -6068,8 +6434,9 @@ void Bf2MenuMapNode::update(float delta)
         hfe::eventManager->postEvent(hfe::ECHud, 0x4D, 0, 0.0f);   // PE +0x10 overload
     }
 
-    // Send size-change events on either transition while the commander screen is hidden.
-    if ((!m_field776 && sizeReached && !hfe::hudManager->isCommanderShown())
+    // PE 0x77C85D: send the size-change event when the map finishes growing with the commander
+    // screen shown, or finishes shrinking with it hidden.
+    if ((!m_field776 && sizeReached && hfe::hudManager->isCommanderShown())
         || (m_field776 && !sizeReached && !hfe::hudManager->isCommanderShown()))
     {
         hfe::eventManager->postEvent(hfe::ECHud, 0x4C, 0, 0.0f);

@@ -2,6 +2,7 @@
 
 #include "BFCommander.h"
 
+
 #include "IAIObject.h"
 #include "AIPlayer.h"
 #include "../../../IO/Network/INetworkable.h"
@@ -216,6 +217,36 @@ bool BFCommander::gameHasArtillery(int team)
 bool BFCommander::anyArtilleryPiecesLeft(int team)
 {
     return world::artilleryManager->getHandler(static_cast<unsigned char>(team))->haveAnyArtillery();
+}
+
+// [CHOSEN, not recovered] OpenBF2 extension: see IBFCommander. The same handler calls as
+// ArtilleryEvent::executeServer, without its commander test.
+bool BFCommander::fireArtilleryAsAI(int team, Vec2 position)
+{
+    if ((team != 1 && team != 2) || !world::artilleryManager)
+        return false;
+    if (static_cast<ISquadManager*>(squadManager)->getCommander(team) != -1)
+        return false;
+    world::ArtilleryHandler* const handler =
+        world::artilleryManager->getHandler(static_cast<unsigned char>(team));
+    if (!handler || !handler->haveAnyArtillery() || !handler->isReadyToFire())
+        return false;
+    if (!handler->setTarget(position))
+    {
+        handler->failedFire();
+        return false;
+    }
+    handler->requestFire();
+    return true;
+}
+
+bool BFCommander::isArtilleryReady(int team)
+{
+    if ((team != 1 && team != 2) || !world::artilleryManager)
+        return false;
+    world::ArtilleryHandler* const handler =
+        world::artilleryManager->getHandler(static_cast<unsigned char>(team));
+    return handler && handler->haveAnyArtillery() && handler->isReadyToFire();
 }
 
 // ELF 0x840FD30. The capital A is attested by the mangled name.

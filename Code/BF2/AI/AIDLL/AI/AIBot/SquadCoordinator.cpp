@@ -1136,6 +1136,8 @@ SquadCoordinator::SquadCoordinator(int side, int squadIndex)
     , m_b172(false)
     , m_b196(false)
     , m_b220(false)
+    , m_lastAreaIndex(-1)
+    , m_lastAreaTime(0.0)
 {
     m_v28.x = 0.0f;
     m_v28.y = 0.0f;
@@ -1222,6 +1224,12 @@ bool SquadCoordinator::squadHasPosition()
 // PE inlined at : four stores in this order.
 void SquadCoordinator::unAssignSquad()
 {
+    // [CHOSEN, not recovered] Remembered for the squad stickiness of Invasion.
+    if (m_strategicAreaAssignment)
+    {
+        m_lastAreaIndex = m_strategicAreaAssignment->getIndex();
+        m_lastAreaTime = static_cast<IBFTimer*>(CommonSingletonServer::m_iBFTimer)->getGameTime();
+    }
     m_strategicAreaAssignment = 0;
     m_i40 = 4;
     m_i44 = 0;

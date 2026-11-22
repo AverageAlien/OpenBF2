@@ -120,6 +120,7 @@ AIStrategicArea::AIStrategicArea(const std::string& name, Vec2 topLeft, Vec2 cen
     m_orderPosesInitialised = false;
     m_takeableSeen[0] = 0xFF;
     m_takeableSeen[1] = 0xFF;
+    m_searchRadiusSet = false;
     internalConstructorCall(topLeft, centre);
 }
 
@@ -152,6 +153,7 @@ AIStrategicArea::AIStrategicArea(const std::string& name, unsigned int controlPo
     m_orderPosesInitialised = false;
     m_takeableSeen[0] = 0xFF;
     m_takeableSeen[1] = 0xFF;
+    m_searchRadiusSet = false;
 }
 
 // ELF 0x336F90 (D2; D1 0x337410, D0 0x337890; from AIStrategicObjectManager::reset/destructor):
@@ -245,7 +247,10 @@ void AIStrategicArea::postLoadInit()
 
         m_f148 = controlPointPosition.y;
 
+        const float searchRadius = m_f396;
         internalConstructorCall(m_centre, flat);
+        if (m_searchRadiusSet)
+            m_f396 = searchRadius;
         init();
     }
 

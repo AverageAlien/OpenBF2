@@ -45,6 +45,13 @@ public:
     virtual void denySupplyRequest(int a, int b) = 0;
     virtual void denyVehicleDropRequest(int a, int b) = 0;
     virtual void denyUavRequest(int a, int b) = 0;
+    // [CHOSEN, not recovered] OpenBF2 extension, appended slots. Retail's AI route (fireArtillery)
+    // posts a request that ArtilleryEvent::executeServer accepts only from the team's commander,
+    // so an AI commander's strike never fired. fireArtilleryAsAI fires the team's artillery at the
+    // XZ position directly when the team has no human commander and the artillery is ready;
+    // isArtilleryReady says whether the team has guns left and its reload is over.
+    virtual bool fireArtilleryAsAI(int team, Vec2 position) = 0;
+    virtual bool isArtilleryReady(int team) = 0;
 };
 
 class BFCommander : public IBFCommander
@@ -71,6 +78,8 @@ public:
     virtual void denySupplyRequest(int a, int b);
     virtual void denyVehicleDropRequest(int a, int b);
     virtual void denyUavRequest(int a, int b);
+    virtual bool fireArtilleryAsAI(int team, Vec2 position);
+    virtual bool isArtilleryReady(int team);
 
 private:
     // bf2 ELF 0x840F740: the shared body of the three give*Order methods.

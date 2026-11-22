@@ -92,8 +92,9 @@ public:
     virtual bool  getShowOnMinimap();                // the template's +0x1BC
     std::string   getName();                         // NON-virtual (not in either table),
                                                      // returns the template's name BY value (sret)
-    // [CHOSEN, not recovered] OpenBF2 extension (nonvirtual): switches every spawn group and
-    // object spawner of this control point on or off (Python cp_setParam 'spawnEnabled').
+    // [CHOSEN, not recovered] OpenBF2 extension (nonvirtual): switches every spawn group of this
+    // control point on or off (Python cp_setParam 'spawnEnabled'). Its object spawners stay as they are:
+    // an objective's emplacements and vehicles stand from the round's start.
     void          setSpawnEnabled(bool enabled);
 
     // The replication component reads the capture fields RAW (init/updateStateMask/setNetUpdate on

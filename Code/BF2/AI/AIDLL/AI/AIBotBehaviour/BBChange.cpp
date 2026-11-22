@@ -280,6 +280,17 @@ float BBChange::calculateUrgency(Bot* bot, bool evaluate, float scale)
         if (squadManager->isInArtilleryDangerZone(pos, bot->getSide(), artillerySinceStart, artillerySide)
             && artillerySinceStart > 4.0f)
             inArtillery = true;
+        // [CHOSEN, not recovered] Armour (Tank: tanks and AA; ArmedCar: APCs) keeps its crew under artillery;
+        // retail emptied a healthy tank onto the open ground the shells were hitting. They still get out when it
+        // is damaged below the bail value.
+        if (inArtillery && !equipmentInfo->isOfType(ITSoldier))
+        {
+            Information* const primary = informationManager->getInformation(equipmentInfo->getPrimaryObject(bot->getSide()));
+            const IAISettings* const settings = static_cast<IAISettings*>(CommonSingletonServer::m_iaiSettings);
+            const int type = primary && primary->getUnit() ? primary->getUnit()->getEquipmentType() : -1;
+            if (type >= 0 && (type == settings->getVehicle(std::string("Tank")) || type == settings->getVehicle(std::string("ArmedCar"))))
+                inArtillery = false;
+        }
     }
 
     if (!isAir && !isBailAllowed(bot))

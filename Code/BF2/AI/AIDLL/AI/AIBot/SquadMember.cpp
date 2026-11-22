@@ -410,10 +410,33 @@ bool SquadMember::isAllowedInFormation()
                 const float dy = goal.y - position.y;
                 if (dz * dz + dx * dx + dy * dy < m_formationDistanceSq)
                     allowed = false;
+                else if (allowed && isFarFromLeaderTowardsGoal(position, goal))
+                    allowed = false;
             }
         }
     }
     return allowed;
+}
+
+// [CHOSEN, not recovered] Invasion: squad members spawn at different spawn groups (a defender squad partly at the
+// outposts, partly at Market for its vehicles), and a member in formation walks to its slot beside the leader
+// wherever he is - half a squad marched 300 m back from the points it was sent to defend. A member more than 80 m
+// from its leader and nearer the squad's goal than the leader leaves the formation and goes to the goal itself.
+bool SquadMember::isFarFromLeaderTowardsGoal(const Vec3& position, const Vec3& goal)
+{
+    SAI* const sai = IAIMain::m_instance->getSAI(m_side + 1);
+    if (!sai || !sai->isInvasionGame())
+        return false;
+    SquadMember* const leader = m_squad->getSquadLeader();
+    Vec3 leaderPosition = { 0.0f, 0.0f, 0.0f };
+    if (!leader || leader == this || !leader->getPosition(leaderPosition))
+        return false;
+    const float lx = leaderPosition.x - position.x, ly = leaderPosition.y - position.y, lz = leaderPosition.z - position.z;
+    if (lx * lx + ly * ly + lz * lz <= 80.0f * 80.0f)
+        return false;
+    const float mx = goal.x - position.x, my = goal.y - position.y, mz = goal.z - position.z;
+    const float gx = goal.x - leaderPosition.x, gy = goal.y - leaderPosition.y, gz = goal.z - leaderPosition.z;
+    return mx * mx + my * my + mz * mz < gx * gx + gy * gy + gz * gz;
 }
 
 // ELF 0x1B1A70 (371 bytes). The position is the primary object's (with physical information)

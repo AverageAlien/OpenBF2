@@ -57,6 +57,7 @@ public:
     bool avoidArtillery(Vec3 position, double sinceStart, int side);   // ELF 0x1B2840 [FRONTIER]
     bool getPosition(Vec3& position);         // copies even if invalid
     bool isAllowedInFormation();             // nonnull vehicle [FRONTIER]
+    bool isFarFromLeaderTowardsGoal(const Vec3& position, const Vec3& goal);   // [CHOSEN, not recovered]
     void updateMemberPos();                  // nonnull vehicle [FRONTIER]
     bool isMobile();                         // owner query [FRONTIER]
     void moveWithFormation();                // ELF 0x1B3AC0

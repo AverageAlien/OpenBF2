@@ -95,7 +95,8 @@ namespace {
 // bases, far more than the vehicles there could carry. A spawn group whose front distance (see
 // IAIGame::getSpawnGroupFrontDistance) exceeds the side's nearest eligible group's by more than
 // kRearSpawnMargin is a rear spawn: bots pick it only while the free vehicle seats within
-// kRearSpawnRadius outnumber the bots already claiming it. In other modes every front distance is
+// kRearSpawnRadius, or at the spawners of the group's own control point, outnumber the bots
+// already claiming it. In other modes every front distance is
 // 0, so no spawn is a rear spawn and bot spawning is unchanged.
 const float kRearSpawnMargin = 50.0f;
 const float kRearSpawnRadius = 50.0f;
@@ -116,7 +117,7 @@ bool isRearSpawnFull(IAIGame* game, int side, int group, float nearest)
     if (game->getSpawnGroupFrontDistance(group) <= nearest + kRearSpawnMargin)
         return false;
     const Vec3 position = game->getSpawnPointPosition(group);
-    const int seats = game->getFreeVehicleSeats(position, kRearSpawnRadius);
+    const int seats = game->getFreeVehicleSeats(position, kRearSpawnRadius, game->getControlPointId(group));
     SAI* const sai = IAIMain::m_instance->getSAI(side);
     // A pick sets the bot's spawn group at once, so dead bots already include this update's picks
     // (SAI::getSpawnsToPoint would count them twice).

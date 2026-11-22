@@ -340,6 +340,9 @@ private:
                                RenderContext* context);
     void drawMapBorder(const Rect* adjusted, const Rect* bounds,
                        System* system, RenderContext* context);
+    // [CHOSEN, not recovered] Invasion: the combat area split into one region per objective group
+    // (Voronoi cells of the flags, a group's cells merged), each outlined in its side's colour.
+    void drawInvasionRegions(const Rect* bounds, System* system, RenderContext* context);
     void clearMapIcons();
     void collectSupplyLineIcons(const Rect* bounds);
     float getZoomExponent(int level);

@@ -1041,6 +1041,83 @@ unsigned long long inputMask(int input)
     return static_cast<unsigned long long>(static_cast<long long>(1 << input));
 }
 
+// [CHOSEN, not recovered] OpenBF2: tap fire for automatic small arms at range. Retail holds the trigger while the
+// aim check passes; the bot's own aim error shrinks the longer it stays on a target, but the weapon's spread keeps
+// growing with every round of the burst, so far targets were sprayed with little effect. Beyond kMinRange, once a
+// bot has fired for kSprayTime without a hit on its target (SensedObject::m_fireRating), it switches to single
+// rounds: one tick of trigger, then a pause that lets the spread settle, longer with distance. It keeps tapping
+// for the rest of the engagement, or until the target comes inside kMinRange. Last in the fire condition's And, so
+// it only runs while every other check would fire.
+class BAPConTapFire : public BAPCondition
+{
+public:
+    explicit BAPConTapFire(unsigned int target)
+        : m_target(target), m_hits(0), m_lastHit(0.0), m_since(0.0), m_lastEvaluate(-10.0), m_nextShot(0.0),
+          m_tapping(false), m_pulse(false)
+    {
+    }
+
+    virtual bool evaluate(Bot* bot)
+    {
+        static const float kMinRange = 40.0f;
+        static const double kSprayTime = 1.0;
+        const double now = static_cast<IBFTimer*>(CommonSingletonServer::m_iBFTimer)->getGameTime();
+        Information* const self = informationManager->getInformation(bot->getCurrentEquipment());
+        Information* const target = informationManager->getInformation(m_target);
+        SensedObject* const sensed = bot->getSensedObjectFromHandle(m_target);
+        if (!self || !target || !sensed)
+            return true;
+        const Vec3& a = self->getPosition();
+        const Vec3& b = target->getPosition();
+        const float distance = std::sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y) + (a.z - b.z) * (a.z - b.z));
+        if (sensed->m_fireRating != m_hits)
+        {
+            m_hits = sensed->m_fireRating;
+            m_lastHit = now;
+        }
+        if (now - m_lastEvaluate > 0.5)
+            m_since = now;
+        m_lastEvaluate = now;
+        if (distance < kMinRange)
+        {
+            m_tapping = false;
+            m_pulse = false;
+            return true;
+        }
+        if (!m_tapping)
+        {
+            const double quiet = now - (m_lastHit > m_since ? m_lastHit : m_since);
+            if (now - m_since < kSprayTime || quiet < kSprayTime)
+                return true;
+            m_tapping = true;
+            m_nextShot = now;
+        }
+        if (m_pulse)
+        {
+            m_pulse = false;
+            const float pause = 0.3f + distance * 0.003f;
+            m_nextShot = now + (pause > 0.9f ? 0.9f : pause);
+            return false;
+        }
+        if (now < m_nextShot)
+            return false;
+        m_pulse = true;
+        return true;
+    }
+
+    virtual BAPConditionType getConditionType() const { return BAPCTGeneric1Arg; }
+
+private:
+    unsigned int m_target;
+    int m_hits;
+    double m_lastHit;
+    double m_since;           // start of the current stretch of firing
+    double m_lastEvaluate;
+    double m_nextShot;
+    bool m_tapping;
+    bool m_pulse;             // the trigger was pressed on the last evaluate
+};
+
 // Every branch starts its parallel block with the sensing-agent override; bots whose own
 // object has type flag 0x200000 only override while not sprinting.
 BAPStatement* newOverrideSensingAgent(bool selfFlag200000, int patternId)
@@ -2036,6 +2113,10 @@ BAPStatement* BBPFireInfantery::createFirePlan(Bot* bot, BBPFireInfantery::Firin
             fireCondition->addCondition(checkPointer(new BAPConOkToThrowGrenade(target, aimOffsetVariable, aimVariable)));
         fireCondition->addCondition(precision);
     }
+    // [CHOSEN, not recovered] Tap fire (BAPConTapFire) for an automatic small arm of a bot on foot.
+    if (weaponInfo->getBurst() && selfFlag && !splash && guidance == 0 && !weaponInfo->getIsThrown() && !sniping
+        && weaponInfo->getExplosionRadius() == 0.0f)
+        fireCondition->addCondition(checkPointer(new BAPConTapFire(target)));
 
     // A fresh plan waits (1.5 + U[0,1)) x (1 - skill) s before the first shot (0x278C50).
     float delay = 0.0f;

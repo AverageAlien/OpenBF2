@@ -563,6 +563,48 @@ float calculateFireStrength(Bot* bot, Information* vehicle, int side, const floa
     return 0.0f;
 }
 
+// [CHOSEN, not recovered] Invasion: riders of a ground vehicle get out at their squad's target. Retail lets them
+// out there only when the area's vehicle order position lies outside the control point radius (it rarely does),
+// so a full transport parked on a point it was sent to defend and nobody got out. A seat counts as arrived when
+// the squad is on an attack or defend mission, the vehicle is within the control point radius + 25 m and slower
+// than 4 m/s. Passenger seats then get out: those without a weapon of their own, and the APCs' firing ports
+// (armed, but not an exposed soldier). Gunners on an exposed mount (tank, AA and jeep top MGs, all with
+// setHasExposedSoldier 1) and the driver stay with the vehicle. Avoided seats are worth nothing, so BBChange
+// takes the bot out and won't board them near the target either.
+bool invasionDismount(Information* vehicle, int side, Bot* bot)
+{
+    if (vehicle->isPrimary())
+        return false;
+    SAI* const sai = IAIMain::m_instance->getSAI(side);
+    if (!sai || !sai->isInvasionGame())
+        return false;
+    Information* const primary = infoOf(vehicle->getPrimaryObject(side));
+    if (!primary || primary->isOfType(ITSoldier) || primary->isOfType(ITAir) || primary->isOfType(ITHelicopter)
+        || !primary->getMobile())
+        return false;
+    if (vehicle->hasArmament() && !vehicle->getUnit()->mustBorrowArmament() && vehicle->getUnit()->hasExposedSoldier())
+        return false;
+    SquadMember* const member = bot->getSquadMember();
+    SquadCoordinator* const squad = member ? member->getSquad() : 0;
+    if (!squad || !squad->squadHasMission() || (squad->m_i40 != 0 && squad->m_i40 != 1))
+        return false;
+    AIStrategicArea* const area = squad->getSquadStrategicAreaAssignment();
+    if (!area || area->m_controlPointId == 0xFFFFFFFFu)
+        return false;
+    Vec3 centre;
+    centre.x = 0.0f;
+    centre.y = 0.0f;
+    centre.z = 0.0f;
+    float radius = 1.0f;
+    bool active = false;
+    static_cast<const IAIGame*>(CommonSingletonServer::m_iaiGame)
+        ->getControlPointInfo(area->m_controlPointId, centre, radius, active);
+    const Vec3& p = primary->getPosition();
+    const float reach = radius + 25.0f;
+    const float dx = p.x - centre.x, dy = p.y - centre.y, dz = p.z - centre.z;
+    return dx * dx + dy * dy + dz * dz < reach * reach && primary->getMobile()->getSpeedMagnitude() < 4.0f;
+}
+
 // ELF 0x2265E0. A ground vehicle (primary not a soldier, not flags 0x10 / 0x20) while the bot's
 // squad holds a takeable area whose order position is outside its control point radius: avoided
 // when the bot already uses it (same primary) within 25 m of the order position (unless the bot
@@ -570,6 +612,8 @@ float calculateFireStrength(Bot* bot, Information* vehicle, int side, const floa
 // or the squad is within 70 m of the control point.
 bool closeAndShouldAvoidVehiclesImpl(Information* vehicle, int side, Bot* bot)
 {
+    if (invasionDismount(vehicle, side, bot))
+        return true;
     bool avoid = false;
     Information* const primary = infoOf(vehicle->getPrimaryObject(side));
     if (primary->isOfType(ITSoldier) || primary->isOfType(ITAir) || primary->isOfType(ITHelicopter))

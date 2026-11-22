@@ -73,6 +73,8 @@ public:
     const Vec3& getGoal() const { return m_goal; }
     float getTargetDistance() const { return m_sentinel188; }
     bool getIsStuck() const { return m_flag192; }
+    // [CHOSEN, not recovered] see BotNavigation.cpp.
+    void refreshLastValidPosition(Information* info);
     unsigned int getLastValidIsland() const { return static_cast<unsigned int>(m_vehicleIsland); }
     // [INFERRED] reader of +0x58 (InfanteryControl / BBAvoid read begin/end inline).
     const std::vector<unsigned int>& getObstacles() const { return m_obstacles; }

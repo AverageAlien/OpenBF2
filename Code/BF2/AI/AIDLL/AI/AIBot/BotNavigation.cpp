@@ -257,6 +257,33 @@ bool BotNavigation::isActive()
     return now - m_double244 < 3.0;
 }
 
+// [CHOSEN, not recovered] A new search needs the bot within 10 m of its last valid navmesh position. For vehicles
+// that record was often stale (Karkand Invasion log: a tank 14-16 m past it while driving on the vehicle mesh, a
+// freshly entered Humvee still at 0/0/0), so the search failed, the driver counted as stuck and BotManager put the
+// crew out and barred the vehicle to bots for the rest of the round. When the record is missing or more than 10 m
+// away, the bot's current polygon is looked up directly and stored as its last valid position.
+void BotNavigation::refreshLastValidPosition(Information* info)
+{
+    IPIMobile* const mobile = info->getMobile();
+    const IPIMobile::ValidPos& valid = mobile->getLastValidPosition();
+    const Vec3& position = info->getPosition();
+    const float dx = position.x - valid.position.x, dy = position.y - valid.position.y, dz = position.z - valid.position.z;
+    if (valid.island != 0xFFFFFFFFu && valid.polygon != 0xFFFFFFFFu && dx * dx + dy * dy + dz * dz <= 100.0f)
+        return;
+    IAIPathfinding* const pathfinding = m_pathfinding ? m_pathfinding : IAIPathfinding::instance;
+    IPIMobile::ValidPos fresh;
+    fresh.polygon = 0xFFFFFFFFu;
+    fresh.island = 0xFFFFFFFFu;
+    const int map = mobile->getVehicleNumber();
+    if (!pathfinding->getPolygon(position, map, fresh.polygon, fresh.island, info->getUnit()->getEquipmentType()))
+        return;
+    fresh.position = position;
+    if (pathfinding->getTraceMapIndex() == map)
+        mobile->setLastValidInfantryPos(fresh);
+    else
+        mobile->setLastValidVehiclePos(fresh);
+}
+
 // ELF 0x192830 (123 bytes).
 void BotNavigation::updateOccationally()
 {
@@ -333,6 +360,7 @@ bool BotNavigation::initPathfinding(unsigned int island, unsigned int goalPolygo
     if (m_pathfinding == 0)
         m_pathfinding = IAIPathfinding::instance;
     IPIMobile* const mobile = info->getMobile();
+    refreshLastValidPosition(info);
     const IPIMobile::ValidPos& valid = mobile->getLastValidPosition();
 
     const bool sameGoal = std::fabs(to.x - m_goal.x) <= 1.1920929e-07f

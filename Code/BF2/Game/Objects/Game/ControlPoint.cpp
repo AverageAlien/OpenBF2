@@ -274,14 +274,6 @@ void ControlPoint::setSpawnEnabled(bool enabled)
             it->second->setTeam(spawnGroupTeamFor(it->second, m_team));
         }
     }
-    const std::map<unsigned int, IObject*>& spawners =
-        *static_cast<const std::map<unsigned int, IObject*>*>(gameLogic->getObjectSpawnerMap());
-    for (std::map<unsigned int, IObject*>::const_iterator it = spawners.begin(); it != spawners.end(); ++it)
-    {
-        IObjectSpawner* spawner = static_cast<IObjectSpawner*>(it->second->queryInterface(IID_IObjectSpawner));
-        if (spawner->getControlPointId() == m_template->controlPointId)
-            spawner->setActive(enabled);
-    }
 }
 
 // the template's byte at +0x1BC.

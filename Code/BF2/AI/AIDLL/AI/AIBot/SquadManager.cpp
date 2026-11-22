@@ -617,6 +617,39 @@ SquadCoordinator* SquadManager::getClosestAvailableSquad(AIStrategicArea* area, 
     Vec3 squadPosition = { 0.0f, 0.0f, 0.0f };
     std::vector<SquadCoordinator*>& coordinators = m_Squads[side - 1];
     strength = 0;
+    // [CHOSEN, not recovered] Invasion: a squad released from this very area within the last minute (a re-plan
+    // after a takeability change, the defence budget, a lower-ranked defence) is taken back first, so an area
+    // keeps the squads already holding or heading to it instead of swapping in the nearest other ones.
+    SAI* const sai = IAIMain::m_instance->getSAI(side);
+    if (sai && sai->isInvasionGame())
+    {
+        const double now = static_cast<const IBFTimer*>(CommonSingletonServer::m_iBFTimer)->getGameTime();
+        for (unsigned int i = 0; i < coordinators.size(); ++i)
+        {
+            SquadCoordinator* const squad = coordinators[i];
+            if (squad->m_lastAreaIndex != area->getIndex() || now - squad->m_lastAreaTime > 60.0
+                || !squad->isSquadAvailable() || squad->getNumberOfSquadMembers() <= 0)
+                continue;
+            if (squad->isSquadRequestedToArea(area->getIndex()) && !squad->getSquadLeader()->isBot())
+                continue;
+            const int value = squad->getStrategicStrength(static_cast<StrategicStrengthType>(!attack)) * 2;
+            if (value <= 0)
+                continue;
+            squad->getSquadPosition(squadPosition);
+            const float dx = position.x - squadPosition.x;
+            const float dy = position.y - squadPosition.y;
+            const float dz = position.z - squadPosition.z;
+            const float distance = dx * dx + dy * dy + dz * dz;
+            if (distance < best)
+            {
+                strength = value;
+                closest = squad;
+                best = distance;
+            }
+        }
+        if (closest)
+            return closest;
+    }
     for (unsigned int i = 0; i < coordinators.size(); ++i)
     {
         SquadCoordinator* const squad = coordinators[i];
@@ -705,6 +738,57 @@ bool SquadManager::friendliesCloseTo(Vec3 position, float radius, int side)
         }
     }
     return found;
+}
+
+// [CHOSEN, not recovered] OpenBF2 extension. The players are walked like friendliesCloseTo; an
+// enemy counts only when `side` holds information about its vehicle (soldier or vehicle).
+bool SquadManager::findEnemyCluster(const Vec3& centre, float radius, float clusterRadius, int side,
+                                    Vec3& aim)
+{
+    std::vector<int> ids;
+    static_cast<const IAIObjectEnvironment*>(CommonSingletonServer::m_iaiObjectEnvironment)->getWorldPlayerIds(ids);
+    IAIPlayerFactory* const factory = static_cast<IAIPlayerFactory*>(CommonSingletonServer::m_iaiPlayerFactory);
+    std::vector<Vec3> enemies;
+    for (std::vector<int>::iterator it = ids.begin(); it != ids.end(); ++it)
+    {
+        IAIPlayer* const player = factory->getPlayerFromId(*it);
+        if (!player || player->getSide() == side || player->getSide() <= 0)
+            continue;
+        IAIObject* const vehicle = player->getCurrentVehicle();
+        if (!vehicle)
+            continue;
+        Information* const info = informationManager->getInformation(vehicle->getInformation(side));
+        if (!info)
+            continue;
+        const Vec3& p = info->getPosition();
+        const float dx = p.x - centre.x;
+        const float dz = p.z - centre.z;
+        if (dx * dx + dz * dz < radius * radius)
+            enemies.push_back(p);
+    }
+    if (enemies.empty())
+        return false;
+
+    int best = -1;
+    unsigned int bestIndex = 0;
+    for (unsigned int i = 0; i < enemies.size(); ++i)
+    {
+        int neighbours = 0;
+        for (unsigned int j = 0; j < enemies.size(); ++j)
+        {
+            const float dx = enemies[j].x - enemies[i].x;
+            const float dz = enemies[j].z - enemies[i].z;
+            if (j != i && dx * dx + dz * dz < clusterRadius * clusterRadius)
+                ++neighbours;
+        }
+        if (neighbours > best)
+        {
+            best = neighbours;
+            bestIndex = i;
+        }
+    }
+    aim = enemies[bestIndex];
+    return true;
 }
 
 // ELF 0x1B09A0 (339 bytes). Marks the side's artillery warning with the time and impact point

@@ -6551,6 +6551,7 @@ class BF2_CC_NAME : public ::dice::hfe::ConsoleObjectBaseImpl
         {
             m_hasReturnValue = false;
             getActiveStrategicArea()->m_f396 = BF2_CC_ARG(float, 0);
+            getActiveStrategicArea()->m_searchRadiusSet = true;   // [CHOSEN, not recovered]
         }
     }
     virtual void setArgFromString(int index, const std::string& value)

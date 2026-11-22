@@ -319,6 +319,26 @@ bool BFGame::getControlPointInfo(unsigned int index, Vec3& position, float& radi
 }
 
 // [CHOSEN, not recovered] Per-team takeability for the AI, see IAIGame.
+std::string BFGame::getGameMode() const
+{
+    return settings->stringGet(std::string("GSGameMode"), std::string(""));
+}
+
+int BFGame::getControlPointGroup(unsigned int index) const
+{
+    typedef std::map<unsigned int, world::IObject*> ControlPointMap;
+
+    ControlPointMap* const points = gameLogic ? gameLogic->getControlPointMap() : 0;
+    if (!points)
+        return -1;
+    const ControlPointMap::iterator found = points->find(index);
+    if (found == points->end())
+        return -1;
+    world::ControlPointTemplate* const controlPointTemplate = const_cast<world::ControlPointTemplate*>(
+        static_cast<const world::ControlPointTemplate*>(found->second->getTemplate()));
+    return controlPointTemplate->getGroupId();
+}
+
 bool BFGame::isControlPointTakeableBy(unsigned int index, int team) const
 {
     typedef std::map<unsigned int, world::IObject*> ControlPointMap;
@@ -403,7 +423,7 @@ int templateSeats(const world::IObjectTemplate* objectTemplate)
 // sensed, so at round start it knows no vehicles at all; this reads the world directly. A spawner
 // about to spawn (at round start the bots choose before any vehicle exists) counts its template's
 // seats.
-int BFGame::getFreeVehicleSeats(const Vec3& position, float radius) const
+int BFGame::getFreeVehicleSeats(const Vec3& position, float radius, int controlPointId) const
 {
     typedef std::map<unsigned int, world::IObject*> SpawnerMap;
 
@@ -417,12 +437,15 @@ int BFGame::getFreeVehicleSeats(const Vec3& position, float radius) const
             static_cast<world::IObjectSpawner*>(it->second->queryInterface(world::IID_IObjectSpawner)));
         if (!spawner)
             continue;
+        // A spawner of the given control point counts its vehicles near itself, however far from `position` it stands.
+        const bool own = controlPointId != -1 && static_cast<int>(spawner->getControlPointId()) == controlPointId;
+        const Vec3& centre = own ? it->second->getAbsolutePosition() : position;
         if (const world::IObjectTemplate* const pending = spawner->getImmediateSpawnTemplate())
         {
             const Vec3& at = it->second->getAbsolutePosition();
             const float dx = at.x - position.x;
             const float dz = at.z - position.z;
-            if (dx * dx + dz * dz <= radius * radius)
+            if (own || dx * dx + dz * dz <= radius * radius)
                 seats += templateSeats(pending);
         }
         const std::vector<int>& ids = spawner->getSpawnedObjectIds();
@@ -437,8 +460,8 @@ int BFGame::getFreeVehicleSeats(const Vec3& position, float radius) const
             if (armor && static_cast<world::IArmorGLComp*>(armor)->isDestroyed())
                 continue;
             const Vec3& at = object->getAbsolutePosition();
-            const float dx = at.x - position.x;
-            const float dz = at.z - position.z;
+            const float dx = at.x - centre.x;
+            const float dz = at.z - centre.z;
             if (dx * dx + dz * dz > radius * radius)
                 continue;
             IAIObject* const vehicle = static_cast<IAIObject*>(world::object_detail::LayoutAccess::aiObject(object));

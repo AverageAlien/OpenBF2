@@ -234,6 +234,9 @@ public:
     // [CHOSEN, not recovered] Was tail padding. Per side, the takeability update last saw:
     // bit 0 = the side may capture the area, bit 1 = the enemy may; 0xFF until the first update.
     /* +430 */ unsigned char m_takeableSeen[2];
+    // [CHOSEN, not recovered] AIStrategicArea.vehicleSearchRadius was given: postLoadInit keeps that value instead of
+    // the one its control point's radius gives (the level's StrategicAreas.ai runs before postLoadInit).
+    /* +432 */ bool m_searchRadiusSet;
 };
 
 } // namespace ai

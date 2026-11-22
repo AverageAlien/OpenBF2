@@ -81,6 +81,12 @@ public:
     SquadCoordinator* getClosestAvailableSquad(AIStrategicArea* area, const Vec3& position, int side,
                                                bool attack, int& strength);   // ELF symbol; requested from ai-bot
     bool  friendliesCloseTo(Vec3 position, float radius, int side); // ELF 0x1B07F0
+    // [CHOSEN, not recovered] OpenBF2 extension (Invasion commander artillery): among the enemies
+    // of `side` that side knows of within `radius` (XZ) of `centre`, the position of the one with
+    // the most other such enemies within `clusterRadius`; false when there is none.
+    bool  findEnemyCluster(const Vec3& centre, float radius, float clusterRadius, int side, Vec3& aim);
+    // [CHOSEN, not recovered] OpenBF2 extension (Invasion squad split): the squads of `side`.
+    const std::vector<SquadCoordinator*>& getSquads(int side) const { return m_Squads[side - 1]; }
     void  removeAllSquads();                                       // ELF 0x1AE000
     void  destroySquadMember(int playerId, int side);             // ELF 0x1B0010
     void  removeSquadMember(int playerId, int side);              // ELF 0x1AFF20

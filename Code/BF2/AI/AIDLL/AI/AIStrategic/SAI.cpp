@@ -4,7 +4,10 @@
 
 #include "SAI.h"
 
+#include <algorithm>
 #include <cmath>
+#include <cctype>
+#include <cstring>
 // <iostream>'s ios_base::Init object is this TU's static initialisation and teardown (ELF 0x330020,
 // __tcf_0 0x330080, _GLOBAL__I 0x3300B0). The image has four more such triads for the TUs this file
 // merges [INFERRED]: CommanderInterface (0x323420 / 0x323480 / 0x3234B0), ISAI and
@@ -358,6 +361,10 @@ SAI::SAI(int side, int, int, Vec2, Vec2)
     , m_stateD(0)
     , m_int1F4(0)
     , m_commander(0)
+    , m_invasionDefenders(0)
+    , m_invasionDesperateTickets(0)
+    , m_invasionCheckTime(0.0)
+    , m_invasionAttackTime(0.0)
 {
     m_commander = checkPointer(new CommanderInterface());
 
@@ -1034,12 +1041,17 @@ void SAI::checkCommanderUseArtillery()
     bool singleSlot = false;
     if (CommonSingletonServer::m_iaiSettings)
         singleSlot = static_cast<IAISettings*>(CommonSingletonServer::m_iaiSettings)->getMaxNBots() - 1 <= 0;
-    if (m_flag1D1 || singleSlot)
-        return;
     const double now = static_cast<IBFTimer*>(CommonSingletonServer::m_iBFTimer)->getGameTime();
     IBFCommander* const commander = static_cast<IBFCommander*>(CommonSingletonServer::m_iBFCommander);
+    if (m_flag1D1 || singleSlot)
+        return;
     if (!commander->gameHasArtillery(m_side) || !commander->anyArtilleryPiecesLeft(m_side))
         return;
+    if (isInvasionGame())
+    {
+        updateInvasionArtillery(now, commander);
+        return;
+    }
     if (!(now > m_time68) || !(now > m_time88))
         return;
     m_time88 = now + 10.0f;
@@ -1061,9 +1073,13 @@ void SAI::checkCommanderUseArtillery()
             const float safe = squads->getArtillerySafeDistance();
             if (!squads->friendliesCloseTo(target, safe, m_side))
             {
-                m_time68 = now + 60.0f;
-                commander->fireArtillery(m_side, -1, position);
-                squads->incomingArtillery(target, m_side);
+                // [CHOSEN, not recovered] OpenBF2: fireArtilleryAsAI instead of retail's
+                // fireArtillery request, which the server refused (see IBFCommander).
+                if (commander->fireArtilleryAsAI(m_side, position))
+                {
+                    m_time68 = now + 60.0f;
+                    squads->incomingArtillery(target, m_side);
+                }
                 return;
             }
         }
@@ -1075,9 +1091,272 @@ void SAI::checkCommanderUseArtillery()
     target.x = position.x;
     target.y = terrain->getTerrainAltitude(position.x, position.y);
     target.z = position.y;
+    if (!commander->fireArtilleryAsAI(m_side, position))   // [CHOSEN, not recovered] as above
+        return;
     m_time68 = now + 60.0f;
-    commander->fireArtillery(m_side, -1, position);
     squads->incomingArtillery(target, m_side);
+}
+
+namespace {
+
+double invasionRandom()
+{
+    return static_cast<double>(AIRandom::m_instance->next()) * 2.3283064e-10;
+}
+
+// A uniform point of the disc of `radius` around `centre`, in XZ.
+void invasionScatter(Vec3& centre, float radius)
+{
+    const double distance = std::sqrt(invasionRandom()) * radius;
+    const double angle = invasionRandom() * 6.283185307179586;
+    centre.x = static_cast<float>(centre.x + std::cos(angle) * distance);
+    centre.z = static_cast<float>(centre.z + std::sin(angle) * distance);
+}
+
+} // namespace
+
+bool SAI::isInvasionGame() const
+{
+    const std::string mode = static_cast<IAIGame*>(CommonSingletonServer::m_iaiGame)->getGameMode();
+    const char* const invasion = "gpm_invasion";
+    if (mode.size() != std::strlen(invasion))
+        return false;
+    for (unsigned int i = 0; i < mode.size(); ++i)
+        if (std::tolower(static_cast<unsigned char>(mode[i])) != invasion[i])
+            return false;
+    return true;
+}
+
+// [CHOSEN, not recovered] OpenBF2 extension: the AI commander's artillery in the Invasion mode
+// (gpm_invasion), in place of the retail rule. Objectives are the control points with a group
+// (supplyGroupId > 0); the open group is the lowest group that some side may capture now; the
+// defenders own the later groups (or, with no later group left, owned the open one when first
+// seen).
+// Attackers: an open point they do not hold, attacked by their squads with enemies on it and not
+// taken within a random 150-450 s (counted from when it opened, from losing it, or from the last
+// strike on it), is a candidate; every 10 s there is a 60% chance to shell one, picked by enemy
+// strength. Below a ticket threshold (20-70) the time limit is dropped; such a desperate strike
+// rerolls the threshold to a different value.
+// Defenders: when an open point they held goes neutral, one roll decides whether to answer it
+// (70/55/40% for 1/2/3+ points in the group, x1.3 up to 90% in the last group); the strike follows
+// 1-5 s later, or once the artillery is reloaded, while the point is still neutral and the enemy
+// is at least as strong there; then it fires even with friendlies near the aim point.
+void SAI::updateInvasionArtillery(double now, IBFCommander* commander)
+{
+    if (!(now > m_invasionCheckTime))
+        return;
+    m_invasionCheckTime = now + 0.5;
+
+    IAIGame* const game = static_cast<IAIGame*>(CommonSingletonServer::m_iaiGame);
+    const std::vector<AIStrategicObject*>& objects =
+        AIStrategicObjectManager::getInstance()->getStrategicObjects();
+
+    int openGroup = -1;
+    for (std::vector<AIStrategicObject*>::const_iterator it = objects.begin(); it != objects.end(); ++it)
+    {
+        if (!*it || !(*it)->hasObjectTypeFlag(AIStrategicObject::ControlPoint))
+            continue;
+        const unsigned int id = static_cast<AIStrategicArea*>(*it)->m_controlPointId;
+        const int group = game->getControlPointGroup(id);
+        if (group > 0 && (game->isControlPointTakeableBy(id, 1) || game->isControlPointTakeableBy(id, 2))
+            && (openGroup < 0 || group < openGroup))
+            openGroup = group;
+    }
+    if (openGroup < 0)
+        return;
+
+    std::vector<AIStrategicArea*> open;
+    bool laterGroups = false;
+    int laterOwner = 0;
+    for (std::vector<AIStrategicObject*>::const_iterator it = objects.begin(); it != objects.end(); ++it)
+    {
+        if (!*it || !(*it)->hasObjectTypeFlag(AIStrategicObject::ControlPoint))
+            continue;
+        AIStrategicArea* const area = static_cast<AIStrategicArea*>(*it);
+        const int group = game->getControlPointGroup(area->m_controlPointId);
+        if (group == openGroup)
+        {
+            open.push_back(area);
+        }
+        else if (group > openGroup)
+        {
+            laterGroups = true;
+            const int owner = game->getOwnerOfControlPoint(area->m_controlPointId);
+            if (owner == 1 || owner == 2)
+                laterOwner = owner;
+        }
+    }
+    if (laterOwner)
+    {
+        m_invasionDefenders = laterOwner;
+    }
+    else if (!m_invasionDefenders)
+    {
+        int owner = 0;
+        for (unsigned int i = 0; i < open.size(); ++i)
+        {
+            const int pointOwner = game->getOwnerOfControlPoint(open[i]->m_controlPointId);
+            if (i == 0)
+                owner = pointOwner;
+            else if (pointOwner != owner)
+                owner = 0;
+        }
+        if (owner == 1 || owner == 2)
+            m_invasionDefenders = owner;
+    }
+    if (!m_invasionDefenders)
+        return;
+
+    if (m_side != m_invasionDefenders)
+    {
+        // Desperate: with the attackers' tickets below a threshold rolled once per round (20-70),
+        // the stall clock no longer has to run out.
+        if (m_invasionDesperateTickets <= 0)
+            m_invasionDesperateTickets = 20 + static_cast<int>(invasionRandom() * 51.0);
+        const int tickets = game->getTickets(m_side);
+        const bool desperate = tickets < m_invasionDesperateTickets;
+        std::vector<AIStrategicArea*> candidates;
+        float total = 0.0f;
+        for (unsigned int i = 0; i < open.size(); ++i)
+        {
+            AIStrategicArea* const area = open[i];
+            const unsigned int id = area->m_controlPointId;
+            std::map<unsigned int, InvasionPoint>::iterator found = m_invasionPoints.find(id);
+            if (found == m_invasionPoints.end())
+            {
+                const InvasionPoint fresh = { -1.0, 0.0, 0, false, 0.0, false };
+                found = m_invasionPoints.insert(std::make_pair(id, fresh)).first;
+            }
+            InvasionPoint& point = found->second;
+            if (game->getOwnerOfControlPoint(id) == m_side)
+            {
+                point.stallSince = -1.0;
+                continue;
+            }
+            if (point.stallSince < 0.0)
+            {
+                point.stallSince = now;
+                point.stallLimit = 150.0 + 300.0 * invasionRandom();
+                point.allowNearFriendlies = invasionRandom() < 0.2;
+            }
+            if (!desperate && now - point.stallSince < point.stallLimit)
+                continue;
+            const float enemy = area->m_enemyBattleStrength[m_side - 1];
+            if (area->m_assignedSquadStrength[m_side - 1] <= 0 || !(enemy > 0.0f))
+                continue;
+            candidates.push_back(area);
+            total += enemy;
+        }
+        if (candidates.empty() || !(now > m_invasionAttackTime))
+            return;
+        m_invasionAttackTime = now + 10.0;
+        if (!(invasionRandom() < 0.6))
+            return;
+        float pick = static_cast<float>(invasionRandom()) * total;
+        AIStrategicArea* target = candidates.back();
+        for (unsigned int i = 0; i < candidates.size(); ++i)
+        {
+            pick -= candidates[i]->m_enemyBattleStrength[m_side - 1];
+            if (pick < 0.0f)
+            {
+                target = candidates[i];
+                break;
+            }
+        }
+        InvasionPoint& point = m_invasionPoints[target->m_controlPointId];
+        const bool desperateStrike = desperate && now - point.stallSince < point.stallLimit;
+        if (invasionStrike(target, point.allowNearFriendlies, commander))
+        {
+            point.stallSince = now;
+            point.stallLimit = 150.0 + 300.0 * invasionRandom();
+            point.allowNearFriendlies = invasionRandom() < 0.2;
+            if (desperateStrike)
+            {
+                // A desperate strike rerolls the threshold to a different value.
+                const int previous = m_invasionDesperateTickets;
+                while (m_invasionDesperateTickets == previous)
+                    m_invasionDesperateTickets = 20 + static_cast<int>(invasionRandom() * 51.0);
+            }
+        }
+        return;
+    }
+
+    float chance = open.size() <= 1 ? 0.7f : open.size() == 2 ? 0.55f : 0.4f;
+    if (!laterGroups)
+        chance = std::min(chance * 1.3f, 0.9f);
+    for (unsigned int i = 0; i < open.size(); ++i)
+    {
+        AIStrategicArea* const area = open[i];
+        const unsigned int id = area->m_controlPointId;
+        std::map<unsigned int, InvasionPoint>::iterator found = m_invasionPoints.find(id);
+        if (found == m_invasionPoints.end())
+        {
+            const InvasionPoint fresh = { -1.0, 0.0, game->getOwnerOfControlPoint(id), false, 0.0, false };
+            found = m_invasionPoints.insert(std::make_pair(id, fresh)).first;
+        }
+        InvasionPoint& point = found->second;
+        const int owner = game->getOwnerOfControlPoint(id);
+        if (owner != point.lastOwner)
+        {
+            point.strike = owner == 0 && point.lastOwner == m_side && invasionRandom() < chance;
+            point.strikeAt = now + 1.0 + 4.0 * invasionRandom();
+            point.allowNearFriendlies = invasionRandom() < 0.2;
+            point.lastOwner = owner;
+        }
+        if (owner != 0)
+            point.strike = false;
+        if (!point.strike || now < point.strikeAt)
+            continue;
+        const float enemy = area->m_enemyBattleStrength[m_side - 1];
+        if (!(enemy > 0.0f) || enemy < area->m_friendlyBattleStrength[m_side - 1])
+            continue;
+        if (!commander->isArtilleryReady(m_side))
+            continue;
+        // Friendlies near the aim point never hold a defender strike: the enemy is at least even.
+        if (invasionStrike(area, true, commander))
+            point.strike = false;
+        return;
+    }
+}
+
+// Aims at the densest knot of known enemies within 40 m of the flag (12 m neighbourhood, a bit
+// inside the shells' 15 m blast) plus up to 5 m of scatter, or anywhere within 15 m of the flag
+// when none is known. With friendlies within the safe distance of the aim point the strike needs
+// allowNearFriendlies and no friendly advantage at the point. A fired strike warns the side's bots.
+bool SAI::invasionStrike(AIStrategicArea* area, bool allowNearFriendlies, IBFCommander* commander)
+{
+    IAIGame* const game = static_cast<IAIGame*>(CommonSingletonServer::m_iaiGame);
+    SquadManager* const squads = SquadManager::m_instance;
+    Vec3 flag;
+    flag.x = 0.0f;
+    flag.y = 0.0f;
+    flag.z = 0.0f;
+    float radius = 0.0f;
+    bool active = false;
+    if (!game->getControlPointInfo(area->m_controlPointId, flag, radius, active))
+        return false;
+
+    Vec3 aim = flag;
+    const bool cluster = squads->findEnemyCluster(flag, 40.0f, 12.0f, m_side, aim);
+    if (cluster)
+        invasionScatter(aim, 5.0f);
+    else
+        invasionScatter(aim, 15.0f);
+    aim.y = static_cast<IAITerrain*>(CommonSingletonServer::m_iaiTerrain)->getTerrainAltitude(aim.x, aim.z);
+
+    const bool friendlies = squads->friendliesCloseTo(aim, squads->getArtillerySafeDistance(), m_side);
+    if (friendlies
+        && (!allowNearFriendlies
+            || area->m_friendlyBattleStrength[m_side - 1] > area->m_enemyBattleStrength[m_side - 1]))
+        return false;
+
+    Vec2 position;
+    position.x = aim.x;
+    position.y = aim.z;
+    if (!commander->fireArtilleryAsAI(m_side, position))
+        return false;
+    squads->incomingArtillery(aim, m_side);
+    return true;
 }
 
 // ELF 0x327210. The first strategic object that is a control point (hasObjectTypeFlag(16)),
@@ -2293,6 +2572,21 @@ void SAI::distributeResources()
         attackShare = 0.0f;
         defenceShare = 1.0f;
     }
+    else if (ownAllTakeableCps(m_side))
+    {
+        // [CHOSEN, not recovered] Nothing this side may capture: no attack orders, whatever the strategy's
+        // aggression (the attack targets would all be worth 0). Lets a defending side's strategy keep some
+        // aggression for retaking points without sending squads at points nobody can capture.
+        attackShare = 0.0f;
+        defenceShare = 1.0f;
+    }
+    else if (!haveAnyOwnedAndTakeableCps(m_side))
+    {
+        // [CHOSEN, not recovered] The reverse: nothing this side owns can be taken by the enemy, so
+        // no defence orders (a defender would only idle at a point nobody can capture).
+        attackShare = 1.0f;
+        defenceShare = 0.0f;
+    }
     else
     {
         attackShare = m_activeStrategy->strategy->getAggression();
@@ -2478,6 +2772,7 @@ void SAI::categoryDistributeDefence(const std::vector<AIStrategicObject*>& objec
         return;
     }
 
+    const int budget = isInvasionGame() ? invasionDefenceSquadBudget() : -1;
     unsigned int count = 0;
     std::priority_queue<AIStrategicObject*, std::vector<AIStrategicObject*>, sobOrdering> queue((sobOrdering(m_side)));
     for (it = squares.begin(); it != squares.end(); ++it)
@@ -2491,13 +2786,60 @@ void SAI::categoryDistributeDefence(const std::vector<AIStrategicObject*>& objec
         if (!(m_activeStrategy->strategy->getNumberOfDefences() > count))
             break;
     }
-    while (!queue.empty())
+    int fed = 0;
+    while (!queue.empty() && (budget < 0 || fed < budget))
     {
         AIStrategicObject* const object = queue.top();
         queue.pop();
         if (object->collectAdditionalSquadResources(1, m_side, this))
+        {
+            ++fed;
             queue.push(object);
+        }
     }
+}
+
+// [CHOSEN, not recovered] Invasion: how many more squads defence may take. As shipped, defence runs before the
+// attack and feeds its areas every idle squad, whatever the strategy's aggression (which only splits single bots),
+// so one owned point could hold eight squads while one attacked. Here defence keeps (1 - aggression) of the side's
+// squads (all of them while nothing is left to capture, at least one), and squads defending beyond that are
+// released for the attack that follows, the ones farthest from their area first (those holding it stay).
+int SAI::invasionDefenceSquadBudget()
+{
+    const std::vector<SquadCoordinator*>& squads = SquadManager::m_instance->getSquads(m_side);
+    std::vector<SquadCoordinator*> defending;
+    int total = 0;
+    for (std::size_t i = 0; i < squads.size(); ++i)
+    {
+        SquadCoordinator* const squad = squads[i];
+        if (squad->getNumberOfSquadMembers() <= 0)
+            continue;
+        ++total;
+        AIStrategicArea* const area = squad->getSquadStrategicAreaAssignment();
+        // A human-led squad keeps its order; it still counts towards the side's squads.
+        if (area && !area->isAttack(m_side) && squad->getSquadLeader()->isBot())
+            defending.push_back(squad);
+    }
+    const float share = ownAllTakeableCps(m_side) ? 1.0f : 1.0f - m_activeStrategy->strategy->getAggression();
+    const int wanted = std::max(1, static_cast<int>(total * share + 0.5f));
+    if (static_cast<int>(defending.size()) > wanted)
+    {
+        std::vector<std::pair<float, SquadCoordinator*> > byDistance;
+        for (std::size_t i = 0; i < defending.size(); ++i)
+        {
+            Vec3 position;
+            defending[i]->getSquadPosition(position);
+            const Vec2& target = defending[i]->getSquadStrategicAreaAssignment()->getPosition(m_side);
+            const float dx = position.x - target.x, dz = position.z - target.y;
+            byDistance.push_back(std::make_pair(dx * dx + dz * dz, defending[i]));
+        }
+        std::sort(byDistance.begin(), byDistance.end(),
+                  [](const std::pair<float, SquadCoordinator*>& a, const std::pair<float, SquadCoordinator*>& b)
+                  { return a.first > b.first; });
+        for (std::size_t i = 0; static_cast<int>(defending.size() - i) > wanted; ++i)
+            byDistance[i].second->unAssignSquad();
+    }
+    return std::max(0, wanted - static_cast<int>(defending.size()));
 }
 
 // ELF 0x32B9B0: per category (or over all objects when there are none), unless the active

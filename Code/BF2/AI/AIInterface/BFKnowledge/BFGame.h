@@ -64,8 +64,15 @@ public:
     virtual float getSpawnGroupFrontDistance(int groupId) const = 0;
     // [CHOSEN, not recovered] OpenBF2 extension: the free seats (unoccupied unit positions) of the
     // live, undestroyed mobile vehicles kept by object spawners whose XZ distance from `position` is
-    // at most `radius`. Read from the world, not from a side's sensed knowledge.
-    virtual int getFreeVehicleSeats(const Vec3& position, float radius) const = 0;
+    // at most `radius`. Read from the world, not from a side's sensed knowledge. The spawners of
+    // control point `controlPointId` (-1 for none) count wherever they stand: their vehicles while
+    // within `radius` of the spawner.
+    virtual int getFreeVehicleSeats(const Vec3& position, float radius, int controlPointId) const = 0;
+    // [CHOSEN, not recovered] OpenBF2 extension: the running game mode's name (GSGameMode), and a
+    // control point's group (its template's supplyGroupId; -1 for an unknown ID), which the
+    // Invasion mode uses to order the objectives.
+    virtual std::string getGameMode() const = 0;
+    virtual int getControlPointGroup(unsigned int index) const = 0;
 };
 
 class BFGame : public IAIGame
@@ -102,7 +109,9 @@ public:
     virtual void enemySpottedByAI(world::IPlayer* player, world::IObject* object) const;
     virtual bool isControlPointTakeableBy(unsigned int index, int team) const;
     virtual float getSpawnGroupFrontDistance(int groupId) const;
-    virtual int getFreeVehicleSeats(const Vec3& position, float radius) const;
+    virtual int getFreeVehicleSeats(const Vec3& position, float radius, int controlPointId) const;
+    virtual std::string getGameMode() const;
+    virtual int getControlPointGroup(unsigned int index) const;
 
 private:
     /* +0x00 */ // vptr

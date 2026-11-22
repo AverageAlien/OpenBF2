@@ -129,6 +129,10 @@ int BAPAMoveToObjectFinding::update(Vec2& point, bool& reached, bool& done, floa
         return 0;
     }
     IPIMobile* mobile = self->getMobile();
+    // [CHOSEN, not recovered] A missing or stale last valid position is looked up afresh first (see
+    // BotNavigation::refreshLastValidPosition); without it a freshly entered vehicle counted as stuck here and
+    // BotManager put its crew out and barred it to bots.
+    bot->getBotNavigation()->refreshLastValidPosition(self);
     const IPIMobile::ValidPos& own = mobile->getLastValidPosition(mobile->getVehicleNumber());
     Information* primary = bapinline::info(target->getPrimaryObject(self->getSide()));
     if (!primary || !primary->getMobile()) {
