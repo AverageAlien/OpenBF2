@@ -11,6 +11,9 @@
 #include <string>
 
 #include "Team.h"                                    // getTeamId, for the CommanderEvent
+#include "../../../AI/AIInterface/AIInstance.h"      // the AI notification of both arms
+#include "../../../AI/AIInterface/IAIEventCourier.h"
+#include "../../../AI/AIInterface/SingletonServer.h"
 #include "Squad.h"                                   // removeFromSquad in the assignment arm
 #include "../../IGame.h"                             // game - sendGameEventToAllConnected (+0x94)
 #include "../../IGameLogic.h"                        // gameLogic - isServer / spawnObject
@@ -122,8 +125,10 @@ void CommanderManager::applyForCommander(int playerId, Team* team)
 // Stand-down clears the player's flag before the stored id and always broadcasts.
 // Assignment removes squad membership and notifies applicants before clearing them.
 // Python receives (team truth value, old player, new player).
-// [UNRESOLVED] The optional two-global notification branch is omitted while its
-// first global is unavailable; recover it before publishing those services.
+// With an initialized AI, its event courier hears of both arms (PE 0x4E8743 / 0x4E8927), which
+// tells that side's strategic AI whether a player commands it. [INFERRED] The first argument,
+// from an unidentified call on this manager (PE 0x4E50B0), is unread by the AI; the commander's
+// player id is passed.
 bool CommanderManager::setCommander(int playerId, Team* team)
 {
     return setCommander(-1, team, playerId);
@@ -147,7 +152,9 @@ bool CommanderManager::setCommander(int, Team* team, int playerId)
             new CommanderEvent(static_cast<CommanderEvent::CommanderEventTypes>(3),
                                team->getTeamId(), -1));                               // IGame +0x94
 
-        // [UNRESOLVED] the two-global AI notification - omitted; null-global retail branch.
+        if (ai::g_aiInstance && ai::aiInstance()->isInitialized())
+            ai::BFSingletonServer::m_iaiEventCourier->event_resignAsCommander(
+                old ? old->getId() : -1, team->getTeamId());              // courier +0x80
 
         if (old)
         {
@@ -195,7 +202,9 @@ bool CommanderManager::setCommander(int, Team* team, int playerId)
     game->sendGameEventToAllConnected(
         new PostRemoteEvent(ECHud, 33, true, &payload, 8, 0.0f));
 
-    // [UNRESOLVED] the two-global AI notification - omitted; null-global retail branch.
+    if (ai::g_aiInstance && ai::aiInstance()->isInitialized())
+        ai::BFSingletonServer::m_iaiEventCourier->event_acceptedCommander(
+            playerId, team->getTeamId());                                 // courier +0x7C
 
     for (std::set<int>::iterator it = m_applicants.begin(); it != m_applicants.end(); ++it)
     {

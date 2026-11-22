@@ -17,6 +17,7 @@
 #include "../Game/GameLogic/SquadManager/ISquadManager.h"  // getSquadInfo +28, getSquadLeader +3C
 #include "../Game/Objects/IObject.h"                    // getArmorComponent (+3C)
 #include "../Game/Objects/IPlayer.h"
+#include "../Game/Objects/Game/ArtilleryHandler.h"      // the team's artillery reload
 #include "../Game/Objects/GameLogicComp/IArmorGLComp.h" // hit points +3C / +84
 #include "../Scene/Object/PlayerManager.h"
 #include <algorithm>
@@ -27,9 +28,29 @@
 namespace dice { namespace hfe {
 extern IBase* squadManager;                             // ds:99EF84
 namespace hud {
+namespace {
+// [CHOSEN, not recovered] OpenBF2: retail counts a fixed 60 s. The countdown now follows the
+// local team's server-side artillery reload (ArtilleryHandler::requestFire's interval), keeping
+// the given value when that is unknown here.
+float artilleryReloadSeconds(float fallback)
+{
+    world::IPlayer* const player = world::playerManager->getLocalHumanPlayer();
+    if (!player || !world::artilleryManager)
+        return fallback;
+    const int team = player->getTeam();
+    if (team != 1 && team != 2)
+        return fallback;
+    world::ArtilleryHandler* const handler =
+        world::artilleryManager->getHandler(static_cast<unsigned char>(team));
+    const float seconds = handler ? handler->getReloadSeconds() : 0.0f;
+    return seconds > 0.0f ? seconds : fallback;
+}
+}
+
 void HudCommander::setArtilleryReloading(bool active)
 {
     if (active) {
+        m_artilleryDuration = artilleryReloadSeconds(m_artilleryDuration);
         const double now = WorldPref::getWorldTime();
         const float duration = m_artilleryDuration;
         m_artilleryReloading = true;
@@ -181,6 +202,7 @@ void HudCommander::handleHudEvent(unsigned int id, EventNode*, void* data)
 {
     world::IPlayer* player = world::playerManager->getLocalHumanPlayer();
     if (id == 8) {
+        m_artilleryDuration = artilleryReloadSeconds(m_artilleryDuration);
         m_artilleryDeadline = static_cast<float>(WorldPref::getWorldTime() + m_artilleryDuration);
         m_artilleryRemaining = m_artilleryDuration;
         m_artilleryReloading = true;
@@ -512,6 +534,7 @@ void HudCommander::refreshArtillery()
             m_artilleryFraction = 0;
         }
     } else {
+        m_artilleryDuration = artilleryReloadSeconds(m_artilleryDuration);
         m_artilleryDeadline = static_cast<float>(WorldPref::getWorldTime() + m_artilleryDuration);
         m_artilleryRemaining = m_artilleryDuration;
         m_artilleryReloading = true;

@@ -76,8 +76,8 @@ static void listNodeCases()
         CHECK(std::strcmp(node.m_name, "Menu") == 0);
         CHECK(node.m_positionX == 12.5f && node.m_positionY == -7.5f);
         CHECK(node.m_count == 9);
-        CHECK(node.m_field034 == 1.0f);          // the one non-zero default
-        CHECK(node.m_field018 == 0 && node.m_field030 == 0);
+        CHECK(node.m_directionY == 1.0f);        // the one non-zero default
+        CHECK(node.m_field018 == 0 && node.m_directionX == 0.0f);
         CHECK(node.m_positionBinding0 == nullptr && node.m_positionBinding1 == nullptr);
         CHECK(node.m_offsetX == 0 && node.m_offsetY == 0);
         CHECK(node.m_children.empty());

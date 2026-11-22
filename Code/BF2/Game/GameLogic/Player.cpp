@@ -73,6 +73,10 @@
 #include "../Objects/GameLogicComp/IArmorGLComp.h"   // getDefaultMaterial
 #include "../../Scene/Object/ObjectTypes/Game/IPlayerControlObject.h"
 #include "ActionBuffer.h"                         // sizeof 0x2C - ditto
+#if !DEDICATED
+#include "../../Menu/BF2HudManager.h"              // update()'s commander-asset arm
+namespace dice { namespace hfe { extern hud::BF2HudManager* hudManager; } }   // ds:0xA10890
+#endif
 
 namespace dice {
 namespace hfe {
@@ -1459,11 +1463,74 @@ bool Player::getOverheadCameraTopDownView() const
 // . IPlayer +0xC0. forwards first, through its OWN vtable: the top-down write
 // always mirrors into setCommanderCamOverhead (+0xC8, virtual - `call [edx+0C8h]`, preserved as a
 // virtual call), and only then guard-stores its own byte.
+#if !DEDICATED
+namespace {
+
+// The client's overhead-view state (PE keeps it in its client Player at +0x90..+0xB0); one local
+// player exists, so file statics keep the ELF-matched Player layout.
+Vec4 g_overheadSavedFog = { 0.0f, 0.0f, 0.0f, 0.0f };
+int g_overheadSavedViewDistance = 500;
+
+// PostProductionFrameWork's fog vector (+0x24), the raw call GameLogic::setFogStartEndAndBase
+// makes; GSFogStartEndAndBase itself is left alone, as in retail.
+void setPostProductionFog(const Vec4& fog)
+{
+    IBase* const framework = classManager->getSingleton("PostProductionFrameWork");
+    if (!framework)
+        return;
+    typedef void (__fastcall* SetStateVec4Fn)(void* self, void* edx, const Vec4* value);
+    void** const vtbl = *reinterpret_cast<void***>(framework);
+    reinterpret_cast<SetStateVec4Fn>(vtbl[0x24 / sizeof(void*)])(framework, 0, &fog);
+}
+
+} // anonymous namespace
+#endif
+
+// The client image (PE 0x4FC630) also switches the local player's view when the top-down view
+// changes: entering takes the commander camera's FOV, clears the fog (start 0, end 10000) and
+// sets view distance 500; leaving restores them.
+// [FRONTIER] Retail also sets five renderer values on enter and restores them on leave (renderer
+// +0x7C/+0x84/+0x8C/+0x94/+0x9C: object view distance 500, road values 10 and -1e-6, lights
+// off, low-quality terrain). The rebuilt renderer's slots are still frontiers, so they are
+// skipped. [RETIRE-WHEN: renderer-overhead-slots] Recover RendDX9 slots +0x78..+0x9C, then call them here.
 void Player::setOverheadCameraTopDownView(bool topDown)
 {
     setCommanderCamOverhead(topDown);                                // virtual +0xC8
-    if (topDown != (m_overheadCameraTopDownView != 0))               // the +0x72 guard-store
-        m_overheadCameraTopDownView = topDown;
+    if (topDown == (m_overheadCameraTopDownView != 0))
+        return;
+
+#if !DEDICATED
+    if (!isDedicated() && world::playerManager->getLocalHumanPlayer() == this)
+    {
+        if (topDown)
+        {
+            float fov = 0.0f;
+            world::IObject* const cam = static_cast<world::IObject*>(
+                static_cast<ISquadManager*>(squadManager)->getCommanderCam(getTeam()));
+            world::ICameraObject* const camera = cam
+                ? static_cast<world::ICameraObject*>(cam->queryInterface(world::IID_ICameraObject)) : 0;
+            if (camera)
+                fov = camera->getActiveFOV();
+            setFov(fov, 0.0f);
+
+            const Vec4 zero = { 0.0f, 0.0f, 0.0f, 0.0f };
+            g_overheadSavedFog = settings->Vec4Get(std::string("GSFogStartEndAndBase"), zero);
+            const Vec4 clear = { 0.0f, 10000.0f, 0.0f, 1.0f };
+            setPostProductionFog(clear);
+
+            g_overheadSavedViewDistance = settings->intGet(std::string("GSViewDistance"), 500);
+            settings->intSet(std::string("GSViewDistance"), 500);
+        }
+        else
+        {
+            setFov(0.0f, 0.0f);
+            setPostProductionFog(g_overheadSavedFog);
+            settings->intSet(std::string("GSViewDistance"), g_overheadSavedViewDistance);
+        }
+    }
+#endif
+
+    m_overheadCameraTopDownView = topDown;
 }
 
 //  / 0x80F9000, 12 B - the plain +0x73 pair the mirror above lands in.
@@ -4160,6 +4227,24 @@ void Player::update(float deltaTime)
 
         updateCommanderStatus();
     }
+
+#if !DEDICATED
+    // PE 0x50540C: the local player's commander assets reach the HUD on every peer, the
+    // listen-server host included (no server test). The availability words are float bits.
+    if (hudManager && this == world::playerManager->getLocalHumanPlayer())
+    {
+        hudManager->setSatelliteEnabled(m_fieldF8);
+        hudManager->setArtilleryEnabled(m_fieldF9);
+        hudManager->setUAVEnabled(m_fieldFA);
+        float availability;
+        std::memcpy(&availability, &m_fieldFC, sizeof availability);
+        hudManager->setSatelliteAvailability(availability);
+        std::memcpy(&availability, &m_field100, sizeof availability);
+        hudManager->setArtilleryAvailability(availability);
+        std::memcpy(&availability, &m_field104, sizeof availability);
+        hudManager->setUAVAvailability(availability);
+    }
+#endif
 
     // 5: the one-shot VOIP re-check
     if (m_checkVoip && this == world::playerManager->getLocalHumanPlayer())

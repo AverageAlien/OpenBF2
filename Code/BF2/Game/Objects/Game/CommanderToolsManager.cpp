@@ -14,6 +14,7 @@
 #include "../../Common/GameEvent.h"
 #include "../../IGame.h"
 #include "../../IGameLogic.h"
+#include "../../Main/Game.h"                             // isDedicated - the local HUD posts
 #include "../GameLogicComp/IArmorGLComp.h"
 #include "../IObject.h"
 #include "../IObjectTemplate.h"
@@ -438,6 +439,14 @@ void CommanderToolsManager::handleUAVEvent(const Vec3& position, int team)
             game->sendGameEventIfPlaying(player->getId(), event);
         }
     }
+
+    // PE 0x5C6D50: the local player of that team (the listen-server host) gets it on its HUD.
+    IPlayer* const local = playerManager->getLocalHumanPlayer();
+    if (!isDedicated() && local && local->getTeam() == team)
+    {
+        Vec3 payload = position;
+        eventManager->postEvent(ECHud, 40u, &payload, 0.0f);
+    }
 }
 
 void CommanderToolsManager::handleSatelliteEvent(int playerId)
@@ -459,6 +468,10 @@ void CommanderToolsManager::handleSatelliteEvent(int playerId)
             new PostRemoteEvent(ECHud, 41u, false, 0, 0u, 0.0f);
         game->sendGameEventIfPlaying(playerId, event);
     }
+    else if (!isDedicated())
+    {
+        eventManager->postEvent(ECHud, 41u, 0, 0.0f);      // PE 0x5C6E44: the local commander
+    }
 }
 
 void CommanderToolsManager::handleDropVehicleEvent(const Vec3& position, int team)
@@ -472,7 +485,7 @@ void CommanderToolsManager::handleDropVehicleEvent(const Vec3& position, int tea
     if (objectId == -1)
         return;
 
-    (void)playerManager->getLocalHumanPlayer();             // retained, unused retail call
+    IPlayer* const local = playerManager->getLocalHumanPlayer();
     const std::list<IPlayer*>& players = playerManager->getPlayers(team);
 
     DropVehicleHudPayload payload;
@@ -480,8 +493,14 @@ void CommanderToolsManager::handleDropVehicleEvent(const Vec3& position, int tea
     payload.remainingFraction = getPercentOfDropVehicles(team);
     payload.position = position;
 
+    // PE 0x5C7209: the local player (the listen-server host) gets it posted straight to the HUD.
     for (std::list<IPlayer*>::const_iterator it = players.begin(); it != players.end(); ++it)
     {
+        if (!isDedicated() && (!local || (*it)->getId() == local->getId()))
+        {
+            eventManager->postEvent(ECHud, 74u, &payload, 0.0f);
+            continue;
+        }
         PostRemoteEvent* const event =
             new PostRemoteEvent(ECHud, 74u, false, &payload, 20u, 0.0f);
         game->sendGameEventIfConnected((*it)->getId(), event);
@@ -519,12 +538,18 @@ float CommanderToolsManager::getPercentOfDropVehicles(int team)
 void CommanderToolsManager::addDropVehicleToTeam(int team)
 {
     --m_teamStates[team - 1].m_dropVehicleCount;
-    (void)playerManager->getLocalHumanPlayer();             // retained, unused retail call
+    IPlayer* const local = playerManager->getLocalHumanPlayer();
     const std::list<IPlayer*>& players = playerManager->getPlayers(team);
     float remainingFraction = getPercentOfDropVehicles(team);
 
+    // PE 0x5C6F64: the local player (the listen-server host) gets it posted straight to the HUD.
     for (std::list<IPlayer*>::const_iterator it = players.begin(); it != players.end(); ++it)
     {
+        if (!isDedicated() && (!local || (*it)->getId() == local->getId()))
+        {
+            eventManager->postEvent(ECHud, 75u, &remainingFraction, 0.0f);
+            continue;
+        }
         PostRemoteEvent* const event =
             new PostRemoteEvent(ECHud, 75u, false, &remainingFraction, 4u, 0.0f);
         game->sendGameEventIfConnected((*it)->getId(), event);

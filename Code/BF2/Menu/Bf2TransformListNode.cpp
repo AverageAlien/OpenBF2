@@ -2,6 +2,8 @@
 #include "Bf2TransformListNode.h"
 #if !DEDICATED
 #include "Bf2TransformNode.h"
+#include "../External/BFMeme/Style.h"                    // Rect
+#include "../External/BFMeme/System.h"
 #include "../External/BFMeme/TypeDescriptor.h"
 #include <cstring>
 namespace dice { namespace meme {
@@ -27,7 +29,7 @@ void releaseTransformListName(char*& owned)
 Bf2TransformListNode::Bf2TransformListNode(const char* name, float x, float y, int count)
     : Node(), m_children(), m_name(nullptr), m_field018(0),
       m_positionBinding0(nullptr), m_positionBinding1(nullptr),
-      m_count(count), m_offsetX(0), m_offsetY(0), m_field030(0), m_field034(1.0f),
+      m_count(count), m_offsetX(0), m_offsetY(0), m_directionX(0.0f), m_directionY(1.0f),
       m_positionX(0.0f), m_positionY(0.0f)
 {
     releaseTransformListName(m_name);
@@ -60,6 +62,59 @@ bool Bf2TransformListNode::setName(const char* name)
     return true;
 }
 bool Bf2TransformListNode::slot_0x24() { return true; }
+
+// 7D18F0. The bound position (ints) replaces the stored one, then the offset is added to it and
+// written back, so with no binding a nonzero offset accumulates, as in Bf2TransformNode. The
+// children are measured along the direction with the count as the gap between them; the list is
+// then pushed inside the bounds, whose origin is the screen centre. The far-edge test uses the
+// extent measured from the position before the near-edge clamp, as shipped.
+bool Bf2TransformListNode::update(System* system, const NodeState* state, const Rect* bounds,
+                                  float delta)
+{
+    if (m_positionBinding0) m_positionX = static_cast<float>(*m_positionBinding0);
+    if (m_positionBinding1) m_positionY = static_cast<float>(*m_positionBinding1);
+    m_positionX += static_cast<float>(m_offsetX);
+    m_positionY += static_cast<float>(m_offsetY);
+
+    const float gap = static_cast<float>(m_count);
+    const float stepY = gap * m_directionY;
+    const float stepX = gap * m_directionX;
+    float width = 0.0f;
+    float height = 0.0f;
+    for (std::list<Bf2TransformNode*>::iterator it = m_children.begin(); it != m_children.end(); ++it) {
+        const hfe::Vec2& size = (*it)->getSize();
+        if (m_directionX > 0.0f) {
+            width += size.x;
+            if (height < size.y) height = size.y;
+        } else {
+            height += size.y;
+            if (width < size.x) width = size.x;
+        }
+        width += stepX;
+        height += stepY;
+    }
+
+    const float right = width + m_positionX;
+    const float bottom = height + m_positionY;
+    const float left = system->getWidth() * 0.5f + bounds->x;
+    if (left > m_positionX) m_positionX = left;
+    if (left + bounds->width < right) m_positionX = left + bounds->width - width;
+    const float top = system->getHeight() * 0.5f + bounds->y;
+    if (top > m_positionY) m_positionY = top;
+    if (top + bounds->height < bottom) m_positionY = top + bounds->height - height;
+
+    float x = m_positionX;
+    float y = m_positionY;
+    for (std::list<Bf2TransformNode*>::iterator it = m_children.begin(); it != m_children.end(); ++it) {
+        Bf2TransformNode* const child = *it;
+        child->setPositionForHud(x, y);
+        const hfe::Vec2& size = child->getSize();
+        x += m_directionX * size.x + stepX;
+        y += size.y * m_directionY + stepY;
+    }
+
+    return Node::update(system, state, bounds, delta);
+}
 
 namespace {
 TypeDescriptor* const registeredBf2TransformListNodeType = Bf2TransformListNode::getClassType();

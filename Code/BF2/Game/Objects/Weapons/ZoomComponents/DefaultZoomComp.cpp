@@ -15,6 +15,8 @@
 #include "../../IPlayer.h"
 #include "../../ObjectLayoutAccess.h"
 #include "../../GeometryPartAccess.h"
+#include "../../IWeaponHudComp.h"
+#include "../../WeaponHudCompTemplate.h"                      // WeaponHudInfo::altGuiIndex
 #include "../../../../Core/EventManager.h"
 #include "../../../../Core/Ids.h"
 #include "../../../../Core/System.h"
@@ -377,12 +379,12 @@ void DefaultZoomComp::changeZoom(int camera, bool immediate)
         }
     }
 
-    // [FRONTIER] [RETIRE-WHEN: unrecovered-factories-registered]
-    // Retail's remaining arm reads the firearm's Object +0x5C WeaponHud component, calls its
-    // specialized +0x50 getter, tests the returned object's +0x18 field, and only then posts the
-    // zoom HUD event for a local first-person player. WeaponHud remains factory-dark under RW-6
-    // and a dedicated server's is1P() is false, so the arm is unreachable in this slice. It must
-    // land with the typed WeaponHud interface rather than being mis-dispatched through an ELF slot.
+    // PE 0x606CD1: a weapon with an alternate GUI index (the scoped crosshair) makes the local
+    // first-person HUD recompute GuiIndex. The component is read before is1P, as shipped.
+    IWeaponHudComp* const weaponHud = static_cast<IWeaponHudComp*>(
+        object_detail::LayoutAccess::weaponHudComponent(static_cast<IObject*>(firearm())));
+    if (is1P() && weaponHud && weaponHud->getHudInfo()->altGuiIndex != -1)
+        eventManager->postEvent(ECHud, 31, this, 0.0f);
 }
 
 int DefaultZoomComp::getZoomLod() const

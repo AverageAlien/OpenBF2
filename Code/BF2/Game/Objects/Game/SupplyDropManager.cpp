@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 
+#include "../../../Core/EventManager.h"                  // reportSupplyDrop's local HUD post
 #include "../../../Core/Ids.h"
 #include "../../../Core/System.h"
 #include "../../../Math/Vec3.h"
@@ -18,6 +19,7 @@
 #include "../../GameEvents/SupplyDropEvent.h"
 #include "../../IGame.h"
 #include "../../IGameLogic.h"
+#include "../../Main/Game.h"                             // isDedicated - reportSupplyDrop
 #include "../IObject.h"
 #include "../IObjectTemplate.h"
 #include "../IPlayer.h"
@@ -129,14 +131,21 @@ bool SupplyDropManager::spawnSupplyDrop(unsigned char team, const Vec3& where)
     return true;
 }
 
+// PE 0x452470. Remote team members get the drop as a game event; on a client image the local
+// player (the listen-server host, who has no connection) gets it posted straight to the HUD.
 void SupplyDropManager::reportSupplyDrop(unsigned char team, const Vec3& where)
 {
-    playerManager->getLocalHumanPlayer();                    // result discarded, as shipped
+    IPlayer* const local = playerManager->getLocalHumanPlayer();
     const std::list<IPlayer*>& players = playerManager->getPlayers(team);
     Vec3 payload = where;
 
     for (std::list<IPlayer*>::const_iterator it = players.begin(); it != players.end(); ++it)
     {
+        if (!isDedicated() && (!local || (*it)->getId() == local->getId()))
+        {
+            eventManager->postEvent(ECHud, 83, &payload, 0.0f);
+            continue;
+        }
         PostRemoteEvent* const event =
             new PostRemoteEvent(ECHud, 83, false, &payload, 12, 0.0f);
         game->sendGameEventIfConnected((*it)->getId(), event);

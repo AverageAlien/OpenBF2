@@ -6,6 +6,7 @@
 #include "HudArtillerySeams.h"
 #include "../AI/AIInterface/AIInstance.h"
 #include "../AI/AIInterface/SingletonServer.h"
+#include "../AI/AIInterface/IAIEventCourier.h"            // event_incomingArtillery
 #include "../Core/EventManager.h"
 #include "../Core/System.h"
 #include "../Game/IGameLogic.h"
@@ -139,11 +140,12 @@ bool BF2HudManager::launchArtillery(bool silent)
         return true;
     }
     eventManager->postEventNextUpdate(ECGameLogic, 15, event);
+    // PE 0x7B25C5: the AI hears of the strike (courier +0x5C) so the side's bots flee it.
     if (ai::g_aiInstance && ai::aiInstance()->isInitialized()) {
         ai::IAIEventCourier* courier = ai::BFSingletonServer::m_iaiEventCourier;
         const Vec2 position = getCommanderPosition(false);
         const int team = player->getTeam();
-        ai::dispatchArtilleryRequest(courier, team, position);
+        courier->event_incomingArtillery(team, position);
     }
     return true;
 }

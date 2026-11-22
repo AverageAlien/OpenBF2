@@ -40,6 +40,11 @@ public:
     // [INFERRED] name: inlined into BFCommander::gameHasArtillery (bf2 0x840FCE0), which tests
     // the list header at +4 against its first node.
     bool hasArtilleryPieces() const { return !m_artillery.empty(); }
+    // [CHOSEN, not recovered] OpenBF2 extension: the reload requestFire enforces, in seconds (the
+    // longest minTimeBetweenActivation of the team's guns); the commander HUD counts it down, and
+    // isReadyToFire tells the AI commander whether a request would be accepted now.
+    float getReloadSeconds() const { return static_cast<float>(m_minIntervalTicks) / 30.0f; }
+    bool isReadyToFire() const;
 
 private:
     void findHelperObjects(ArtilleryObjectStruct& artillery);

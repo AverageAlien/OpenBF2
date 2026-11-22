@@ -7,6 +7,8 @@
 #include "RemoteControlledObject.h"
 #include "TargetObject.h"
 #include "../../../Core/Debug.h"
+#include "../../../Core/EventManager.h"                  // reportFire's local HUD post
+#include "../../Main/Game.h"                             // isDedicated - reportFire
 #include "../../../Core/IBase.h"
 #include "../../../Core/Ids.h"
 #include "../../../Core/System.h"
@@ -491,15 +493,24 @@ void ArtilleryHandler::requestFire()
         reportFire(target->getAbsolutePosition(), true);
 }
 
+bool ArtilleryHandler::isReadyToFire() const
+{
+    return !m_artillery.empty()
+        && WorldPref::getTickCount() - m_fireAtTick >= m_minIntervalTicks - m_fireDelayTicks;
+}
+
 void ArtilleryHandler::failedFire()
 {
     const Vec3 zero = Vec3::getZero();
     reportFire(zero, false);
 }
 
+// PE 0x5C4BB0. Remote team members get the result as a game event; on a client image the local
+// player (the listen-server host, who has no connection) gets it posted straight to the HUD.
+// With no local player at all the post is made too, as shipped.
 void ArtilleryHandler::reportFire(const Vec3& position, bool accepted)
 {
-    (void)playerManager->getLocalHumanPlayer();
+    IPlayer* const local = playerManager->getLocalHumanPlayer();
     const std::list<IPlayer*>& players = playerManager->getPlayers(m_team);
 
     ArtilleryHudPayload payload;
@@ -507,6 +518,11 @@ void ArtilleryHandler::reportFire(const Vec3& position, bool accepted)
     payload.accepted = accepted;
     for (std::list<IPlayer*>::const_iterator it = players.begin(); it != players.end(); ++it)
     {
+        if (!isDedicated() && (!local || (*it)->getId() == local->getId()))
+        {
+            eventManager->postEvent(ECHud, 42u, &payload, 0.0f);
+            continue;
+        }
         PostRemoteEvent* event =
             new PostRemoteEvent(ECHud, 42u, 0, &payload, 16u, 0.0f);
         game->sendGameEventIfConnected((*it)->getId(), event);

@@ -78,8 +78,10 @@ void TargetDeviationComp::updateComponent(float, unsigned int) {}
 void TargetDeviationComp::updateDeviation(io::PlayerInput, bool, bool) {}
 
 // . The seed is rebuilt for each burst member from the weapon object's id, current
-// tick and caller index. The first sample chooses x on the radius; the second chooses z within the
-// matching circle chord. Y is snapped to terrain at the resulting x/z, exactly as shipped.
+// tick and caller index. Y is snapped to terrain at the resulting x/z, exactly as shipped.
+// [CHOSEN, not recovered] OpenBF2 change: retail took x evenly over the diameter and z evenly over
+// the chord at that x, which crowds impacts towards the x ends of the circle. The two samples now
+// give a radius (square root, for an even density) and an angle, so impacts cover the disc evenly.
 Vec3 TargetDeviationComp::deviatePosition(Vec3& position, int projectileIndex)
 {
     IObject* const object = static_cast<IObject*>(
@@ -90,18 +92,10 @@ Vec3 TargetDeviationComp::deviatePosition(Vec3& position, int projectileIndex)
                    + 3323;
     m_targetRandom.m_seed = static_cast<unsigned int>(seed) & 0x7FFFFFFFu;
 
-    const float rawX = rawUnit(m_targetRandom) * 2.0f - 1.0f;
-    float clampedX = rawX;
-    if (clampedX < -1.0f)
-        clampedX = -1.0f;
-    else if (clampedX > 1.0f)
-        clampedX = 1.0f;
-
-    const float halfChord = std::sin(std::acos(clampedX));
-    const float chordPosition = -halfChord + (halfChord * 2.0f) * rawUnit(m_targetRandom);
-    const float radius = m_targetTemplate->getRadius();
-    const float x = position.x + rawX * radius;
-    const float z = position.z + chordPosition * radius;
+    const float distance = std::sqrt(rawUnit(m_targetRandom)) * m_targetTemplate->getRadius();
+    const float angle = rawUnit(m_targetRandom) * 6.2831853f;
+    const float x = position.x + std::cos(angle) * distance;
+    const float z = position.z + std::sin(angle) * distance;
 
     IHeightmapCluster* const cluster = static_cast<IHeightmapCluster*>(heightmapCluster);
     const float heightDelta = cluster->getHeightInWorldCoords(x, z) - position.y;
