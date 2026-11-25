@@ -1,0 +1,45 @@
+rem *** makeMegaMap.con ***
+rem *** setup for megaMap ***
+renderer.drawObjects 1
+renderer.drawBundledMeshes 1
+renderer.drawStaticMeshes 1
+renderer.drawSkyDome 0
+renderer.drawRoads 1
+renderer.drawTerrain 1
+renderer.drawNametags 0
+renderer.drawTrees 1
+renderer.drawHud 0
+renderer.drawFps 0
+renderer.drawBoundingSpheres 0
+renderer.drawLightSources 0
+renderer.drawLightSourceOpacity 0
+renderer.drawConsole 0
+renderer.minculldistance 5000
+rem renderer.fogStartAndEnd 2000/2000
+shadowManager.dynamicShadowsEnabled 0
+
+staticMeshRenderer.perPixelRenderingDistance 5000
+staticMeshRenderer.nolods 1
+
+
+renderer.maketopworldscreen 2048 "C:\Megamap1" 1536/500/1536 1024
+renderer.maketopworldscreen 2048 "C:\Megamap2" 512/500/1536 1024
+renderer.maketopworldscreen 2048 "C:\Megamap3" -512/500/1536 1024
+renderer.maketopworldscreen 2048 "C:\Megamap4" -1536/500/1536 1024
+
+renderer.maketopworldscreen 2048 "C:\Megamap5" 1536/500/512 1024
+renderer.maketopworldscreen 2048 "C:\Megamap6" 512/500/512 1024
+renderer.maketopworldscreen 2048 "C:\Megamap7" -512/500/512 1024
+renderer.maketopworldscreen 2048 "C:\Megamap8" -1536/500/512 1024
+
+renderer.maketopworldscreen 2048 "C:\Megamap9" 1536/500/-512 1024
+renderer.maketopworldscreen 2048 "C:\Megamap10" 512/500/-512 1024
+renderer.maketopworldscreen 2048 "C:\Megamap11" -512/500/-512 1024
+renderer.maketopworldscreen 2048 "C:\Megamap12" -1536/500/-512 1024
+
+renderer.maketopworldscreen 2048 "C:\Megamap13" 1536/500/-1536 1024
+renderer.maketopworldscreen 2048 "C:\Megamap14" 512/500/-1536 1024
+renderer.maketopworldscreen 2048 "C:\Megamap15" -512/500/-1536 1024
+renderer.maketopworldscreen 2048 "C:\Megamap16" -1536/500/-1536 1024
+
+aiDebug.draw 0

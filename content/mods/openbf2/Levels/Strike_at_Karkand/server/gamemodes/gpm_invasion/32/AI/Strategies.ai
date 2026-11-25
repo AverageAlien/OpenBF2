@@ -1,0 +1,31 @@
+rem ************************
+rem ** Invasion (gpm_invasion)
+rem ************************
+
+aiStrategy.createConstantCondition invHoldsAnyCond Crisp EqualGreater Friendly ControlPoint 1
+aiStrategy.setConditionStrength Required
+
+aiStrategy.createPrerequisite invAlwaysPrereq
+aiStrategy.addCondition invHoldsAnyCond 20.0
+
+aiStrategy.createStrategy invAttack
+aiStrategy.Aggression 0.75
+aiStrategy.NumberOfAttacks 3
+aiStrategy.NumberOfDefences 3
+aiStrategy.setStrategicObjectsModifier ControlPoint      10.0 Owned
+aiStrategy.setStrategicObjectsModifier ControlPoint      10.0 Hostile
+aiStrategy.setStrategicObjectsModifier ControlPoint      12.0 Neutral
+aiStrategy.setPrerequisite invAlwaysPrereq
+
+aiStrategy.createStrategy invDefend
+aiStrategy.Aggression 0.4
+aiStrategy.NumberOfAttacks 3
+aiStrategy.NumberOfDefences 3
+aiStrategy.setStrategicObjectsModifier ControlPoint      10.0 Owned
+aiStrategy.setStrategicObjectsModifier ControlPoint      12.0 Neutral
+aiStrategy.setStrategicObjectsModifier ControlPoint      10.0 Hostile
+aiStrategy.setPrerequisite invAlwaysPrereq
+
+rem *** Add strategies ***
+ai.addSAIStrategy 1 invDefend
+ai.addSAIStrategy 2 invAttack

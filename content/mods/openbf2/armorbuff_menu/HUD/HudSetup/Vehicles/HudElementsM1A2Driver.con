@@ -1,0 +1,77 @@
+hudBuilder.createSplitNode		VehicleHuds M1A2Hud
+hudBuilder.setNodeLogicShowVariable 	EQUAL GuiIndex 14
+hudBuilder.addNodeBlendEffect		7 2
+
+rem ------------crosshair-------------------------
+
+hudBuilder.createPictureNode		M1A2Hud M1A2Crosshair1 272 264 256 128 
+hudBuilder.setPictureNodeTexture 	Ingame\Vehicles\Icons\Hud\Land\M1A2\crosshair.tga
+hudBuilder.setNodeColor		 	0 0.8 0 0.8
+
+rem -------------------------------------- Hit Indication----------------------------------------------------
+   
+hudBuilder.createPictureNode 		M1A2Hud M1A2HitIndication 384 284 32 32
+hudBuilder.setPictureNodeTexture 	Ingame/CrossHair/vsp_HitIndicator.tga
+hudBuilder.setNodeColor 		0 0.8 0 1
+hudBuilder.setNodeAlphaVariable     	HitIndicatorIconAlpha
+hudBuilder.setNodeShowVariable 		HitIndicatorIconShow
+
+rem ------------range to target text---------------
+
+beginrem
+hudBuilder.createPictureNode		M1A2Hud M1A2RangeText 150 490 128 16 
+hudBuilder.setPictureNodeTexture 	Ingame\Vehicles\Icons\Hud\Land\M1A2\range_toTarget_text.tga
+hudBuilder.setNodeColor			0 0.8 0 0.9
+
+hudBuilder.createTextNode		M1A2Hud M1A2RangeLabel 275 492 101 10
+hudBuilder.setTextNodeStyle		Fonts/vehicleHudFont_6.dif 2
+hudBuilder.setTextNodeStringVariable	TargetDistanceString
+hudBuilder.setNodeColor			0 0.8 0 0.9
+endrem
+
+rem ------------HE shell page (copy of the page above)-------------
+
+hudBuilder.createSplitNode		VehicleHuds M1A2HudHE
+hudBuilder.setNodeLogicShowVariable 	EQUAL GuiIndex 91
+hudBuilder.addNodeBlendEffect		7 2
+
+rem ------------crosshair-------------------------
+
+hudBuilder.createPictureNode		M1A2HudHE M1A2Crosshair1HE 272 264 256 128 
+hudBuilder.setPictureNodeTexture 	Ingame\Vehicles\Icons\Hud\Land\M1A2\crosshair.tga
+hudBuilder.setNodeColor		 	0 0.8 0 0.8
+
+rem -------------------------------------- Hit Indication----------------------------------------------------
+   
+hudBuilder.createPictureNode 		M1A2HudHE M1A2HitIndicationHE 384 284 32 32
+hudBuilder.setPictureNodeTexture 	Ingame/CrossHair/vsp_HitIndicator.tga
+hudBuilder.setNodeColor 		0 0.8 0 1
+hudBuilder.setNodeAlphaVariable     	HitIndicatorIconAlpha
+hudBuilder.setNodeShowVariable 		HitIndicatorIconShow
+
+rem ------------range to target text---------------
+
+beginrem
+hudBuilder.createPictureNode		M1A2HudHE M1A2RangeTextHE 150 490 128 16 
+hudBuilder.setPictureNodeTexture 	Ingame\Vehicles\Icons\Hud\Land\M1A2\range_toTarget_text.tga
+hudBuilder.setNodeColor			0 0.8 0 0.9
+
+hudBuilder.createTextNode		M1A2HudHE M1A2RangeLabelHE 275 492 101 10
+hudBuilder.setTextNodeStyle		Fonts/vehicleHudFont_6.dif 2
+hudBuilder.setTextNodeStringVariable	TargetDistanceString
+hudBuilder.setNodeColor			0 0.8 0 0.9
+endrem
+
+rem ------------shell label APFSDS-------------
+hudBuilder.createSplitNode		BottomRightAnimateHud M1A2ShellLabelAPFSDS
+hudBuilder.setNodeLogicShowVariable 	EQUAL GuiIndex 14
+hudBuilder.createPictureNode		M1A2ShellLabelAPFSDS M1A2ShellLabelAPFSDSIcon 325 61 40 10
+hudBuilder.setPictureNodeTexture 	Ingame/Weapons/Icons/Hud/shell_apfsds.tga
+hudBuilder.setNodeColor			1 1 1 1
+
+rem ------------shell label HE-------------
+hudBuilder.createSplitNode		BottomRightAnimateHud M1A2ShellLabelHE
+hudBuilder.setNodeLogicShowVariable 	EQUAL GuiIndex 91
+hudBuilder.createPictureNode		M1A2ShellLabelHE M1A2ShellLabelHEIcon 325 61 40 10
+hudBuilder.setPictureNodeTexture 	Ingame/Weapons/Icons/Hud/shell_he.tga
+hudBuilder.setNodeColor			1 1 1 1

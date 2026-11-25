@@ -1,0 +1,81 @@
+rem *** Create strategic areas ***
+aiStrategicArea.createFromControlPoint CPNAME_SK_SP16_gasstation 503 50
+aiStrategicArea.layer 6
+
+aiStrategicArea.createFromControlPoint CPNAME_SK_SP16_hotel 501 50
+aiStrategicArea.layer 6
+
+aiStrategicArea.createFromControlPoint CPNAME_SK_SP16_market 502 50
+aiStrategicArea.layer 6
+
+aiStrategicArea.createFromControlPoint CPNAME_SK_SP16_square 504 50
+aiStrategicArea.layer 6
+
+
+
+aiStrategicArea.setActive CPNAME_SK_SP16_gasstation
+aiStrategicArea.addObjectTypeFlag ControlPoint
+AIStrategicArea.setOrderPosition Infantry -158.422/161.298/-262.559
+AIStrategicArea.setOrderPosition Vehicle -152.077/161.298/-261.33
+aiStrategicArea.setSide 2
+aiStrategicArea.vehicleSearchRadius 14.1421
+
+aiStrategicArea.setActive CPNAME_SK_SP16_hotel
+AIStrategicArea.addNeighbour CPNAME_SK_SP16_square
+AIStrategicArea.addNeighbour CPNAME_SK_SP16_gasstation
+aiStrategicArea.addObjectTypeFlag ControlPoint
+AIStrategicArea.setOrderPosition Infantry -194.39/158.8/15.3613
+AIStrategicArea.setOrderPosition Vehicle -205.023/155.8/16.4683
+aiStrategicArea.setSide 0
+aiStrategicArea.vehicleSearchRadius 8.48528
+
+aiStrategicArea.setActive CPNAME_SK_SP16_market
+AIStrategicArea.addNeighbour CPNAME_SK_SP16_square
+aiStrategicArea.addObjectTypeFlag ControlPoint
+AIStrategicArea.setOrderPosition Infantry -196.336/149.799/181.271
+AIStrategicArea.setOrderPosition Vehicle -200.626/149.799/184.564
+aiStrategicArea.setSide 0
+aiStrategicArea.vehicleSearchRadius 14.1421
+
+aiStrategicArea.setActive CPNAME_SK_SP16_square
+AIStrategicArea.addNeighbour CPNAME_SK_SP16_hotel
+AIStrategicArea.addNeighbour CPNAME_SK_SP16_market
+aiStrategicArea.addObjectTypeFlag ControlPoint
+AIStrategicArea.setOrderPosition Infantry -188.375/155.498/97.7027
+AIStrategicArea.setOrderPosition Vehicle -189.267/155.498/91.707
+aiStrategicArea.setSide 0
+aiStrategicArea.vehicleSearchRadius 11.3137
+
+rem aiStrategicArea.addWayPoint -198.3/155.8/-68.8703 Infantry CPNAME_SK_SP16_gasstation CPNAME_SK_SP16_hotel
+aiStrategicArea.addWayPoint -196.571/156.718/-69.2323 Infantry CPNAME_SK_SP16_gasstation CPNAME_SK_SP16_hotel
+
+aiStrategicArea.addWayPoint -219.118/157.888/-72.7266 Infantry CPNAME_SK_SP16_gasstation CPNAME_SK_SP16_hotel
+aiStrategicArea.addWayPoint -232.456/155.8/14.1317 Infantry CPNAME_SK_SP16_gasstation CPNAME_SK_SP16_hotel
+aiStrategicArea.addWayPoint -164.906/155.8/-32.1758 Infantry CPNAME_SK_SP16_gasstation CPNAME_SK_SP16_hotel
+aiStrategicArea.addWayPoint -247.273/155.84/-40.7341 Infantry CPNAME_SK_SP16_gasstation CPNAME_SK_SP16_hotel
+aiStrategicArea.addWayPoint -249.415/155.8/18.1613 Infantry CPNAME_SK_SP16_gasstation CPNAME_SK_SP16_hotel
+aiStrategicArea.addWayPoint -215.74/155.8/-52.358 Infantry CPNAME_SK_SP16_gasstation CPNAME_SK_SP16_hotel
+aiStrategicArea.addWayPoint -167.567/155.8/0.029175 Infantry CPNAME_SK_SP16_gasstation CPNAME_SK_SP16_hotel
+aiStrategicArea.addWayPoint -181.018/155.8/-16.2697 Infantry CPNAME_SK_SP16_gasstation CPNAME_SK_SP16_hotel
+aiStrategicArea.addWayPoint -202.014/155.8/37.2531 Infantry CPNAME_SK_SP16_hotel CPNAME_SK_SP16_square
+aiStrategicArea.addWayPoint -171.391/155.8/41.5198 Infantry CPNAME_SK_SP16_hotel CPNAME_SK_SP16_square
+aiStrategicArea.addWayPoint -185.32/155.8/36.7877 Infantry CPNAME_SK_SP16_hotel CPNAME_SK_SP16_square
+aiStrategicArea.addWayPoint -238.794/155.8/56.7684 Infantry CPNAME_SK_SP16_hotel CPNAME_SK_SP16_square
+aiStrategicArea.addWayPoint -166.982/155.8/13.0283 Infantry CPNAME_SK_SP16_hotel CPNAME_SK_SP16_square
+aiStrategicArea.addWayPoint -136.411/155.8/46.7399 Infantry CPNAME_SK_SP16_hotel CPNAME_SK_SP16_square
+
+
+aiStrategicArea.addWayPoint -229.162/155.8/134.906 Infantry CPNAME_SK_SP16_market CPNAME_SK_SP16_square
+aiStrategicArea.addWayPoint -193.814/150.668/126.132 Infantry CPNAME_SK_SP16_market CPNAME_SK_SP16_square
+aiStrategicArea.addWayPoint -146.911/149.799/127.067 Infantry CPNAME_SK_SP16_market CPNAME_SK_SP16_square
+aiStrategicArea.addWayPoint -154.503/155.8/116.419 Infantry CPNAME_SK_SP16_market CPNAME_SK_SP16_square
+aiStrategicArea.addWayPoint -213.712/155.8/75.0151 Infantry CPNAME_SK_SP16_market CPNAME_SK_SP16_square
+aiStrategicArea.addWayPoint -244.353/155.8/147.755 Infantry CPNAME_SK_SP16_market CPNAME_SK_SP16_square
+aiStrategicArea.addWayPoint -229.715/155.8/167.437 Infantry CPNAME_SK_SP16_market CPNAME_SK_SP16_square
+aiStrategicArea.addWayPoint -220.613/149.799/175.818 Infantry CPNAME_SK_SP16_market CPNAME_SK_SP16_square
+aiStrategicArea.addWayPoint -155.066/149.799/168.062 Infantry CPNAME_SK_SP16_market CPNAME_SK_SP16_square
+
+rem *** Invasion: attack order ***
+AIStrategicArea.addTwoWayNeighbour CPNAME_SK_SP16_gasstation CPNAME_SK_SP16_hotel
+AIStrategicArea.addTwoWayNeighbour CPNAME_SK_SP16_hotel CPNAME_SK_SP16_square
+AIStrategicArea.addTwoWayNeighbour CPNAME_SK_SP16_square CPNAME_SK_SP16_market

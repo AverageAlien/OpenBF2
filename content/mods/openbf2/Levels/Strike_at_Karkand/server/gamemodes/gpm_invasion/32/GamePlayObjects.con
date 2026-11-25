@@ -1,0 +1,2818 @@
+gameLogic.setDefaultNumberOfTicketsEx 32 1 999
+gameLogic.setDefaultNumberOfTicketsEx 32 2 300
+rem ********** Object Spawner **********
+rem [ObjectSpawnerTemplate: CPNAME_SK_SP16_gasstation_APC]
+ObjectTemplate.create ObjectSpawner CPNAME_SK_SP16_gasstation_APC
+ObjectTemplate.activeSafe ObjectSpawner CPNAME_SK_SP16_gasstation_APC
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.setObjectTemplate 1 APC_BTR90
+ObjectTemplate.setObjectTemplate 2 USAPC_LAV25
+
+rem [ObjectSpawnerTemplate: CPNAME_SK_SP16_gasstation_Jeep]
+ObjectTemplate.create ObjectSpawner CPNAME_SK_SP16_gasstation_Jeep
+ObjectTemplate.activeSafe ObjectSpawner CPNAME_SK_SP16_gasstation_Jeep
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.setObjectTemplate 1 JEP_VODNIK
+ObjectTemplate.setObjectTemplate 2 USJEP_HMMWV
+
+rem [ObjectSpawnerTemplate: CPNAME_SK_SP16_gasstation_HeavyTank]
+ObjectTemplate.create ObjectSpawner CPNAME_SK_SP16_gasstation_HeavyTank
+ObjectTemplate.activeSafe ObjectSpawner CPNAME_SK_SP16_gasstation_HeavyTank
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.setObjectTemplate 1 RUTNK_T90
+ObjectTemplate.setObjectTemplate 2 USTNK_M1A2
+ObjectTemplate.minSpawnDelay 20
+ObjectTemplate.maxSpawnDelay 50
+
+rem [ObjectSpawnerTemplate: CPNAME_SK_SP16_gasstation_ART]
+ObjectTemplate.create ObjectSpawner CPNAME_SK_SP16_gasstation_ART
+ObjectTemplate.activeSafe ObjectSpawner CPNAME_SK_SP16_gasstation_ART
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.setObjectTemplate 2 USART_LW155
+ObjectTemplate.minSpawnDelay 360
+ObjectTemplate.maxSpawnDelay 360
+ObjectTemplate.teamOnVehicle 1
+
+rem [ObjectSpawnerTemplate: CPNAME_SK_SP16_gasstation_ART_0]
+ObjectTemplate.create ObjectSpawner CPNAME_SK_SP16_gasstation_ART_0
+ObjectTemplate.activeSafe ObjectSpawner CPNAME_SK_SP16_gasstation_ART_0
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.setObjectTemplate 2 USART_LW155
+ObjectTemplate.minSpawnDelay 360
+ObjectTemplate.maxSpawnDelay 360
+ObjectTemplate.teamOnVehicle 1
+
+rem [ObjectSpawnerTemplate: CPNAME_SK_SP16_gasstation_UAV]
+ObjectTemplate.create ObjectSpawner CPNAME_SK_SP16_gasstation_UAV
+ObjectTemplate.activeSafe ObjectSpawner CPNAME_SK_SP16_gasstation_UAV
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.setObjectTemplate 2 aircontroltower
+ObjectTemplate.minSpawnDelay 360
+ObjectTemplate.maxSpawnDelay 360
+ObjectTemplate.teamOnVehicle 1
+
+rem [ObjectSpawnerTemplate: CPNAME_SK_SP16_gasstation_Radar]
+ObjectTemplate.create ObjectSpawner CPNAME_SK_SP16_gasstation_Radar
+ObjectTemplate.activeSafe ObjectSpawner CPNAME_SK_SP16_gasstation_Radar
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.setObjectTemplate 2 mobileradar_us_dest
+ObjectTemplate.minSpawnDelay 360
+ObjectTemplate.maxSpawnDelay 360
+ObjectTemplate.teamOnVehicle 1
+
+rem [ObjectSpawnerTemplate: CPNAME_SK_SP16_gasstation_SMG]
+ObjectTemplate.create ObjectSpawner CPNAME_SK_SP16_gasstation_SMG
+ObjectTemplate.activeSafe ObjectSpawner CPNAME_SK_SP16_gasstation_SMG
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.setObjectTemplate 1 MEC_BIPOD
+ObjectTemplate.setObjectTemplate 2 US_BIPOD
+
+rem [ObjectSpawnerTemplate: CPNAME_SK_SP16_gasstation_HeavyJeep]
+ObjectTemplate.create ObjectSpawner CPNAME_SK_SP16_gasstation_HeavyJeep
+ObjectTemplate.activeSafe ObjectSpawner CPNAME_SK_SP16_gasstation_HeavyJeep
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.setObjectTemplate 1 jep_vodnik
+ObjectTemplate.setObjectTemplate 2 usjep_hmmwv
+
+rem [ObjectSpawnerTemplate: CPNAME_SK_SP16_gasstation_APC_0]
+ObjectTemplate.create ObjectSpawner CPNAME_SK_SP16_gasstation_APC_0
+ObjectTemplate.activeSafe ObjectSpawner CPNAME_SK_SP16_gasstation_APC_0
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.setObjectTemplate 1 apc_btr90
+ObjectTemplate.setObjectTemplate 2 usapc_lav25
+
+rem [ObjectSpawnerTemplate: CPNAME_SK_SP16_gasstation_Tank]
+ObjectTemplate.create ObjectSpawner CPNAME_SK_SP16_gasstation_Tank
+ObjectTemplate.activeSafe ObjectSpawner CPNAME_SK_SP16_gasstation_Tank
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.setObjectTemplate 1 rutnk_t90
+ObjectTemplate.setObjectTemplate 2 ustnk_m1a2
+
+rem [ObjectSpawnerTemplate: CPNAME_SK_SP16_gasstation_ART_1]
+ObjectTemplate.create ObjectSpawner CPNAME_SK_SP16_gasstation_ART_1
+ObjectTemplate.activeSafe ObjectSpawner CPNAME_SK_SP16_gasstation_ART_1
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.setObjectTemplate 2 USART_LW155
+ObjectTemplate.minSpawnDelay 360
+ObjectTemplate.maxSpawnDelay 360
+ObjectTemplate.teamOnVehicle 1
+
+rem [ObjectSpawnerTemplate: Spawner_1]
+ObjectTemplate.create ObjectSpawner Spawner_1
+ObjectTemplate.activeSafe ObjectSpawner Spawner_1
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.setObjectTemplate 1 ats_hj8
+
+rem [ObjectSpawnerTemplate: Spawner_2]
+ObjectTemplate.create ObjectSpawner Spawner_2
+ObjectTemplate.activeSafe ObjectSpawner Spawner_2
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.setObjectTemplate 1 apc_btr90
+
+rem [ObjectSpawnerTemplate: Spawner_3]
+ObjectTemplate.create ObjectSpawner Spawner_3
+ObjectTemplate.activeSafe ObjectSpawner Spawner_3
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.setObjectTemplate 1 jep_vodnik
+
+rem [ObjectSpawnerTemplate: Spawner_4]
+ObjectTemplate.create ObjectSpawner Spawner_4
+ObjectTemplate.activeSafe ObjectSpawner Spawner_4
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.setObjectTemplate 1 rutnk_t90
+
+rem [ObjectSpawnerTemplate: Spawner_6]
+ObjectTemplate.create ObjectSpawner Spawner_6
+ObjectTemplate.activeSafe ObjectSpawner Spawner_6
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.setObjectTemplate 1 jep_vodnik
+
+rem [ObjectSpawnerTemplate: CPNAME_SK_SP16_gasstation_UAV_1]
+ObjectTemplate.create ObjectSpawner CPNAME_SK_SP16_gasstation_UAV_1
+ObjectTemplate.activeSafe ObjectSpawner CPNAME_SK_SP16_gasstation_UAV_1
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.setObjectTemplate 2 aircontroltower
+ObjectTemplate.minSpawnDelay 360
+ObjectTemplate.maxSpawnDelay 360
+ObjectTemplate.teamOnVehicle 2
+ObjectTemplate.setObjectTemplate 1 aircontroltower_mec
+
+rem [ObjectSpawnerTemplate: CPNAME_SK_SP16_gasstation_Radar_1]
+ObjectTemplate.create ObjectSpawner CPNAME_SK_SP16_gasstation_Radar_1
+ObjectTemplate.activeSafe ObjectSpawner CPNAME_SK_SP16_gasstation_Radar_1
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.setObjectTemplate 2 mobileradar_us_dest
+ObjectTemplate.minSpawnDelay 360
+ObjectTemplate.maxSpawnDelay 360
+ObjectTemplate.teamOnVehicle 1
+ObjectTemplate.setObjectTemplate 1 mobileradar_mech_dest
+
+rem [ObjectSpawnerTemplate: CPNAME_SK_SP16_gasstation_ART_2]
+ObjectTemplate.create ObjectSpawner CPNAME_SK_SP16_gasstation_ART_2
+ObjectTemplate.activeSafe ObjectSpawner CPNAME_SK_SP16_gasstation_ART_2
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.setObjectTemplate 2 USART_LW155
+ObjectTemplate.minSpawnDelay 360
+ObjectTemplate.maxSpawnDelay 360
+ObjectTemplate.teamOnVehicle 2
+ObjectTemplate.setObjectTemplate 1 ars_d30
+
+rem [ObjectSpawnerTemplate: CPNAME_SK_SP16_gasstation_ART_3]
+ObjectTemplate.create ObjectSpawner CPNAME_SK_SP16_gasstation_ART_3
+ObjectTemplate.activeSafe ObjectSpawner CPNAME_SK_SP16_gasstation_ART_3
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.setObjectTemplate 2 USART_LW155
+ObjectTemplate.minSpawnDelay 360
+ObjectTemplate.maxSpawnDelay 360
+ObjectTemplate.teamOnVehicle 2
+ObjectTemplate.setObjectTemplate 1 ars_d30
+
+rem [ObjectSpawnerTemplate: CPNAME_SK_SP16_gasstation_ART_4]
+ObjectTemplate.create ObjectSpawner CPNAME_SK_SP16_gasstation_ART_4
+ObjectTemplate.activeSafe ObjectSpawner CPNAME_SK_SP16_gasstation_ART_4
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.setObjectTemplate 2 USART_LW155
+ObjectTemplate.minSpawnDelay 360
+ObjectTemplate.maxSpawnDelay 360
+ObjectTemplate.teamOnVehicle 2
+ObjectTemplate.setObjectTemplate 1 ars_d30
+
+rem [ObjectSpawnerTemplate: Spawner_7]
+ObjectTemplate.create ObjectSpawner Spawner_7
+ObjectTemplate.activeSafe ObjectSpawner Spawner_7
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.setObjectTemplate 1 mec_bipod
+
+rem [ObjectSpawnerTemplate: Spawner_8]
+ObjectTemplate.create ObjectSpawner Spawner_8
+ObjectTemplate.activeSafe ObjectSpawner Spawner_8
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.setObjectTemplate 1 mec_bipod
+
+rem [ObjectSpawnerTemplate: Spawner_9]
+ObjectTemplate.create ObjectSpawner Spawner_9
+ObjectTemplate.activeSafe ObjectSpawner Spawner_9
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.setObjectTemplate 1 mec_bipod
+
+rem [ObjectSpawnerTemplate: Spawner_10]
+ObjectTemplate.create ObjectSpawner Spawner_10
+ObjectTemplate.activeSafe ObjectSpawner Spawner_10
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.setObjectTemplate 1 ats_hj8
+
+rem [ObjectSpawnerTemplate: Spawner_11]
+ObjectTemplate.create ObjectSpawner Spawner_11
+ObjectTemplate.activeSafe ObjectSpawner Spawner_11
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.setObjectTemplate 1 ats_hj8
+
+rem [ObjectSpawnerTemplate: Spawner_12]
+ObjectTemplate.create ObjectSpawner Spawner_12
+ObjectTemplate.activeSafe ObjectSpawner Spawner_12
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.setObjectTemplate 1 mec_bipod
+
+rem [ObjectSpawnerTemplate: Spawner_13]
+ObjectTemplate.create ObjectSpawner Spawner_13
+ObjectTemplate.activeSafe ObjectSpawner Spawner_13
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.setObjectTemplate 1 mec_bipod
+
+rem [ObjectSpawnerTemplate: Spawner_14]
+ObjectTemplate.create ObjectSpawner Spawner_14
+ObjectTemplate.activeSafe ObjectSpawner Spawner_14
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.setObjectTemplate 1 mec_bipod
+
+rem [ObjectSpawnerTemplate: Spawner_15]
+ObjectTemplate.create ObjectSpawner Spawner_15
+ObjectTemplate.activeSafe ObjectSpawner Spawner_15
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.setObjectTemplate 1 ats_hj8
+
+rem [ObjectSpawnerTemplate: Spawner_16]
+ObjectTemplate.create ObjectSpawner Spawner_16
+ObjectTemplate.activeSafe ObjectSpawner Spawner_16
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.setObjectTemplate 1 mec_bipod
+
+rem [ObjectSpawnerTemplate: Spawner_17]
+ObjectTemplate.create ObjectSpawner Spawner_17
+ObjectTemplate.activeSafe ObjectSpawner Spawner_17
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.setObjectTemplate 1 mec_bipod
+
+rem [ObjectSpawnerTemplate: Spawner_18]
+ObjectTemplate.create ObjectSpawner Spawner_18
+ObjectTemplate.activeSafe ObjectSpawner Spawner_18
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.setObjectTemplate 1 ats_hj8
+
+rem [ObjectSpawnerTemplate: Spawner_19]
+ObjectTemplate.create ObjectSpawner Spawner_19
+ObjectTemplate.activeSafe ObjectSpawner Spawner_19
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.setObjectTemplate 1 mec_bipod
+
+rem [ObjectSpawnerTemplate: Spawner_20]
+ObjectTemplate.create ObjectSpawner Spawner_20
+ObjectTemplate.activeSafe ObjectSpawner Spawner_20
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.setObjectTemplate 1 mec_bipod
+
+rem [ObjectSpawnerTemplate: Spawner_21]
+ObjectTemplate.create ObjectSpawner Spawner_21
+ObjectTemplate.activeSafe ObjectSpawner Spawner_21
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.setObjectTemplate 1 ats_hj8
+
+rem [ObjectSpawnerTemplate: Spawner_22]
+ObjectTemplate.create ObjectSpawner Spawner_22
+ObjectTemplate.activeSafe ObjectSpawner Spawner_22
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.setObjectTemplate 1 mec_bipod
+
+rem [ObjectSpawnerTemplate: Spawner_23]
+ObjectTemplate.create ObjectSpawner Spawner_23
+ObjectTemplate.activeSafe ObjectSpawner Spawner_23
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.setObjectTemplate 1 mec_bipod
+
+rem [ObjectSpawnerTemplate: Spawner_24]
+ObjectTemplate.create ObjectSpawner Spawner_24
+ObjectTemplate.activeSafe ObjectSpawner Spawner_24
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.setObjectTemplate 1 ats_hj8
+
+rem [ObjectSpawnerTemplate: Spawner_25]
+ObjectTemplate.create ObjectSpawner Spawner_25
+ObjectTemplate.activeSafe ObjectSpawner Spawner_25
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.setObjectTemplate 1 mec_bipod
+
+rem [ObjectSpawnerTemplate: Spawner_26]
+ObjectTemplate.create ObjectSpawner Spawner_26
+ObjectTemplate.activeSafe ObjectSpawner Spawner_26
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.setObjectTemplate 1 mec_bipod
+
+if v_arg1 == host
+
+   rem [ObjectSpawner: CPNAME_SK_SP16_gasstation_APC]
+   Object.create CPNAME_SK_SP16_gasstation_APC
+   Object.absolutePosition -146.453/161.298/-268.604
+   Object.rotation 0.000/-0.000/0.000
+   Object.setControlPointId 503
+   Object.layer 1
+
+   rem [ObjectSpawner: CPNAME_SK_SP16_gasstation_Jeep]
+   Object.create CPNAME_SK_SP16_gasstation_Jeep
+   Object.absolutePosition -133.487/161.298/-291.850
+   Object.rotation -90.000/-0.000/0.000
+   Object.setControlPointId 503
+   Object.layer 1
+
+   rem [ObjectSpawner: CPNAME_SK_SP16_gasstation_HeavyTank]
+   Object.create CPNAME_SK_SP16_gasstation_HeavyTank
+   Object.absolutePosition -172.895/161.298/-309.128
+   Object.rotation 90.000/-0.000/0.000
+   Object.setControlPointId 503
+   Object.layer 1
+
+   rem [ObjectSpawner: CPNAME_SK_SP16_gasstation_ART]
+   Object.create CPNAME_SK_SP16_gasstation_ART
+   Object.absolutePosition -177.659/161.298/-333.136
+   Object.rotation 0.000/-0.000/0.000
+   Object.setControlPointId 503
+   Object.layer 1
+
+   rem [ObjectSpawner: CPNAME_SK_SP16_gasstation_ART_0]
+   Object.create CPNAME_SK_SP16_gasstation_ART_0
+   Object.absolutePosition -187.422/161.298/-337.426
+   Object.rotation 0.000/-0.000/0.000
+   Object.setControlPointId 503
+   Object.layer 1
+
+   rem [ObjectSpawner: CPNAME_SK_SP16_gasstation_UAV]
+   Object.create CPNAME_SK_SP16_gasstation_UAV
+   Object.absolutePosition -194.734/161.298/-279.504
+   Object.rotation -90.000/-0.000/0.000
+   Object.setControlPointId 503
+   Object.layer 1
+
+   rem [ObjectSpawner: CPNAME_SK_SP16_gasstation_Radar]
+   Object.create CPNAME_SK_SP16_gasstation_Radar
+   Object.absolutePosition -132.000/162.219/-318.000
+   Object.rotation 0.000/-0.000/0.000
+   Object.setControlPointId 503
+   Object.layer 1
+
+   rem [ObjectSpawner: CPNAME_SK_SP16_gasstation_SMG]
+   Object.create CPNAME_SK_SP16_gasstation_SMG
+   Object.absolutePosition -162.334/162.407/-258.094
+   Object.rotation 0.000/-0.000/0.000
+   Object.setControlPointId 503
+   Object.layer 1
+
+   rem [ObjectSpawner: CPNAME_SK_SP16_gasstation_HeavyJeep]
+   Object.create CPNAME_SK_SP16_gasstation_HeavyJeep
+   Object.absolutePosition -140.339/161.335/-255.941
+   Object.rotation -90.000/-0.000/0.000
+   Object.setControlPointId 503
+   Object.layer 1
+
+   rem [ObjectSpawner: CPNAME_SK_SP16_gasstation_APC_0]
+   Object.create CPNAME_SK_SP16_gasstation_APC_0
+   Object.absolutePosition -146.392/161.298/-279.623
+   Object.rotation 0.000/-0.000/0.000
+   Object.setControlPointId 503
+   Object.layer 1
+
+   rem [ObjectSpawner: CPNAME_SK_SP16_gasstation_Tank]
+   Object.create CPNAME_SK_SP16_gasstation_Tank
+   Object.absolutePosition -139.849/161.298/-306.563
+   Object.rotation -90.000/-0.000/0.000
+   Object.setControlPointId 503
+   Object.layer 1
+
+   rem [ObjectSpawner: CPNAME_SK_SP16_gasstation_ART_1]
+   Object.create CPNAME_SK_SP16_gasstation_ART_1
+   Object.absolutePosition -197.623/161.298/-341.990
+   Object.rotation 0.000/0.000/0.000
+   Object.setControlPointId 503
+   Object.layer 1
+
+   rem [ObjectSpawner: Spawner_1]
+   Object.create Spawner_1
+   Object.absolutePosition -209.020/165.170/-140.814
+   Object.rotation 144.224/0.000/0.000
+   Object.setControlPointId 504
+   Object.layer 1
+
+   rem [ObjectSpawner: Spawner_2]
+   Object.create Spawner_2
+   Object.absolutePosition -199.818/155.800/273.707
+   Object.rotation -180.000/0.000/0.000
+   Object.setControlPointId 517
+   Object.layer 1
+
+   rem [ObjectSpawner: Spawner_3]
+   Object.create Spawner_3
+   Object.absolutePosition -205.604/155.800/273.443
+   Object.rotation -180.000/0.000/0.000
+   Object.setControlPointId 517
+   Object.layer 1
+
+   rem [ObjectSpawner: Spawner_4]
+   Object.create Spawner_4
+   Object.absolutePosition -144.337/149.799/250.606
+   Object.rotation -180.000/0.000/0.000
+   Object.setControlPointId 518
+   Object.layer 1
+
+   rem [ObjectSpawner: Spawner_6]
+   Object.create Spawner_6
+   Object.absolutePosition -134.506/149.799/250.606
+   Object.rotation -180.000/0.000/0.000
+   Object.setControlPointId 518
+   Object.layer 1
+
+   rem [ObjectSpawner: CPNAME_SK_SP16_gasstation_UAV_1]
+   Object.create CPNAME_SK_SP16_gasstation_UAV_1
+   Object.absolutePosition -175.661/149.799/253.474
+   Object.rotation -180.000/0.000/0.000
+   Object.setControlPointId 518
+   Object.layer 1
+
+   rem [ObjectSpawner: CPNAME_SK_SP16_gasstation_Radar_1]
+   Object.create CPNAME_SK_SP16_gasstation_Radar_1
+   Object.absolutePosition -129.654/149.799/276.259
+   Object.rotation 0.000/0.000/0.000
+   Object.setControlPointId 518
+   Object.layer 1
+
+   rem [ObjectSpawner: CPNAME_SK_SP16_gasstation_ART_2]
+   Object.create CPNAME_SK_SP16_gasstation_ART_2
+   Object.absolutePosition -120.675/149.853/248.615
+   Object.rotation -180.000/0.000/0.000
+   Object.setControlPointId 518
+   Object.layer 1
+
+   rem [ObjectSpawner: CPNAME_SK_SP16_gasstation_ART_3]
+   Object.create CPNAME_SK_SP16_gasstation_ART_3
+   Object.absolutePosition -120.675/149.853/239.619
+   Object.rotation -180.000/0.000/0.000
+   Object.setControlPointId 518
+   Object.layer 1
+
+   rem [ObjectSpawner: CPNAME_SK_SP16_gasstation_ART_4]
+   Object.create CPNAME_SK_SP16_gasstation_ART_4
+   Object.absolutePosition -120.675/149.853/230.950
+   Object.rotation -180.000/0.000/0.000
+   Object.setControlPointId 518
+   Object.layer 1
+
+   rem [ObjectSpawner: Spawner_7]
+   Object.create Spawner_7
+   Object.absolutePosition -173.375/163.493/-126.979
+   Object.rotation 180.000/0.000/0.000
+   Object.setControlPointId 505
+   Object.layer 1
+
+   rem [ObjectSpawner: Spawner_8]
+   Object.create Spawner_8
+   Object.absolutePosition -216.983/157.005/-6.925
+   Object.rotation 180.000/0.000/0.000
+   Object.setControlPointId 508
+   Object.layer 1
+
+   rem [ObjectSpawner: Spawner_9]
+   Object.create Spawner_9
+   Object.absolutePosition -203.876/156.910/-9.539
+   Object.rotation 180.000/0.000/0.000
+   Object.setControlPointId 508
+   Object.layer 1
+
+   rem [ObjectSpawner: Spawner_10]
+   Object.create Spawner_10
+   Object.absolutePosition -199.125/155.892/97.643
+   Object.rotation 180.000/0.000/0.000
+   Object.setControlPointId 511
+   Object.layer 1
+
+   rem [ObjectSpawner: Spawner_11]
+   Object.create Spawner_11
+   Object.absolutePosition -152.907/155.892/84.103
+   Object.rotation 180.000/0.000/0.000
+   Object.setControlPointId 512
+   Object.layer 1
+
+   rem [ObjectSpawner: Spawner_12]
+   Object.create Spawner_12
+   Object.absolutePosition -227.726/156.910/84.137
+   Object.rotation 180.000/0.000/0.000
+   Object.setControlPointId 511
+   Object.layer 1
+
+   rem [ObjectSpawner: Spawner_13]
+   Object.create Spawner_13
+   Object.absolutePosition -180.791/156.706/96.563
+   Object.rotation -170.893/0.000/0.000
+   Object.setControlPointId 511
+   Object.layer 1
+
+   rem [ObjectSpawner: Spawner_14]
+   Object.create Spawner_14
+   Object.absolutePosition -126.215/156.906/92.072
+   Object.rotation -180.000/0.000/0.000
+   Object.setControlPointId 512
+   Object.layer 1
+
+   rem [ObjectSpawner: Spawner_15]
+   Object.create Spawner_15
+   Object.absolutePosition -274.211/155.800/156.018
+   Object.rotation 180.000/0.000/0.000
+   Object.setControlPointId 514
+   Object.layer 1
+
+   rem [ObjectSpawner: Spawner_16]
+   Object.create Spawner_16
+   Object.absolutePosition -349.996/166.114/86.152
+   Object.rotation 90.000/0.000/0.000
+   Object.setControlPointId 513
+   Object.layer 1
+
+   rem [ObjectSpawner: Spawner_17]
+   Object.create Spawner_17
+   Object.absolutePosition -319.197/167.986/120.967
+   Object.rotation 180.000/0.000/0.000
+   Object.setControlPointId 513
+   Object.layer 1
+
+   rem [ObjectSpawner: Spawner_18]
+   Object.create Spawner_18
+   Object.absolutePosition -350.967/168.790/126.486
+   Object.rotation 150.000/0.000/0.000
+   Object.setControlPointId 513
+   Object.layer 1
+
+   rem [ObjectSpawner: Spawner_19]
+   Object.create Spawner_19
+   Object.absolutePosition -284.888/162.913/179.835
+   Object.rotation 180.000/0.000/0.000
+   Object.setControlPointId 514
+   Object.layer 1
+
+   rem [ObjectSpawner: Spawner_20]
+   Object.create Spawner_20
+   Object.absolutePosition -332.951/169.389/216.004
+   Object.rotation 180.000/0.000/0.000
+   Object.setControlPointId 516
+   Object.layer 1
+
+   rem [ObjectSpawner: Spawner_21]
+   Object.create Spawner_21
+   Object.absolutePosition -307.816/167.962/211.755
+   Object.rotation 180.000/0.000/0.000
+   Object.setControlPointId 516
+   Object.layer 1
+
+   rem [ObjectSpawner: Spawner_22]
+   Object.create Spawner_22
+   Object.absolutePosition -204.398/151.012/216.873
+   Object.rotation 180.000/0.000/0.000
+   Object.setControlPointId 518
+   Object.layer 1
+
+   rem [ObjectSpawner: Spawner_23]
+   Object.create Spawner_23
+   Object.absolutePosition -178.413/151.012/182.168
+   Object.rotation 180.000/0.000/0.000
+   Object.setControlPointId 518
+   Object.layer 1
+
+   rem [ObjectSpawner: Spawner_24]
+   Object.create Spawner_24
+   Object.absolutePosition -210.331/149.898/210.240
+   Object.rotation 180.000/0.000/0.000
+   Object.setControlPointId 518
+   Object.layer 1
+
+   rem [ObjectSpawner: Spawner_25]
+   Object.create Spawner_25
+   Object.absolutePosition -225.097/156.906/234.814
+   Object.rotation 180.000/0.000/0.000
+   Object.setControlPointId 517
+   Object.layer 1
+
+   rem [ObjectSpawner: Spawner_26]
+   Object.create Spawner_26
+   Object.absolutePosition -251.022/162.914/233.815
+   Object.rotation 180.000/0.000/0.000
+   Object.setControlPointId 517
+   Object.layer 1
+
+endIf
+
+rem ********** Spawn Points **********
+rem [SpawnPointTemplate: CPNAME_SK_SP16_gasstation_1]
+ObjectTemplate.create SpawnPoint CPNAME_SK_SP16_gasstation_1
+ObjectTemplate.activeSafe SpawnPoint CPNAME_SK_SP16_gasstation_1
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setSpawnPositionOffset 0/1.25/0
+ObjectTemplate.setControlPointId 503
+
+rem [SpawnPoint: CPNAME_SK_SP16_gasstation_1]
+Object.create CPNAME_SK_SP16_gasstation_1
+Object.absolutePosition -160.956/161.298/-266.017
+Object.rotation 117.052/-0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: CPNAME_SK_SP16_gasstation_2]
+ObjectTemplate.create SpawnPoint CPNAME_SK_SP16_gasstation_2
+ObjectTemplate.activeSafe SpawnPoint CPNAME_SK_SP16_gasstation_2
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setSpawnPositionOffset 0/1.25/0
+ObjectTemplate.setControlPointId 503
+
+rem [SpawnPoint: CPNAME_SK_SP16_gasstation_2]
+Object.create CPNAME_SK_SP16_gasstation_2
+Object.absolutePosition -121.763/161.298/-282.870
+Object.rotation -90.000/-0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: CPNAME_SK_SP16_gasstation_3]
+ObjectTemplate.create SpawnPoint CPNAME_SK_SP16_gasstation_3
+ObjectTemplate.activeSafe SpawnPoint CPNAME_SK_SP16_gasstation_3
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setSpawnPositionOffset 0/1.25/0
+ObjectTemplate.setControlPointId 503
+
+rem [SpawnPoint: CPNAME_SK_SP16_gasstation_3]
+Object.create CPNAME_SK_SP16_gasstation_3
+Object.absolutePosition -162.397/161.298/-319.513
+Object.rotation 0.000/-0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: CPNAME_SK_SP16_gasstation_5]
+ObjectTemplate.create SpawnPoint CPNAME_SK_SP16_gasstation_5
+ObjectTemplate.activeSafe SpawnPoint CPNAME_SK_SP16_gasstation_5
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setSpawnPositionOffset 0/1.25/0
+ObjectTemplate.setControlPointId 503
+
+rem [SpawnPoint: CPNAME_SK_SP16_gasstation_5]
+Object.create CPNAME_SK_SP16_gasstation_5
+Object.absolutePosition -179.000/161.298/-316.000
+Object.rotation 52.068/-0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: CPNAME_SK_SP16_gasstation_14]
+ObjectTemplate.create SpawnPoint CPNAME_SK_SP16_gasstation_14
+ObjectTemplate.activeSafe SpawnPoint CPNAME_SK_SP16_gasstation_14
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setSpawnPositionOffset 0/1.25/0
+ObjectTemplate.setControlPointId 503
+
+rem [SpawnPoint: CPNAME_SK_SP16_gasstation_14]
+Object.create CPNAME_SK_SP16_gasstation_14
+Object.absolutePosition -121.763/161.298/-287.938
+Object.rotation -90.000/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: CPNAME_SK_SP16_gasstation_15]
+ObjectTemplate.create SpawnPoint CPNAME_SK_SP16_gasstation_15
+ObjectTemplate.activeSafe SpawnPoint CPNAME_SK_SP16_gasstation_15
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setSpawnPositionOffset 0/1.25/0
+ObjectTemplate.setControlPointId 503
+
+rem [SpawnPoint: CPNAME_SK_SP16_gasstation_15]
+Object.create CPNAME_SK_SP16_gasstation_15
+Object.absolutePosition -121.763/161.298/-292.836
+Object.rotation -90.000/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: CPNAME_SK_SP16_gasstation_16]
+ObjectTemplate.create SpawnPoint CPNAME_SK_SP16_gasstation_16
+ObjectTemplate.activeSafe SpawnPoint CPNAME_SK_SP16_gasstation_16
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setSpawnPositionOffset 0/1.25/0
+ObjectTemplate.setControlPointId 503
+
+rem [SpawnPoint: CPNAME_SK_SP16_gasstation_16]
+Object.create CPNAME_SK_SP16_gasstation_16
+Object.absolutePosition -156.933/161.298/-319.513
+Object.rotation 0.000/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: CPNAME_SK_SP16_gasstation_17]
+ObjectTemplate.create SpawnPoint CPNAME_SK_SP16_gasstation_17
+ObjectTemplate.activeSafe SpawnPoint CPNAME_SK_SP16_gasstation_17
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setSpawnPositionOffset 0/1.25/0
+ObjectTemplate.setControlPointId 503
+
+rem [SpawnPoint: CPNAME_SK_SP16_gasstation_17]
+Object.create CPNAME_SK_SP16_gasstation_17
+Object.absolutePosition -174.710/161.298/-316.000
+Object.rotation 52.068/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_1]
+ObjectTemplate.create SpawnPoint SpawnPoint_1
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_1
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 505
+ObjectTemplate.setOnlyForTeam 1
+
+rem [SpawnPoint: SpawnPoint_1]
+Object.create SpawnPoint_1
+Object.absolutePosition -184.040/155.805/-76.782
+Object.rotation -180.000/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_2]
+ObjectTemplate.create SpawnPoint SpawnPoint_2
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_2
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 505
+ObjectTemplate.setOnlyForTeam 1
+
+rem [SpawnPoint: SpawnPoint_2]
+Object.create SpawnPoint_2
+Object.absolutePosition -171.888/155.800/-67.441
+Object.rotation -180.000/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_3]
+ObjectTemplate.create SpawnPoint SpawnPoint_3
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_3
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 505
+ObjectTemplate.setOnlyForTeam 1
+
+rem [SpawnPoint: SpawnPoint_3]
+Object.create SpawnPoint_3
+Object.absolutePosition -176.354/155.800/-75.348
+Object.rotation -180.000/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_4]
+ObjectTemplate.create SpawnPoint SpawnPoint_4
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_4
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 505
+ObjectTemplate.setOnlyForTeam 1
+
+rem [SpawnPoint: SpawnPoint_4]
+Object.create SpawnPoint_4
+Object.absolutePosition -162.181/155.860/-74.714
+Object.rotation -90.000/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_5]
+ObjectTemplate.create SpawnPoint SpawnPoint_5
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_5
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 504
+ObjectTemplate.setOnlyForTeam 1
+
+rem [SpawnPoint: SpawnPoint_5]
+Object.create SpawnPoint_5
+Object.absolutePosition -241.267/164.067/-73.890
+Object.rotation 165.000/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_6]
+ObjectTemplate.create SpawnPoint SpawnPoint_6
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_6
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 504
+ObjectTemplate.setOnlyForTeam 1
+
+rem [SpawnPoint: SpawnPoint_6]
+Object.create SpawnPoint_6
+Object.absolutePosition -248.364/165.062/-74.530
+Object.rotation 165.020/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_7]
+ObjectTemplate.create SpawnPoint SpawnPoint_7
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_7
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 504
+ObjectTemplate.setOnlyForTeam 1
+
+rem [SpawnPoint: SpawnPoint_7]
+Object.create SpawnPoint_7
+Object.absolutePosition -285.001/169.897/-98.650
+Object.rotation 120.000/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_8]
+ObjectTemplate.create SpawnPoint SpawnPoint_8
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_8
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 504
+ObjectTemplate.setOnlyForTeam 1
+
+rem [SpawnPoint: SpawnPoint_8]
+Object.create SpawnPoint_8
+Object.absolutePosition -288.937/170.243/-100.441
+Object.rotation 135.020/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_9]
+ObjectTemplate.create SpawnPoint SpawnPoint_9
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_9
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 506
+ObjectTemplate.setOnlyForTeam 1
+
+rem [SpawnPoint: SpawnPoint_9]
+Object.create SpawnPoint_9
+Object.absolutePosition -171.246/155.800/0.608
+Object.rotation 90.000/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_10]
+ObjectTemplate.create SpawnPoint SpawnPoint_10
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_10
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 506
+ObjectTemplate.setOnlyForTeam 1
+
+rem [SpawnPoint: SpawnPoint_10]
+Object.create SpawnPoint_10
+Object.absolutePosition -179.321/155.800/0.608
+Object.rotation -89.980/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_11]
+ObjectTemplate.create SpawnPoint SpawnPoint_11
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_11
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 506
+ObjectTemplate.setOnlyForTeam 1
+
+rem [SpawnPoint: SpawnPoint_11]
+Object.create SpawnPoint_11
+Object.absolutePosition -193.025/158.402/3.697
+Object.rotation -89.980/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_12]
+ObjectTemplate.create SpawnPoint SpawnPoint_12
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_12
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 506
+ObjectTemplate.setOnlyForTeam 1
+
+rem [SpawnPoint: SpawnPoint_12]
+Object.create SpawnPoint_12
+Object.absolutePosition -141.911/155.800/0.806
+Object.rotation -179.980/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_13]
+ObjectTemplate.create SpawnPoint SpawnPoint_13
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_13
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 507
+ObjectTemplate.setOnlyForTeam 1
+
+rem [SpawnPoint: SpawnPoint_13]
+Object.create SpawnPoint_13
+Object.absolutePosition -225.726/155.800/36.465
+Object.rotation -89.980/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_14]
+ObjectTemplate.create SpawnPoint SpawnPoint_14
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_14
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 507
+ObjectTemplate.setOnlyForTeam 1
+
+rem [SpawnPoint: SpawnPoint_14]
+Object.create SpawnPoint_14
+Object.absolutePosition -247.893/155.800/32.508
+Object.rotation 90.020/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_15]
+ObjectTemplate.create SpawnPoint SpawnPoint_15
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_15
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 507
+ObjectTemplate.setOnlyForTeam 1
+
+rem [SpawnPoint: SpawnPoint_15]
+Object.create SpawnPoint_15
+Object.absolutePosition -261.168/155.800/19.902
+Object.rotation 90.020/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_16]
+ObjectTemplate.create SpawnPoint SpawnPoint_16
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_16
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 507
+ObjectTemplate.setOnlyForTeam 1
+
+rem [SpawnPoint: SpawnPoint_16]
+Object.create SpawnPoint_16
+Object.absolutePosition -222.409/155.800/12.595
+Object.rotation -89.980/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_17]
+ObjectTemplate.create SpawnPoint SpawnPoint_17
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_17
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 508
+ObjectTemplate.setOnlyForTeam 1
+
+rem [SpawnPoint: SpawnPoint_17]
+Object.create SpawnPoint_17
+Object.absolutePosition -194.013/155.800/63.247
+Object.rotation -90.000/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_18]
+ObjectTemplate.create SpawnPoint SpawnPoint_18
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_18
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 508
+ObjectTemplate.setOnlyForTeam 1
+
+rem [SpawnPoint: SpawnPoint_18]
+Object.create SpawnPoint_18
+Object.absolutePosition -170.788/160.286/50.350
+Object.rotation -90.000/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_19]
+ObjectTemplate.create SpawnPoint SpawnPoint_19
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_19
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 508
+ObjectTemplate.setOnlyForTeam 1
+
+rem [SpawnPoint: SpawnPoint_19]
+Object.create SpawnPoint_19
+Object.absolutePosition -221.897/155.800/64.586
+Object.rotation 90.000/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_20]
+ObjectTemplate.create SpawnPoint SpawnPoint_20
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_20
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 508
+ObjectTemplate.setOnlyForTeam 1
+
+rem [SpawnPoint: SpawnPoint_20]
+Object.create SpawnPoint_20
+Object.absolutePosition -250.289/155.800/32.533
+Object.rotation 90.000/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_21]
+ObjectTemplate.create SpawnPoint SpawnPoint_21
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_21
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 509
+ObjectTemplate.setOnlyForTeam 1
+
+rem [SpawnPoint: SpawnPoint_21]
+Object.create SpawnPoint_21
+Object.absolutePosition -142.698/155.800/49.037
+Object.rotation 90.000/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_22]
+ObjectTemplate.create SpawnPoint SpawnPoint_22
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_22
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 509
+ObjectTemplate.setOnlyForTeam 1
+
+rem [SpawnPoint: SpawnPoint_22]
+Object.create SpawnPoint_22
+Object.absolutePosition -145.318/155.959/58.908
+Object.rotation 90.000/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_23]
+ObjectTemplate.create SpawnPoint SpawnPoint_23
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_23
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 509
+ObjectTemplate.setOnlyForTeam 1
+
+rem [SpawnPoint: SpawnPoint_23]
+Object.create SpawnPoint_23
+Object.absolutePosition -170.944/164.275/39.181
+Object.rotation 90.000/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_24]
+ObjectTemplate.create SpawnPoint SpawnPoint_24
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_24
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 509
+ObjectTemplate.setOnlyForTeam 1
+
+rem [SpawnPoint: SpawnPoint_24]
+Object.create SpawnPoint_24
+Object.absolutePosition -143.009/155.800/81.532
+Object.rotation 90.000/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_25]
+ObjectTemplate.create SpawnPoint SpawnPoint_25
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_25
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 512
+ObjectTemplate.setOnlyForTeam 1
+
+rem [SpawnPoint: SpawnPoint_25]
+Object.create SpawnPoint_25
+Object.absolutePosition -124.968/149.851/121.497
+Object.rotation 180.000/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_26]
+ObjectTemplate.create SpawnPoint SpawnPoint_26
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_26
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 512
+ObjectTemplate.setOnlyForTeam 1
+
+rem [SpawnPoint: SpawnPoint_26]
+Object.create SpawnPoint_26
+Object.absolutePosition -124.968/149.851/124.361
+Object.rotation 180.000/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_27]
+ObjectTemplate.create SpawnPoint SpawnPoint_27
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_27
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 512
+ObjectTemplate.setOnlyForTeam 1
+
+rem [SpawnPoint: SpawnPoint_27]
+Object.create SpawnPoint_27
+Object.absolutePosition -125.163/149.851/87.817
+Object.rotation 0.028/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_28]
+ObjectTemplate.create SpawnPoint SpawnPoint_28
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_28
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 512
+ObjectTemplate.setOnlyForTeam 1
+
+rem [SpawnPoint: SpawnPoint_28]
+Object.create SpawnPoint_28
+Object.absolutePosition -125.163/149.851/85.357
+Object.rotation 0.028/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_29]
+ObjectTemplate.create SpawnPoint SpawnPoint_29
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_29
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 511
+ObjectTemplate.setOnlyForTeam 1
+
+rem [SpawnPoint: SpawnPoint_29]
+Object.create SpawnPoint_29
+Object.absolutePosition -146.462/149.799/132.297
+Object.rotation 180.000/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_31]
+ObjectTemplate.create SpawnPoint SpawnPoint_31
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_31
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 511
+ObjectTemplate.setOnlyForTeam 1
+
+rem [SpawnPoint: SpawnPoint_31]
+Object.create SpawnPoint_31
+Object.absolutePosition -143.560/149.799/132.297
+Object.rotation 180.000/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_32]
+ObjectTemplate.create SpawnPoint SpawnPoint_32
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_32
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 511
+ObjectTemplate.setOnlyForTeam 1
+
+rem [SpawnPoint: SpawnPoint_32]
+Object.create SpawnPoint_32
+Object.absolutePosition -227.168/155.800/110.550
+Object.rotation 180.000/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_33]
+ObjectTemplate.create SpawnPoint SpawnPoint_33
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_33
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 511
+ObjectTemplate.setOnlyForTeam 1
+
+rem [SpawnPoint: SpawnPoint_33]
+Object.create SpawnPoint_33
+Object.absolutePosition -249.646/155.800/101.985
+Object.rotation 89.972/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_34]
+ObjectTemplate.create SpawnPoint SpawnPoint_34
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_34
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 510
+ObjectTemplate.setOnlyForTeam 1
+
+rem [SpawnPoint: SpawnPoint_34]
+Object.create SpawnPoint_34
+Object.absolutePosition -257.117/155.800/108.950
+Object.rotation -90.000/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_35]
+ObjectTemplate.create SpawnPoint SpawnPoint_35
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_35
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 510
+ObjectTemplate.setOnlyForTeam 1
+
+rem [SpawnPoint: SpawnPoint_35]
+Object.create SpawnPoint_35
+Object.absolutePosition -281.452/155.800/107.955
+Object.rotation 90.000/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_36]
+ObjectTemplate.create SpawnPoint SpawnPoint_36
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_36
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 510
+ObjectTemplate.setOnlyForTeam 1
+
+rem [SpawnPoint: SpawnPoint_36]
+Object.create SpawnPoint_36
+Object.absolutePosition -326.584/161.797/62.574
+Object.rotation 90.000/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_37]
+ObjectTemplate.create SpawnPoint SpawnPoint_37
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_37
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 510
+ObjectTemplate.setOnlyForTeam 1
+
+rem [SpawnPoint: SpawnPoint_37]
+Object.create SpawnPoint_37
+Object.absolutePosition -312.763/155.800/91.616
+Object.rotation 90.000/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_38]
+ObjectTemplate.create SpawnPoint SpawnPoint_38
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_38
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 513
+ObjectTemplate.setOnlyForTeam 1
+
+rem [SpawnPoint: SpawnPoint_38]
+Object.create SpawnPoint_38
+Object.absolutePosition -381.754/168.797/128.058
+Object.rotation 134.966/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_39]
+ObjectTemplate.create SpawnPoint SpawnPoint_39
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_39
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 513
+ObjectTemplate.setOnlyForTeam 1
+
+rem [SpawnPoint: SpawnPoint_39]
+Object.create SpawnPoint_39
+Object.absolutePosition -368.693/173.699/164.802
+Object.rotation 134.966/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_40]
+ObjectTemplate.create SpawnPoint SpawnPoint_40
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_40
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 513
+ObjectTemplate.setOnlyForTeam 1
+
+rem [SpawnPoint: SpawnPoint_40]
+Object.create SpawnPoint_40
+Object.absolutePosition -323.196/166.997/143.517
+Object.rotation -90.034/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_41]
+ObjectTemplate.create SpawnPoint SpawnPoint_41
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_41
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 513
+ObjectTemplate.setOnlyForTeam 1
+
+rem [SpawnPoint: SpawnPoint_41]
+Object.create SpawnPoint_41
+Object.absolutePosition -331.495/171.482/157.637
+Object.rotation -90.034/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_42]
+ObjectTemplate.create SpawnPoint SpawnPoint_42
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_42
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 514
+ObjectTemplate.setOnlyForTeam 1
+
+rem [SpawnPoint: SpawnPoint_42]
+Object.create SpawnPoint_42
+Object.absolutePosition -258.975/155.800/171.064
+Object.rotation -90.034/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_43]
+ObjectTemplate.create SpawnPoint SpawnPoint_43
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_43
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 514
+ObjectTemplate.setOnlyForTeam 1
+
+rem [SpawnPoint: SpawnPoint_43]
+Object.create SpawnPoint_43
+Object.absolutePosition -276.048/161.884/182.934
+Object.rotation -150.034/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_44]
+ObjectTemplate.create SpawnPoint SpawnPoint_44
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_44
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 514
+ObjectTemplate.setOnlyForTeam 1
+
+rem [SpawnPoint: SpawnPoint_44]
+Object.create SpawnPoint_44
+Object.absolutePosition -244.821/155.800/171.245
+Object.rotation 89.966/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_45]
+ObjectTemplate.create SpawnPoint SpawnPoint_45
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_45
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 514
+ObjectTemplate.setOnlyForTeam 1
+
+rem [SpawnPoint: SpawnPoint_45]
+Object.create SpawnPoint_45
+Object.absolutePosition -281.308/167.299/204.498
+Object.rotation -150.034/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_46]
+ObjectTemplate.create SpawnPoint SpawnPoint_46
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_46
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 515
+ObjectTemplate.setOnlyForTeam 1
+
+rem [SpawnPoint: SpawnPoint_46]
+Object.create SpawnPoint_46
+Object.absolutePosition -220.782/149.799/195.781
+Object.rotation -90.034/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_47]
+ObjectTemplate.create SpawnPoint SpawnPoint_47
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_47
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 515
+ObjectTemplate.setOnlyForTeam 1
+
+rem [SpawnPoint: SpawnPoint_47]
+Object.create SpawnPoint_47
+Object.absolutePosition -233.207/155.800/191.593
+Object.rotation 179.966/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_48]
+ObjectTemplate.create SpawnPoint SpawnPoint_48
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_48
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 515
+ObjectTemplate.setOnlyForTeam 1
+
+rem [SpawnPoint: SpawnPoint_48]
+Object.create SpawnPoint_48
+Object.absolutePosition -154.052/149.799/195.337
+Object.rotation 179.966/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_49]
+ObjectTemplate.create SpawnPoint SpawnPoint_49
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_49
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 515
+ObjectTemplate.setOnlyForTeam 1
+
+rem [SpawnPoint: SpawnPoint_49]
+Object.create SpawnPoint_49
+Object.absolutePosition -168.540/149.799/198.825
+Object.rotation -90.062/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_50]
+ObjectTemplate.create SpawnPoint SpawnPoint_50
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_50
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 516
+ObjectTemplate.setOnlyForTeam 1
+
+rem [SpawnPoint: SpawnPoint_50]
+Object.create SpawnPoint_50
+Object.absolutePosition -299.857/172.228/262.044
+Object.rotation -90.034/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_51]
+ObjectTemplate.create SpawnPoint SpawnPoint_51
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_51
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 516
+ObjectTemplate.setOnlyForTeam 1
+
+rem [SpawnPoint: SpawnPoint_51]
+Object.create SpawnPoint_51
+Object.absolutePosition -272.225/161.808/284.358
+Object.rotation 179.985/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_52]
+ObjectTemplate.create SpawnPoint SpawnPoint_52
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_52
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 516
+ObjectTemplate.setOnlyForTeam 1
+
+rem [SpawnPoint: SpawnPoint_52]
+Object.create SpawnPoint_52
+Object.absolutePosition -274.638/161.808/284.301
+Object.rotation 179.985/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_53]
+ObjectTemplate.create SpawnPoint SpawnPoint_53
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_53
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 516
+ObjectTemplate.setOnlyForTeam 1
+
+rem [SpawnPoint: SpawnPoint_53]
+Object.create SpawnPoint_53
+Object.absolutePosition -295.105/168.297/261.556
+Object.rotation 89.985/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_54]
+ObjectTemplate.create SpawnPoint SpawnPoint_54
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_54
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 517
+ObjectTemplate.setOnlyForTeam 1
+
+rem [SpawnPoint: SpawnPoint_54]
+Object.create SpawnPoint_54
+Object.absolutePosition -225.653/155.800/276.723
+Object.rotation 90.005/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_55]
+ObjectTemplate.create SpawnPoint SpawnPoint_55
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_55
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 517
+ObjectTemplate.setOnlyForTeam 1
+
+rem [SpawnPoint: SpawnPoint_55]
+Object.create SpawnPoint_55
+Object.absolutePosition -204.172/155.800/284.815
+Object.rotation -179.995/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_57]
+ObjectTemplate.create SpawnPoint SpawnPoint_57
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_57
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 517
+ObjectTemplate.setOnlyForTeam 1
+
+rem [SpawnPoint: SpawnPoint_57]
+Object.create SpawnPoint_57
+Object.absolutePosition -188.051/155.800/248.206
+Object.rotation 0.025/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_58]
+ObjectTemplate.create SpawnPoint SpawnPoint_58
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_58
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 517
+ObjectTemplate.setOnlyForTeam 1
+
+rem [SpawnPoint: SpawnPoint_58]
+Object.create SpawnPoint_58
+Object.absolutePosition -185.744/155.800/241.446
+Object.rotation 0.025/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_59]
+ObjectTemplate.create SpawnPoint SpawnPoint_59
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_59
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 518
+ObjectTemplate.setOnlyForTeam 1
+
+rem [SpawnPoint: SpawnPoint_59]
+Object.create SpawnPoint_59
+Object.absolutePosition -167.445/149.799/233.413
+Object.rotation -89.995/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_60]
+ObjectTemplate.create SpawnPoint SpawnPoint_60
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_60
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 518
+ObjectTemplate.setOnlyForTeam 1
+
+rem [SpawnPoint: SpawnPoint_60]
+Object.create SpawnPoint_60
+Object.absolutePosition -222.492/149.799/231.459
+Object.rotation 120.005/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_61]
+ObjectTemplate.create SpawnPoint SpawnPoint_61
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_61
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 518
+ObjectTemplate.setOnlyForTeam 1
+
+rem [SpawnPoint: SpawnPoint_61]
+Object.create SpawnPoint_61
+Object.absolutePosition -156.498/149.799/233.370
+Object.rotation 120.005/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_62]
+ObjectTemplate.create SpawnPoint SpawnPoint_62
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_62
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 518
+ObjectTemplate.setOnlyForTeam 1
+
+rem [SpawnPoint: SpawnPoint_62]
+Object.create SpawnPoint_62
+Object.absolutePosition -148.320/149.799/243.588
+Object.rotation -179.967/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_63]
+ObjectTemplate.create SpawnPoint SpawnPoint_63
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_63
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 505
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: SpawnPoint_63]
+Object.create SpawnPoint_63
+Object.absolutePosition -156.651/162.497/-108.288
+Object.rotation 89.980/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_64]
+ObjectTemplate.create SpawnPoint SpawnPoint_64
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_64
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 505
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: SpawnPoint_64]
+Object.create SpawnPoint_64
+Object.absolutePosition -159.431/162.497/-119.262
+Object.rotation 89.980/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_65]
+ObjectTemplate.create SpawnPoint SpawnPoint_65
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_65
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 505
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: SpawnPoint_65]
+Object.create SpawnPoint_65
+Object.absolutePosition -165.324/162.497/-118.797
+Object.rotation 179.952/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_66]
+ObjectTemplate.create SpawnPoint SpawnPoint_66
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_66
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 505
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: SpawnPoint_66]
+Object.create SpawnPoint_66
+Object.absolutePosition -156.122/162.497/-119.262
+Object.rotation 89.980/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_67]
+ObjectTemplate.create SpawnPoint SpawnPoint_67
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_67
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 504
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: SpawnPoint_67]
+Object.create SpawnPoint_67
+Object.absolutePosition -238.903/163.399/-161.432
+Object.rotation 89.952/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_68]
+ObjectTemplate.create SpawnPoint SpawnPoint_68
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_68
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 504
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: SpawnPoint_68]
+Object.create SpawnPoint_68
+Object.absolutePosition -243.871/163.399/-161.432
+Object.rotation 89.952/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_69]
+ObjectTemplate.create SpawnPoint SpawnPoint_69
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_69
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 504
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: SpawnPoint_69]
+Object.create SpawnPoint_69
+Object.absolutePosition -250.366/163.399/-156.410
+Object.rotation -90.028/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_70]
+ObjectTemplate.create SpawnPoint SpawnPoint_70
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_70
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 504
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: SpawnPoint_70]
+Object.create SpawnPoint_70
+Object.absolutePosition -248.052/163.399/-159.431
+Object.rotation -90.028/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_71]
+ObjectTemplate.create SpawnPoint SpawnPoint_71
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_71
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 506
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: SpawnPoint_71]
+Object.create SpawnPoint_71
+Object.absolutePosition -192.410/155.800/-64.792
+Object.rotation -90.028/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_72]
+ObjectTemplate.create SpawnPoint SpawnPoint_72
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_72
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 506
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: SpawnPoint_72]
+Object.create SpawnPoint_72
+Object.absolutePosition -187.971/155.800/-63.536
+Object.rotation 179.972/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_73]
+ObjectTemplate.create SpawnPoint SpawnPoint_73
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_73
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 506
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: SpawnPoint_73]
+Object.create SpawnPoint_73
+Object.absolutePosition -178.217/155.800/-67.095
+Object.rotation 179.972/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_74]
+ObjectTemplate.create SpawnPoint SpawnPoint_74
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_74
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 506
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: SpawnPoint_74]
+Object.create SpawnPoint_74
+Object.absolutePosition -181.439/155.800/-67.095
+Object.rotation 179.972/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_75]
+ObjectTemplate.create SpawnPoint SpawnPoint_75
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_75
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 507
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: SpawnPoint_75]
+Object.create SpawnPoint_75
+Object.absolutePosition -217.553/155.800/-42.703
+Object.rotation -90.028/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_76]
+ObjectTemplate.create SpawnPoint SpawnPoint_76
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_76
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 507
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: SpawnPoint_76]
+Object.create SpawnPoint_76
+Object.absolutePosition -217.553/155.800/-45.228
+Object.rotation -90.028/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_77]
+ObjectTemplate.create SpawnPoint SpawnPoint_77
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_77
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 507
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: SpawnPoint_77]
+Object.create SpawnPoint_77
+Object.absolutePosition -225.936/155.831/-52.452
+Object.rotation -90.028/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_78]
+ObjectTemplate.create SpawnPoint SpawnPoint_78
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_78
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 507
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: SpawnPoint_78]
+Object.create SpawnPoint_78
+Object.absolutePosition -217.055/155.831/-52.452
+Object.rotation 89.972/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_79]
+ObjectTemplate.create SpawnPoint SpawnPoint_79
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_79
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 508
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: SpawnPoint_79]
+Object.create SpawnPoint_79
+Object.absolutePosition -179.072/155.800/-11.782
+Object.rotation -90.028/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_80]
+ObjectTemplate.create SpawnPoint SpawnPoint_80
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_80
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 508
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: SpawnPoint_80]
+Object.create SpawnPoint_80
+Object.absolutePosition -179.932/155.800/-27.620
+Object.rotation -90.028/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_81]
+ObjectTemplate.create SpawnPoint SpawnPoint_81
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_81
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 508
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: SpawnPoint_81]
+Object.create SpawnPoint_81
+Object.absolutePosition -221.033/155.800/-22.371
+Object.rotation 89.972/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_82]
+ObjectTemplate.create SpawnPoint SpawnPoint_82
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_82
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 508
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: SpawnPoint_82]
+Object.create SpawnPoint_82
+Object.absolutePosition -219.665/155.800/-1.799
+Object.rotation 89.972/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_83]
+ObjectTemplate.create SpawnPoint SpawnPoint_83
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_83
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 509
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: SpawnPoint_83]
+Object.create SpawnPoint_83
+Object.absolutePosition -171.237/155.800/-21.524
+Object.rotation 89.972/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_84]
+ObjectTemplate.create SpawnPoint SpawnPoint_84
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_84
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 509
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: SpawnPoint_84]
+Object.create SpawnPoint_84
+Object.absolutePosition -142.758/155.800/-19.000
+Object.rotation 89.972/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_85]
+ObjectTemplate.create SpawnPoint SpawnPoint_85
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_85
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 509
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: SpawnPoint_85]
+Object.create SpawnPoint_85
+Object.absolutePosition -142.294/155.800/-6.172
+Object.rotation 89.972/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_86]
+ObjectTemplate.create SpawnPoint SpawnPoint_86
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_86
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 509
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: SpawnPoint_86]
+Object.create SpawnPoint_86
+Object.absolutePosition -150.068/155.800/-19.383
+Object.rotation -90.028/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_87]
+ObjectTemplate.create SpawnPoint SpawnPoint_87
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_87
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 510
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: SpawnPoint_87]
+Object.create SpawnPoint_87
+Object.absolutePosition -256.642/155.800/20.130
+Object.rotation 89.972/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_88]
+ObjectTemplate.create SpawnPoint SpawnPoint_88
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_88
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 510
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: SpawnPoint_88]
+Object.create SpawnPoint_88
+Object.absolutePosition -227.305/155.800/16.437
+Object.rotation -90.028/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_89]
+ObjectTemplate.create SpawnPoint SpawnPoint_89
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_89
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 510
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: SpawnPoint_89]
+Object.create SpawnPoint_89
+Object.absolutePosition -230.767/155.800/23.466
+Object.rotation -0.028/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_90]
+ObjectTemplate.create SpawnPoint SpawnPoint_90
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_90
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 510
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: SpawnPoint_90]
+Object.create SpawnPoint_90
+Object.absolutePosition -248.829/155.800/13.204
+Object.rotation -0.028/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_91]
+ObjectTemplate.create SpawnPoint SpawnPoint_91
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_91
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 511
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: SpawnPoint_91]
+Object.create SpawnPoint_91
+Object.absolutePosition -187.764/155.800/51.201
+Object.rotation 90.000/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_92]
+ObjectTemplate.create SpawnPoint SpawnPoint_92
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_92
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 511
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: SpawnPoint_92]
+Object.create SpawnPoint_92
+Object.absolutePosition -200.137/155.800/51.304
+Object.rotation 0.000/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_93]
+ObjectTemplate.create SpawnPoint SpawnPoint_93
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_93
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 511
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: SpawnPoint_93]
+Object.create SpawnPoint_93
+Object.absolutePosition -214.892/155.800/88.205
+Object.rotation 0.000/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_94]
+ObjectTemplate.create SpawnPoint SpawnPoint_94
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_94
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 511
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: SpawnPoint_94]
+Object.create SpawnPoint_94
+Object.absolutePosition -171.986/155.800/47.183
+Object.rotation 0.000/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_95]
+ObjectTemplate.create SpawnPoint SpawnPoint_95
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_95
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 512
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: SpawnPoint_95]
+Object.create SpawnPoint_95
+Object.absolutePosition -147.818/155.800/71.305
+Object.rotation -90.020/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_96]
+ObjectTemplate.create SpawnPoint SpawnPoint_96
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_96
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 512
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: SpawnPoint_96]
+Object.create SpawnPoint_96
+Object.absolutePosition -143.710/155.800/59.084
+Object.rotation 89.980/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_97]
+ObjectTemplate.create SpawnPoint SpawnPoint_97
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_97
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 512
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: SpawnPoint_97]
+Object.create SpawnPoint_97
+Object.absolutePosition -150.562/155.800/89.733
+Object.rotation 89.980/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_98]
+ObjectTemplate.create SpawnPoint SpawnPoint_98
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_98
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 512
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: SpawnPoint_98]
+Object.create SpawnPoint_98
+Object.absolutePosition -147.869/155.800/68.651
+Object.rotation -90.020/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_99]
+ObjectTemplate.create SpawnPoint SpawnPoint_99
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_99
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 513
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: SpawnPoint_99]
+Object.create SpawnPoint_99
+Object.absolutePosition -326.586/161.797/56.936
+Object.rotation -0.020/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_100]
+ObjectTemplate.create SpawnPoint SpawnPoint_100
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_100
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 513
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: SpawnPoint_100]
+Object.create SpawnPoint_100
+Object.absolutePosition -344.848/161.797/51.751
+Object.rotation -0.020/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_101]
+ObjectTemplate.create SpawnPoint SpawnPoint_101
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_101
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 513
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: SpawnPoint_101]
+Object.create SpawnPoint_101
+Object.absolutePosition -347.930/161.797/51.751
+Object.rotation -0.020/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_102]
+ObjectTemplate.create SpawnPoint SpawnPoint_102
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_102
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 513
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: SpawnPoint_102]
+Object.create SpawnPoint_102
+Object.absolutePosition -333.799/161.797/51.535
+Object.rotation 90.000/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_103]
+ObjectTemplate.create SpawnPoint SpawnPoint_103
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_103
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 514
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: SpawnPoint_103]
+Object.create SpawnPoint_103
+Object.absolutePosition -311.456/155.800/102.895
+Object.rotation -0.020/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_104]
+ObjectTemplate.create SpawnPoint SpawnPoint_104
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_104
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 514
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: SpawnPoint_104]
+Object.create SpawnPoint_104
+Object.absolutePosition -287.785/155.800/96.242
+Object.rotation -179.992/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_105]
+ObjectTemplate.create SpawnPoint SpawnPoint_105
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_105
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 514
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: SpawnPoint_105]
+Object.create SpawnPoint_105
+Object.absolutePosition -278.848/155.800/92.714
+Object.rotation 90.028/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_106]
+ObjectTemplate.create SpawnPoint SpawnPoint_106
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_106
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 514
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: SpawnPoint_106]
+Object.create SpawnPoint_106
+Object.absolutePosition -257.425/155.800/86.685
+Object.rotation 90.028/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_107]
+ObjectTemplate.create SpawnPoint SpawnPoint_107
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_107
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 515
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: SpawnPoint_107]
+Object.create SpawnPoint_107
+Object.absolutePosition -222.848/149.799/112.124
+Object.rotation -0.020/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_108]
+ObjectTemplate.create SpawnPoint SpawnPoint_108
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_108
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 515
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: SpawnPoint_108]
+Object.create SpawnPoint_108
+Object.absolutePosition -223.531/155.800/106.762
+Object.rotation -0.020/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_109]
+ObjectTemplate.create SpawnPoint SpawnPoint_109
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_109
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 515
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: SpawnPoint_109]
+Object.create SpawnPoint_109
+Object.absolutePosition -145.058/155.800/105.467
+Object.rotation -0.020/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_110]
+ObjectTemplate.create SpawnPoint SpawnPoint_110
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_110
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 515
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: SpawnPoint_110]
+Object.create SpawnPoint_110
+Object.absolutePosition -149.208/155.800/105.467
+Object.rotation -0.020/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_111]
+ObjectTemplate.create SpawnPoint SpawnPoint_111
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_111
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 516
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: SpawnPoint_111]
+Object.create SpawnPoint_111
+Object.absolutePosition -358.770/173.699/173.663
+Object.rotation 89.980/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_112]
+ObjectTemplate.create SpawnPoint SpawnPoint_112
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_112
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 516
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: SpawnPoint_112]
+Object.create SpawnPoint_112
+Object.absolutePosition -363.424/173.699/162.520
+Object.rotation 89.980/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_113]
+ObjectTemplate.create SpawnPoint SpawnPoint_113
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_113
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 516
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: SpawnPoint_113]
+Object.create SpawnPoint_113
+Object.absolutePosition -340.076/168.417/218.334
+Object.rotation 89.980/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_114]
+ObjectTemplate.create SpawnPoint SpawnPoint_114
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_114
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 516
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: SpawnPoint_114]
+Object.create SpawnPoint_114
+Object.absolutePosition -333.921/168.402/230.411
+Object.rotation 0.000/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_115]
+ObjectTemplate.create SpawnPoint SpawnPoint_115
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_115
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 517
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: SpawnPoint_115]
+Object.create SpawnPoint_115
+Object.absolutePosition -262.063/155.800/167.118
+Object.rotation 0.000/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_116]
+ObjectTemplate.create SpawnPoint SpawnPoint_116
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_116
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 517
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: SpawnPoint_116]
+Object.create SpawnPoint_116
+Object.absolutePosition -243.416/155.800/187.935
+Object.rotation 0.000/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_117]
+ObjectTemplate.create SpawnPoint SpawnPoint_117
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_117
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 517
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: SpawnPoint_117]
+Object.create SpawnPoint_117
+Object.absolutePosition -281.022/155.800/168.611
+Object.rotation 0.000/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_118]
+ObjectTemplate.create SpawnPoint SpawnPoint_118
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_118
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 517
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: SpawnPoint_118]
+Object.create SpawnPoint_118
+Object.absolutePosition -233.240/155.800/186.794
+Object.rotation 0.000/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_119]
+ObjectTemplate.create SpawnPoint SpawnPoint_119
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_119
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 518
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: SpawnPoint_119]
+Object.create SpawnPoint_119
+Object.absolutePosition -222.921/149.799/148.930
+Object.rotation 0.000/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_120]
+ObjectTemplate.create SpawnPoint SpawnPoint_120
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_120
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 518
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: SpawnPoint_120]
+Object.create SpawnPoint_120
+Object.absolutePosition -194.473/149.799/157.458
+Object.rotation 0.000/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_121]
+ObjectTemplate.create SpawnPoint SpawnPoint_121
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_121
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 518
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: SpawnPoint_121]
+Object.create SpawnPoint_121
+Object.absolutePosition -161.492/149.799/147.076
+Object.rotation -44.980/0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: SpawnPoint_122]
+ObjectTemplate.create SpawnPoint SpawnPoint_122
+ObjectTemplate.activeSafe SpawnPoint SpawnPoint_122
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setControlPointId 518
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: SpawnPoint_122]
+Object.create SpawnPoint_122
+Object.absolutePosition -150.857/149.834/146.768
+Object.rotation 45.048/0.000/0.000
+Object.layer 1
+
+rem ********** Control Points **********
+rem [ControlPointTemplate: CPNAME_SK_SP16_gasstation]
+ObjectTemplate.create ControlPoint CPNAME_SK_SP16_gasstation
+ObjectTemplate.activeSafe ControlPoint CPNAME_SK_SP16_gasstation
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.setNetworkableInfo ControlPointInfo
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.hasCollisionPhysics 1
+ObjectTemplate.physicsType Mesh
+rem -------------------------------------
+ObjectTemplate.addTemplate flagpole
+rem -------------------------------------
+ObjectTemplate.setControlPointName Gas_station
+ObjectTemplate.radius 10
+ObjectTemplate.team 2
+ObjectTemplate.controlPointId 503
+ObjectTemplate.timeToGetControl 0
+ObjectTemplate.timeToLoseControl 0
+ObjectTemplate.unableToChangeTeam 1
+ObjectTemplate.hoistMinMax 0.2/0.9
+
+rem [ControlPointTemplate: 1_West_Outpost]
+ObjectTemplate.create ControlPoint 1_West_Outpost
+ObjectTemplate.activeSafe ControlPoint 1_West_Outpost
+ObjectTemplate.setNetworkableInfo ControlPointInfo
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.hasCollisionPhysics 1
+ObjectTemplate.physicsType Mesh
+rem -------------------------------------
+ObjectTemplate.addTemplate flagpole
+rem -------------------------------------
+ObjectTemplate.setControlPointName West_outpost
+ObjectTemplate.radius 10
+ObjectTemplate.controlPointId 504
+ObjectTemplate.supplyGroupId 1
+ObjectTemplate.team 1
+ObjectTemplate.areaValueTeam1 10
+ObjectTemplate.areaValueTeam2 10
+ObjectTemplate.timeToGetControl 15
+ObjectTemplate.timeToLoseControl 15
+ObjectTemplate.enemyTicketLossWhenCaptured 50
+
+rem [ControlPointTemplate: 1_East_Outpost]
+ObjectTemplate.create ControlPoint 1_East_Outpost
+ObjectTemplate.activeSafe ControlPoint 1_East_Outpost
+ObjectTemplate.setNetworkableInfo ControlPointInfo
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.hasCollisionPhysics 1
+ObjectTemplate.physicsType Mesh
+ObjectTemplate.addTemplate flagpole
+ObjectTemplate.setControlPointName East_outpost
+ObjectTemplate.radius 10
+ObjectTemplate.controlPointId 505
+ObjectTemplate.supplyGroupId 1
+ObjectTemplate.team 1
+ObjectTemplate.areaValueTeam1 10
+ObjectTemplate.areaValueTeam2 10
+ObjectTemplate.timeToGetControl 15
+ObjectTemplate.timeToLoseControl 15
+ObjectTemplate.enemyTicketLossWhenCaptured 50
+
+rem [ControlPointTemplate: 2_Construction]
+ObjectTemplate.create ControlPoint 2_Construction
+ObjectTemplate.activeSafe ControlPoint 2_Construction
+ObjectTemplate.setNetworkableInfo ControlPointInfo
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.hasCollisionPhysics 1
+ObjectTemplate.physicsType Mesh
+rem -------------------------------------
+ObjectTemplate.addTemplate flagpole
+rem -------------------------------------
+ObjectTemplate.setControlPointName Construction
+ObjectTemplate.radius 10
+ObjectTemplate.controlPointId 506
+ObjectTemplate.team 1
+ObjectTemplate.timeToGetControl 15
+ObjectTemplate.timeToLoseControl 15
+ObjectTemplate.supplyGroupId 2
+ObjectTemplate.enemyTicketLossWhenCaptured 50
+ObjectTemplate.areaValueTeam2 10
+ObjectTemplate.areaValueTeam1 10
+
+rem [ControlPointTemplate: 2_Small_parking]
+ObjectTemplate.create ControlPoint 2_Small_parking
+ObjectTemplate.activeSafe ControlPoint 2_Small_parking
+ObjectTemplate.setNetworkableInfo ControlPointInfo
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.hasCollisionPhysics 1
+ObjectTemplate.physicsType Mesh
+ObjectTemplate.addTemplate flagpole
+ObjectTemplate.setControlPointName Small_parking
+ObjectTemplate.radius 10
+ObjectTemplate.controlPointId 507
+ObjectTemplate.team 1
+ObjectTemplate.timeToGetControl 15
+ObjectTemplate.timeToLoseControl 15
+ObjectTemplate.supplyGroupId 2
+ObjectTemplate.enemyTicketLossWhenCaptured 50
+ObjectTemplate.areaValueTeam2 10
+ObjectTemplate.areaValueTeam1 10
+
+rem [ControlPointTemplate: 3_Hotel]
+ObjectTemplate.create ControlPoint 3_Hotel
+ObjectTemplate.activeSafe ControlPoint 3_Hotel
+ObjectTemplate.setNetworkableInfo ControlPointInfo
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.hasCollisionPhysics 1
+ObjectTemplate.physicsType Mesh
+ObjectTemplate.addTemplate flagpole
+ObjectTemplate.setControlPointName Hotel
+ObjectTemplate.radius 7
+ObjectTemplate.controlPointId 508
+ObjectTemplate.team 1
+ObjectTemplate.timeToGetControl 10
+ObjectTemplate.timeToLoseControl 10
+ObjectTemplate.supplyGroupId 3
+ObjectTemplate.enemyTicketLossWhenCaptured 50
+ObjectTemplate.areaValueTeam2 10
+ObjectTemplate.areaValueTeam1 10
+
+rem [ControlPointTemplate: 3_South_Waterfront]
+ObjectTemplate.create ControlPoint 3_South_Waterfront
+ObjectTemplate.activeSafe ControlPoint 3_South_Waterfront
+ObjectTemplate.setNetworkableInfo ControlPointInfo
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.hasCollisionPhysics 1
+ObjectTemplate.physicsType Mesh
+ObjectTemplate.addTemplate flagpole
+ObjectTemplate.setControlPointName South_waterfront
+ObjectTemplate.radius 10
+ObjectTemplate.controlPointId 509
+ObjectTemplate.team 1
+ObjectTemplate.timeToGetControl 15
+ObjectTemplate.timeToLoseControl 15
+ObjectTemplate.supplyGroupId 3
+ObjectTemplate.enemyTicketLossWhenCaptured 50
+ObjectTemplate.areaValueTeam2 10
+ObjectTemplate.areaValueTeam1 10
+
+rem [ControlPointTemplate: 4_Apartments]
+ObjectTemplate.create ControlPoint 4_Apartments
+ObjectTemplate.activeSafe ControlPoint 4_Apartments
+ObjectTemplate.setNetworkableInfo ControlPointInfo
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.hasCollisionPhysics 1
+ObjectTemplate.physicsType Mesh
+ObjectTemplate.addTemplate flagpole
+ObjectTemplate.setControlPointName Apartments
+ObjectTemplate.radius 10
+ObjectTemplate.controlPointId 510
+ObjectTemplate.team 1
+ObjectTemplate.timeToGetControl 15
+ObjectTemplate.timeToLoseControl 15
+ObjectTemplate.supplyGroupId 4
+ObjectTemplate.enemyTicketLossWhenCaptured 50
+ObjectTemplate.areaValueTeam2 10
+ObjectTemplate.areaValueTeam1 10
+
+rem [ControlPointTemplate: 4_Square]
+ObjectTemplate.create ControlPoint 4_Square
+ObjectTemplate.activeSafe ControlPoint 4_Square
+ObjectTemplate.setNetworkableInfo ControlPointInfo
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.hasCollisionPhysics 1
+ObjectTemplate.physicsType Mesh
+ObjectTemplate.addTemplate flagpole
+ObjectTemplate.setControlPointName Square
+ObjectTemplate.radius 10
+ObjectTemplate.controlPointId 511
+ObjectTemplate.team 1
+ObjectTemplate.timeToGetControl 15
+ObjectTemplate.timeToLoseControl 15
+ObjectTemplate.supplyGroupId 4
+ObjectTemplate.enemyTicketLossWhenCaptured 50
+ObjectTemplate.areaValueTeam2 10
+ObjectTemplate.areaValueTeam1 10
+
+rem [ControlPointTemplate: 4_North_Waterfront]
+ObjectTemplate.create ControlPoint 4_North_Waterfront
+ObjectTemplate.activeSafe ControlPoint 4_North_Waterfront
+ObjectTemplate.setNetworkableInfo ControlPointInfo
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.hasCollisionPhysics 1
+ObjectTemplate.physicsType Mesh
+ObjectTemplate.addTemplate flagpole
+ObjectTemplate.setControlPointName North_waterfront
+ObjectTemplate.radius 10
+ObjectTemplate.controlPointId 512
+ObjectTemplate.team 1
+ObjectTemplate.timeToGetControl 15
+ObjectTemplate.timeToLoseControl 15
+ObjectTemplate.supplyGroupId 4
+ObjectTemplate.enemyTicketLossWhenCaptured 50
+ObjectTemplate.areaValueTeam2 10
+ObjectTemplate.areaValueTeam1 10
+
+rem [ControlPointTemplate: 5_Lower_Villas]
+ObjectTemplate.create ControlPoint 5_Lower_Villas
+ObjectTemplate.activeSafe ControlPoint 5_Lower_Villas
+ObjectTemplate.setNetworkableInfo ControlPointInfo
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.hasCollisionPhysics 1
+ObjectTemplate.physicsType Mesh
+ObjectTemplate.addTemplate flagpole
+ObjectTemplate.setControlPointName Lower_villas
+ObjectTemplate.radius 10
+ObjectTemplate.controlPointId 513
+ObjectTemplate.team 1
+ObjectTemplate.timeToGetControl 15
+ObjectTemplate.timeToLoseControl 15
+ObjectTemplate.supplyGroupId 5
+ObjectTemplate.enemyTicketLossWhenCaptured 50
+ObjectTemplate.areaValueTeam2 10
+ObjectTemplate.areaValueTeam1 10
+
+rem [ControlPointTemplate: 5_Fountain]
+ObjectTemplate.create ControlPoint 5_Fountain
+ObjectTemplate.activeSafe ControlPoint 5_Fountain
+ObjectTemplate.setNetworkableInfo ControlPointInfo
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.hasCollisionPhysics 1
+ObjectTemplate.physicsType Mesh
+ObjectTemplate.addTemplate flagpole
+ObjectTemplate.setControlPointName Fountain
+ObjectTemplate.radius 20
+ObjectTemplate.controlPointId 514
+ObjectTemplate.team 1
+ObjectTemplate.timeToGetControl 15
+ObjectTemplate.timeToLoseControl 15
+ObjectTemplate.supplyGroupId 5
+ObjectTemplate.enemyTicketLossWhenCaptured 50
+ObjectTemplate.areaValueTeam2 10
+ObjectTemplate.areaValueTeam1 10
+
+rem [ControlPointTemplate: 5_Office]
+ObjectTemplate.create ControlPoint 5_Office
+ObjectTemplate.activeSafe ControlPoint 5_Office
+ObjectTemplate.setNetworkableInfo ControlPointInfo
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.hasCollisionPhysics 1
+ObjectTemplate.physicsType Mesh
+ObjectTemplate.addTemplate flagpole
+ObjectTemplate.setControlPointName Office
+ObjectTemplate.radius 10
+ObjectTemplate.controlPointId 515
+ObjectTemplate.team 1
+ObjectTemplate.timeToGetControl 15
+ObjectTemplate.timeToLoseControl 15
+ObjectTemplate.supplyGroupId 5
+ObjectTemplate.enemyTicketLossWhenCaptured 50
+ObjectTemplate.areaValueTeam2 10
+ObjectTemplate.areaValueTeam1 10
+
+rem [ControlPointTemplate: 6_Upper_Villas]
+ObjectTemplate.create ControlPoint 6_Upper_Villas
+ObjectTemplate.activeSafe ControlPoint 6_Upper_Villas
+ObjectTemplate.setNetworkableInfo ControlPointInfo
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.hasCollisionPhysics 1
+ObjectTemplate.physicsType Mesh
+ObjectTemplate.addTemplate flagpole
+ObjectTemplate.setControlPointName Upper_villas
+ObjectTemplate.radius 10
+ObjectTemplate.controlPointId 516
+ObjectTemplate.team 1
+ObjectTemplate.timeToGetControl 15
+ObjectTemplate.timeToLoseControl 15
+ObjectTemplate.supplyGroupId 6
+ObjectTemplate.areaValueTeam2 10
+ObjectTemplate.areaValueTeam1 10
+
+rem [ControlPointTemplate: 6_Big_Parking]
+ObjectTemplate.create ControlPoint 6_Big_Parking
+ObjectTemplate.activeSafe ControlPoint 6_Big_Parking
+ObjectTemplate.setNetworkableInfo ControlPointInfo
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.hasCollisionPhysics 1
+ObjectTemplate.physicsType Mesh
+ObjectTemplate.addTemplate flagpole
+ObjectTemplate.setControlPointName Big_parking
+ObjectTemplate.radius 10
+ObjectTemplate.controlPointId 517
+ObjectTemplate.team 1
+ObjectTemplate.timeToGetControl 15
+ObjectTemplate.timeToLoseControl 15
+ObjectTemplate.supplyGroupId 6
+ObjectTemplate.areaValueTeam2 10
+ObjectTemplate.areaValueTeam1 10
+
+rem [ControlPointTemplate: 6_Market]
+ObjectTemplate.create ControlPoint 6_Market
+ObjectTemplate.activeSafe ControlPoint 6_Market
+ObjectTemplate.setNetworkableInfo ControlPointInfo
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.hasCollisionPhysics 1
+ObjectTemplate.physicsType Mesh
+ObjectTemplate.addTemplate flagpole
+ObjectTemplate.setControlPointName Market
+ObjectTemplate.radius 10
+ObjectTemplate.controlPointId 518
+ObjectTemplate.team 1
+ObjectTemplate.timeToGetControl 15
+ObjectTemplate.timeToLoseControl 15
+ObjectTemplate.supplyGroupId 6
+ObjectTemplate.areaValueTeam2 10
+ObjectTemplate.areaValueTeam1 10
+
+if v_arg1 == host
+
+   rem [ControlPoint: CPNAME_SK_SP16_gasstation]
+   Object.create CPNAME_SK_SP16_gasstation
+   Object.absolutePosition -161.030/161.287/-262.828
+   Object.layer 1
+
+   rem [ControlPoint: 1_West_Outpost]
+   Object.create 1_West_Outpost
+   Object.absolutePosition -236.102/163.399/-152.421
+   Object.rotation -102.810/0.000/0.000
+   Object.layer 1
+
+   rem [ControlPoint: 1_East_Outpost]
+   Object.create 1_East_Outpost
+   Object.absolutePosition -162.589/162.487/-121.096
+   Object.rotation -30.849/0.000/0.000
+   Object.layer 1
+
+   rem [ControlPoint: 2_Construction]
+   Object.create 2_Construction
+   Object.absolutePosition -179.969/155.790/-52.163
+   Object.rotation -126.404/0.000/0.000
+   Object.layer 1
+
+   rem [ControlPoint: 2_Small_parking]
+   Object.create 2_Small_parking
+   Object.absolutePosition -236.271/155.790/-30.782
+   Object.rotation 92.781/0.000/0.000
+   Object.layer 1
+
+   rem [ControlPoint: 3_Hotel]
+   Object.create 3_Hotel
+   Object.absolutePosition -193.019/158.209/12.746
+   Object.rotation 92.781/0.000/0.000
+   Object.layer 1
+
+   rem [ControlPoint: 3_South_Waterfront]
+   Object.create 3_South_Waterfront
+   Object.absolutePosition -137.530/155.884/5.667
+   Object.rotation -49.109/0.000/0.000
+   Object.layer 1
+
+   rem [ControlPoint: 4_Apartments]
+   Object.create 4_Apartments
+   Object.absolutePosition -278.412/155.884/41.615
+   Object.rotation -49.109/0.000/0.000
+   Object.layer 1
+
+   rem [ControlPoint: 4_Square]
+   Object.create 4_Square
+   Object.absolutePosition -182.581/155.576/97.099
+   Object.rotation -49.109/0.000/0.000
+   Object.layer 1
+
+   rem [ControlPoint: 4_North_Waterfront]
+   Object.create 4_North_Waterfront
+   Object.absolutePosition -138.773/155.874/90.718
+   Object.rotation -49.109/0.000/0.000
+   Object.layer 1
+
+   rem [ControlPoint: 5_Lower_Villas]
+   Object.create 5_Lower_Villas
+   Object.absolutePosition -350.027/165.091/91.329
+   Object.rotation -49.109/0.000/0.000
+   Object.layer 1
+
+   rem [ControlPoint: 5_Fountain]
+   Object.create 5_Fountain
+   Object.absolutePosition -284.507/156.317/128.745
+   Object.rotation -49.109/0.000/0.000
+   Object.layer 1
+
+   rem [ControlPoint: 5_Office]
+   Object.create 5_Office
+   Object.absolutePosition -187.986/149.788/150.127
+   Object.rotation 6.220/0.000/0.000
+   Object.layer 1
+
+   rem [ControlPoint: 6_Upper_Villas]
+   Object.create 6_Upper_Villas
+   Object.absolutePosition -324.925/168.392/215.991
+   Object.rotation -59.097/0.000/0.000
+   Object.layer 1
+
+   rem [ControlPoint: 6_Big_Parking]
+   Object.create 6_Big_Parking
+   Object.absolutePosition -246.769/155.790/216.868
+   Object.rotation 109.256/0.000/0.000
+   Object.layer 1
+
+   rem [ControlPoint: 6_Market]
+   Object.create 6_Market
+   Object.absolutePosition -186.754/149.788/178.764
+   Object.rotation -77.369/0.000/0.000
+   Object.layer 1
+
+endIf
+
+CombatAreaManager.use 1
+CombatAreaManager.timeAllowedOutside 10.000000
+CombatArea.create CombatArea_0_SP16
+CombatArea.min 0.000000/0.000000
+CombatArea.max 0.000000/0.000000
+CombatArea.addAreaPoint -93.940216/-103.074738
+CombatArea.addAreaPoint -92.214111/-111.736786
+CombatArea.addAreaPoint -88.023529/-131.119354
+CombatArea.addAreaPoint -79.747589/-162.637909
+CombatArea.addAreaPoint -75.811981/-182.359741
+CombatArea.addAreaPoint -73.601654/-219.688629
+CombatArea.addAreaPoint -74.575378/-231.764832
+CombatArea.addAreaPoint -78.311737/-265.595245
+CombatArea.addAreaPoint -84.423035/-289.381866
+CombatArea.addAreaPoint -93.819153/-318.460266
+CombatArea.addAreaPoint -100.027618/-327.632263
+CombatArea.addAreaPoint -110.502319/-337.192322
+CombatArea.addAreaPoint -125.095795/-345.803833
+CombatArea.addAreaPoint -138.521973/-350.611725
+CombatArea.addAreaPoint -151.878815/-353.408844
+CombatArea.addAreaPoint -164.611847/-353.706879
+CombatArea.addAreaPoint -180.290802/-351.599670
+CombatArea.addAreaPoint -199.731018/-345.455261
+CombatArea.addAreaPoint -205.529053/-340.983612
+CombatArea.addAreaPoint -212.683441/-330.914429
+CombatArea.addAreaPoint -223.038696/-312.385376
+CombatArea.addAreaPoint -230.998718/-296.961121
+CombatArea.addAreaPoint -246.549988/-264.441589
+CombatArea.addAreaPoint -266.377991/-219.185577
+CombatArea.addAreaPoint -274.018066/-203.108765
+CombatArea.addAreaPoint -287.428375/-170.230408
+CombatArea.addAreaPoint -300.097534/-137.156586
+CombatArea.addAreaPoint -306.082153/-119.406830
+CombatArea.addAreaPoint -312.413269/-96.797394
+CombatArea.addAreaPoint -320.293579/-62.260193
+CombatArea.addAreaPoint -323.804810/-34.927490
+CombatArea.addAreaPoint -327.713013/-11.922119
+CombatArea.addAreaPoint -336.911224/9.524902
+CombatArea.addAreaPoint -350.101135/22.168518
+CombatArea.addAreaPoint -363.615082/32.998962
+CombatArea.addAreaPoint -381.044312/47.879944
+CombatArea.addAreaPoint -393.275482/63.857422
+CombatArea.addAreaPoint -402.224243/80.147827
+CombatArea.addAreaPoint -407.551514/102.704590
+CombatArea.addAreaPoint -409.776855/124.018860
+CombatArea.addAreaPoint -411.808655/147.498901
+CombatArea.addAreaPoint -409.631287/167.315674
+CombatArea.addAreaPoint -406.633026/179.481689
+CombatArea.addAreaPoint -401.373779/193.051758
+CombatArea.addAreaPoint -393.469513/205.476013
+CombatArea.addAreaPoint -382.448853/216.102112
+CombatArea.addAreaPoint -370.477875/227.669983
+CombatArea.addAreaPoint -357.694092/239.039307
+CombatArea.addAreaPoint -333.381317/260.367554
+CombatArea.addAreaPoint -319.711548/271.140930
+CombatArea.addAreaPoint -306.506439/279.156616
+CombatArea.addAreaPoint -290.812073/285.086853
+CombatArea.addAreaPoint -280.494324/286.330994
+CombatArea.addAreaPoint -265.962585/286.675110
+CombatArea.addAreaPoint -201.450195/286.667542
+CombatArea.addAreaPoint -170.027313/286.647705
+CombatArea.addAreaPoint -152.259735/285.128296
+CombatArea.addAreaPoint -142.473907/281.867432
+CombatArea.addAreaPoint -132.719421/276.334839
+CombatArea.addAreaPoint -124.378387/268.684814
+CombatArea.addAreaPoint -121.312256/260.809753
+CombatArea.addAreaPoint -119.203430/244.741272
+CombatArea.addAreaPoint -117.537994/-8.071167
+CombatArea.addAreaPoint -117.525299/-24.145752
+CombatArea.addAreaPoint -115.014191/-35.413940
+CombatArea.addAreaPoint -110.860657/-47.696625
+CombatArea.addAreaPoint -105.292999/-63.766266
+CombatArea.addAreaPoint -100.147247/-79.960297
+CombatArea.team 0
+CombatArea.vehicles 0
+CombatArea.layer 1
+CombatArea.usedByPathFinding 1

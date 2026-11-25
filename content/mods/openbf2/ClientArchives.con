@@ -1,0 +1,11 @@
+fileManager.mountArchive armorbuff_objects.zip Objects
+fileManager.mountArchive armorbuff_common.zip Common
+fileManager.mountArchive armorbuff_menu.zip Menu
+fileManager.mountArchive aircraftdamage_objects.zip Objects
+fileManager.mountArchive Objects_client.zip Objects
+fileManager.mountArchive Common_client.zip Common
+fileManager.mountArchive ccip_menu_server.zip Menu
+fileManager.mountArchive Menu_client.zip Menu
+fileManager.mountArchive Fonts_client.zip Fonts
+fileManager.mountArchive Shaders_client.zip Shaders
+fileManager.mountArchive Booster_client.zip Objects

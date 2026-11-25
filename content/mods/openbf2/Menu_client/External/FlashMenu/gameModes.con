@@ -1,0 +1,4 @@
+swiffHost.addGameMode "gpm_cq" "Conquest"
+swiffHost.addGameMode "sp1" "Singleplayer"
+swiffHost.addGameMode "gpm_coop" "Co-op"
+swiffHost.addGameMode "gpm_invasion" "Invasion"

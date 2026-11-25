@@ -1,0 +1,30 @@
+rem *** makeMegaMap.con ***
+rem *** setup for megaMap ***
+renderer.drawObjects 1
+renderer.drawBundledMeshes 1
+renderer.drawStaticMeshes 1
+renderer.drawSkyDome 0
+renderer.drawRoads 1
+renderer.drawTerrain 1
+renderer.drawNametags 0
+renderer.drawTrees 1
+renderer.drawHud 0
+renderer.drawFps 0
+renderer.drawBoundingSpheres 0
+renderer.drawLightSources 0
+renderer.drawLightSourceOpacity 0
+renderer.drawConsole 0
+renderer.minculldistance 5000
+rem renderer.fogStartAndEnd 2000/2000
+shadowManager.dynamicShadowsEnabled 0
+
+staticMeshRenderer.perPixelRenderingDistance 5000
+staticMeshRenderer.nolods 1
+
+
+renderer.maketopworldscreen 2048 "C:\Megamap1" 512/500/512 1024
+renderer.maketopworldscreen 2048 "C:\Megamap2" -512/500/512 1024
+renderer.maketopworldscreen 2048 "C:\Megamap3" 512/500/-512 1024
+renderer.maketopworldscreen 2048 "C:\Megamap4" -512/500/-512 1024
+
+aiDebug.draw 0

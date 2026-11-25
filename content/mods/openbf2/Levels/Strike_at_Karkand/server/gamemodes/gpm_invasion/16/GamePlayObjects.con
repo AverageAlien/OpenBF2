@@ -1,0 +1,1175 @@
+gameLogic.setDefaultNumberOfTicketsEx 16 1 999
+gameLogic.setDefaultNumberOfTicketsEx 16 2 300
+rem ********** Object Spawner **********
+rem [ObjectSpawnerTemplate: CPNAME_SK_SP16_hotel_SMG]
+ObjectTemplate.create ObjectSpawner CPNAME_SK_SP16_hotel_SMG
+ObjectTemplate.activeSafe ObjectSpawner CPNAME_SK_SP16_hotel_SMG
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.setObjectTemplate 1 MEC_BIPOD
+
+rem [ObjectSpawnerTemplate: CPNAME_SK_SP16_market_ATS]
+ObjectTemplate.create ObjectSpawner CPNAME_SK_SP16_market_ATS
+ObjectTemplate.activeSafe ObjectSpawner CPNAME_SK_SP16_market_ATS
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.setObjectTemplate 1 ATS_HJ8
+
+rem [ObjectSpawnerTemplate: CPNAME_SK_SP16_market_HeavyTank]
+ObjectTemplate.create ObjectSpawner CPNAME_SK_SP16_market_HeavyTank
+ObjectTemplate.activeSafe ObjectSpawner CPNAME_SK_SP16_market_HeavyTank
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.setObjectTemplate 1 RUTNK_T90
+
+rem [ObjectSpawnerTemplate: CPNAME_SK_SP16_market_ART]
+ObjectTemplate.create ObjectSpawner CPNAME_SK_SP16_market_ART
+ObjectTemplate.activeSafe ObjectSpawner CPNAME_SK_SP16_market_ART
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.setObjectTemplate 1 ARS_D30
+ObjectTemplate.minSpawnDelay 360
+ObjectTemplate.maxSpawnDelay 360
+ObjectTemplate.teamOnVehicle 1
+
+rem [ObjectSpawnerTemplate: CPNAME_SK_SP16_market_ART_0]
+ObjectTemplate.create ObjectSpawner CPNAME_SK_SP16_market_ART_0
+ObjectTemplate.activeSafe ObjectSpawner CPNAME_SK_SP16_market_ART_0
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.setObjectTemplate 1 ARS_D30
+ObjectTemplate.minSpawnDelay 360
+ObjectTemplate.maxSpawnDelay 360
+ObjectTemplate.teamOnVehicle 1
+
+rem [ObjectSpawnerTemplate: CPNAME_SK_SP16_market_HeavyJeep]
+ObjectTemplate.create ObjectSpawner CPNAME_SK_SP16_market_HeavyJeep
+ObjectTemplate.activeSafe ObjectSpawner CPNAME_SK_SP16_market_HeavyJeep
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.setObjectTemplate 1 JEP_VODNIK
+
+rem [ObjectSpawnerTemplate: CPNAME_SK_SP16_market_UAV]
+ObjectTemplate.create ObjectSpawner CPNAME_SK_SP16_market_UAV
+ObjectTemplate.activeSafe ObjectSpawner CPNAME_SK_SP16_market_UAV
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.setObjectTemplate 1 aircontroltower_mec
+ObjectTemplate.minSpawnDelay 360
+ObjectTemplate.maxSpawnDelay 360
+ObjectTemplate.teamOnVehicle 1
+
+rem [ObjectSpawnerTemplate: CPNAME_SK_SP16_market_Radar]
+ObjectTemplate.create ObjectSpawner CPNAME_SK_SP16_market_Radar
+ObjectTemplate.activeSafe ObjectSpawner CPNAME_SK_SP16_market_Radar
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.setObjectTemplate 1 mobileradar_mech_dest
+ObjectTemplate.minSpawnDelay 360
+ObjectTemplate.maxSpawnDelay 360
+ObjectTemplate.teamOnVehicle 1
+
+rem [ObjectSpawnerTemplate: CPNAME_SK_SP16_market_SMG]
+ObjectTemplate.create ObjectSpawner CPNAME_SK_SP16_market_SMG
+ObjectTemplate.activeSafe ObjectSpawner CPNAME_SK_SP16_market_SMG
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.setObjectTemplate 1 MEC_BIPOD
+
+rem [ObjectSpawnerTemplate: CPNAME_SK_SP16_gasstation_APC]
+ObjectTemplate.create ObjectSpawner CPNAME_SK_SP16_gasstation_APC
+ObjectTemplate.activeSafe ObjectSpawner CPNAME_SK_SP16_gasstation_APC
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.setObjectTemplate 1 APC_BTR90
+ObjectTemplate.setObjectTemplate 2 USAPC_LAV25
+
+rem [ObjectSpawnerTemplate: CPNAME_SK_SP16_gasstation_Jeep]
+ObjectTemplate.create ObjectSpawner CPNAME_SK_SP16_gasstation_Jeep
+ObjectTemplate.activeSafe ObjectSpawner CPNAME_SK_SP16_gasstation_Jeep
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.setObjectTemplate 1 JEP_VODNIK
+ObjectTemplate.setObjectTemplate 2 USJEP_HMMWV
+
+rem [ObjectSpawnerTemplate: CPNAME_SK_SP16_gasstation_HeavyTank]
+ObjectTemplate.create ObjectSpawner CPNAME_SK_SP16_gasstation_HeavyTank
+ObjectTemplate.activeSafe ObjectSpawner CPNAME_SK_SP16_gasstation_HeavyTank
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.setObjectTemplate 1 RUTNK_T90
+ObjectTemplate.setObjectTemplate 2 USTNK_M1A2
+ObjectTemplate.minSpawnDelay 20
+ObjectTemplate.maxSpawnDelay 50
+
+rem [ObjectSpawnerTemplate: CPNAME_SK_SP16_gasstation_ART]
+ObjectTemplate.create ObjectSpawner CPNAME_SK_SP16_gasstation_ART
+ObjectTemplate.activeSafe ObjectSpawner CPNAME_SK_SP16_gasstation_ART
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.setObjectTemplate 2 USART_LW155
+ObjectTemplate.minSpawnDelay 360
+ObjectTemplate.maxSpawnDelay 360
+ObjectTemplate.teamOnVehicle 1
+
+rem [ObjectSpawnerTemplate: CPNAME_SK_SP16_gasstation_ART_0]
+ObjectTemplate.create ObjectSpawner CPNAME_SK_SP16_gasstation_ART_0
+ObjectTemplate.activeSafe ObjectSpawner CPNAME_SK_SP16_gasstation_ART_0
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.setObjectTemplate 2 USART_LW155
+ObjectTemplate.minSpawnDelay 360
+ObjectTemplate.maxSpawnDelay 360
+ObjectTemplate.teamOnVehicle 1
+
+rem [ObjectSpawnerTemplate: CPNAME_SK_SP16_gasstation_UAV]
+ObjectTemplate.create ObjectSpawner CPNAME_SK_SP16_gasstation_UAV
+ObjectTemplate.activeSafe ObjectSpawner CPNAME_SK_SP16_gasstation_UAV
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.setObjectTemplate 2 aircontroltower
+ObjectTemplate.minSpawnDelay 360
+ObjectTemplate.maxSpawnDelay 360
+ObjectTemplate.teamOnVehicle 1
+
+rem [ObjectSpawnerTemplate: CPNAME_SK_SP16_gasstation_Radar]
+ObjectTemplate.create ObjectSpawner CPNAME_SK_SP16_gasstation_Radar
+ObjectTemplate.activeSafe ObjectSpawner CPNAME_SK_SP16_gasstation_Radar
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.setObjectTemplate 2 mobileradar_us_dest
+ObjectTemplate.minSpawnDelay 360
+ObjectTemplate.maxSpawnDelay 360
+ObjectTemplate.teamOnVehicle 1
+
+rem [ObjectSpawnerTemplate: CPNAME_SK_SP16_gasstation_SMG]
+ObjectTemplate.create ObjectSpawner CPNAME_SK_SP16_gasstation_SMG
+ObjectTemplate.activeSafe ObjectSpawner CPNAME_SK_SP16_gasstation_SMG
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.setObjectTemplate 1 MEC_BIPOD
+ObjectTemplate.setObjectTemplate 2 US_BIPOD
+
+rem [ObjectSpawnerTemplate: CPNAME_SK_SP16_gasstation_SMG_0]
+ObjectTemplate.create ObjectSpawner CPNAME_SK_SP16_gasstation_SMG_0
+ObjectTemplate.activeSafe ObjectSpawner CPNAME_SK_SP16_gasstation_SMG_0
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.setObjectTemplate 1 MEC_BIPOD
+ObjectTemplate.setObjectTemplate 2 US_BIPOD
+
+rem [ObjectSpawnerTemplate: CPNAME_SK_SP16_gasstation_SMG_1]
+ObjectTemplate.create ObjectSpawner CPNAME_SK_SP16_gasstation_SMG_1
+ObjectTemplate.activeSafe ObjectSpawner CPNAME_SK_SP16_gasstation_SMG_1
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.setObjectTemplate 1 MEC_BIPOD
+ObjectTemplate.setObjectTemplate 2 US_BIPOD
+
+rem [ObjectSpawnerTemplate: CPNAME_SK_SP16_gasstation_ATS]
+ObjectTemplate.create ObjectSpawner CPNAME_SK_SP16_gasstation_ATS
+ObjectTemplate.activeSafe ObjectSpawner CPNAME_SK_SP16_gasstation_ATS
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.setObjectTemplate 1 ATS_HJ8
+ObjectTemplate.setObjectTemplate 2 ATS_TOW
+
+rem [ObjectSpawnerTemplate: CPNAME_SK_SP16_square_ATS]
+ObjectTemplate.create ObjectSpawner CPNAME_SK_SP16_square_ATS
+ObjectTemplate.activeSafe ObjectSpawner CPNAME_SK_SP16_square_ATS
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.setObjectTemplate 1 ATS_HJ8
+
+rem [ObjectSpawnerTemplate: CPNAME_SK_SP16_square_SMG]
+ObjectTemplate.create ObjectSpawner CPNAME_SK_SP16_square_SMG
+ObjectTemplate.activeSafe ObjectSpawner CPNAME_SK_SP16_square_SMG
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.setObjectTemplate 1 MEC_BIPOD
+
+rem [ObjectSpawnerTemplate: CPNAME_SK_SP16_market_APC]
+ObjectTemplate.create ObjectSpawner CPNAME_SK_SP16_market_APC
+ObjectTemplate.activeSafe ObjectSpawner CPNAME_SK_SP16_market_APC
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.setObjectTemplate 1 apc_btr90
+ObjectTemplate.setObjectTemplate 2 usapc_lav25
+
+rem [ObjectSpawnerTemplate: CPNAME_SK_SP16_gasstation_HeavyJeep]
+ObjectTemplate.create ObjectSpawner CPNAME_SK_SP16_gasstation_HeavyJeep
+ObjectTemplate.activeSafe ObjectSpawner CPNAME_SK_SP16_gasstation_HeavyJeep
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.setObjectTemplate 1 jep_vodnik
+ObjectTemplate.setObjectTemplate 2 usjep_hmmwv
+
+rem [ObjectSpawnerTemplate: CPNAME_SK_SP16_gasstation_APC_0]
+ObjectTemplate.create ObjectSpawner CPNAME_SK_SP16_gasstation_APC_0
+ObjectTemplate.activeSafe ObjectSpawner CPNAME_SK_SP16_gasstation_APC_0
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.setObjectTemplate 1 apc_btr90
+ObjectTemplate.setObjectTemplate 2 usapc_lav25
+
+rem [ObjectSpawnerTemplate: CPNAME_SK_SP16_gasstation_Tank]
+ObjectTemplate.create ObjectSpawner CPNAME_SK_SP16_gasstation_Tank
+ObjectTemplate.activeSafe ObjectSpawner CPNAME_SK_SP16_gasstation_Tank
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.setObjectTemplate 1 rutnk_t90
+ObjectTemplate.setObjectTemplate 2 ustnk_m1a2
+
+if v_arg1 == host
+
+   rem [ObjectSpawner: CPNAME_SK_SP16_hotel_SMG]
+   Object.create CPNAME_SK_SP16_hotel_SMG
+   Object.absolutePosition -216.882/157.009/-6.902
+   Object.rotation -180.000/-0.000/0.000
+   Object.setControlPointId 501
+   Object.layer 1
+
+   rem [ObjectSpawner: CPNAME_SK_SP16_market_ATS]
+   Object.create CPNAME_SK_SP16_market_ATS
+   Object.absolutePosition -208.728/149.898/202.969
+   Object.rotation -180.000/-0.000/0.000
+   Object.setControlPointId 502
+   Object.layer 1
+
+   rem [ObjectSpawner: CPNAME_SK_SP16_market_HeavyTank]
+   Object.create CPNAME_SK_SP16_market_HeavyTank
+   Object.absolutePosition -145.280/149.799/251.445
+   Object.rotation -180.000/-0.000/0.000
+   Object.setControlPointId 502
+   Object.layer 1
+
+   rem [ObjectSpawner: CPNAME_SK_SP16_market_ART]
+   Object.create CPNAME_SK_SP16_market_ART
+   Object.absolutePosition -129.437/149.799/235.451
+   Object.rotation -161.834/-0.000/0.000
+   Object.setControlPointId 502
+   Object.layer 1
+
+   rem [ObjectSpawner: CPNAME_SK_SP16_market_ART_0]
+   Object.create CPNAME_SK_SP16_market_ART_0
+   Object.absolutePosition -129.546/149.799/209.431
+   Object.rotation -161.800/-0.000/0.000
+   Object.setControlPointId 502
+   Object.layer 1
+
+   rem [ObjectSpawner: CPNAME_SK_SP16_market_HeavyJeep]
+   Object.create CPNAME_SK_SP16_market_HeavyJeep
+   Object.absolutePosition -145.420/149.799/219.849
+   Object.rotation -180.000/-0.000/0.000
+   Object.setControlPointId 502
+   Object.layer 1
+
+   rem [ObjectSpawner: CPNAME_SK_SP16_market_UAV]
+   Object.create CPNAME_SK_SP16_market_UAV
+   Object.absolutePosition -152.088/149.899/184.464
+   Object.rotation 180.000/-0.000/0.000
+   Object.setControlPointId 502
+   Object.layer 1
+
+   rem [ObjectSpawner: CPNAME_SK_SP16_market_Radar]
+   Object.create CPNAME_SK_SP16_market_Radar
+   Object.absolutePosition -217.942/150.703/174.999
+   Object.rotation 0.000/-0.000/0.000
+   Object.setControlPointId 502
+   Object.layer 1
+
+   rem [ObjectSpawner: CPNAME_SK_SP16_market_SMG]
+   Object.create CPNAME_SK_SP16_market_SMG
+   Object.absolutePosition -204.427/151.007/216.790
+   Object.rotation 180.000/-0.000/0.000
+   Object.setControlPointId 502
+   Object.layer 1
+
+   rem [ObjectSpawner: CPNAME_SK_SP16_gasstation_APC]
+   Object.create CPNAME_SK_SP16_gasstation_APC
+   Object.absolutePosition -146.453/161.298/-268.604
+   Object.rotation 0.000/-0.000/0.000
+   Object.setControlPointId 503
+   Object.layer 1
+
+   rem [ObjectSpawner: CPNAME_SK_SP16_gasstation_Jeep]
+   Object.create CPNAME_SK_SP16_gasstation_Jeep
+   Object.absolutePosition -133.487/161.298/-291.850
+   Object.rotation -90.000/-0.000/0.000
+   Object.setControlPointId 503
+   Object.layer 1
+
+   rem [ObjectSpawner: CPNAME_SK_SP16_gasstation_HeavyTank]
+   Object.create CPNAME_SK_SP16_gasstation_HeavyTank
+   Object.absolutePosition -172.895/161.298/-309.128
+   Object.rotation 90.000/-0.000/0.000
+   Object.setControlPointId 503
+   Object.layer 1
+
+   rem [ObjectSpawner: CPNAME_SK_SP16_gasstation_ART]
+   Object.create CPNAME_SK_SP16_gasstation_ART
+   Object.absolutePosition -141.581/162.502/-122.090
+   Object.rotation 0.000/-0.000/0.000
+   Object.setControlPointId 503
+   Object.layer 1
+
+   rem [ObjectSpawner: CPNAME_SK_SP16_gasstation_ART_0]
+   Object.create CPNAME_SK_SP16_gasstation_ART_0
+   Object.absolutePosition -223.506/163.399/-146.543
+   Object.rotation 0.000/-0.000/0.000
+   Object.setControlPointId 503
+   Object.layer 1
+
+   rem [ObjectSpawner: CPNAME_SK_SP16_gasstation_UAV]
+   Object.create CPNAME_SK_SP16_gasstation_UAV
+   Object.absolutePosition -194.734/161.298/-279.504
+   Object.rotation -90.000/-0.000/0.000
+   Object.setControlPointId 503
+   Object.layer 1
+
+   rem [ObjectSpawner: CPNAME_SK_SP16_gasstation_Radar]
+   Object.create CPNAME_SK_SP16_gasstation_Radar
+   Object.absolutePosition -132.000/162.219/-318.000
+   Object.rotation 0.000/-0.000/0.000
+   Object.setControlPointId 503
+   Object.layer 1
+
+   rem [ObjectSpawner: CPNAME_SK_SP16_gasstation_SMG]
+   Object.create CPNAME_SK_SP16_gasstation_SMG
+   Object.absolutePosition -162.334/162.407/-258.094
+   Object.rotation 0.000/-0.000/0.000
+   Object.setControlPointId 503
+   Object.layer 1
+
+   rem [ObjectSpawner: CPNAME_SK_SP16_gasstation_SMG_0]
+   Object.create CPNAME_SK_SP16_gasstation_SMG_0
+   Object.absolutePosition -173.044/163.606/-103.639
+   Object.rotation 0.000/-0.000/0.000
+   Object.setControlPointId 503
+   Object.layer 1
+
+   rem [ObjectSpawner: CPNAME_SK_SP16_gasstation_SMG_1]
+   Object.create CPNAME_SK_SP16_gasstation_SMG_1
+   Object.absolutePosition -252.598/164.708/-122.725
+   Object.rotation 37.666/-0.000/0.000
+   Object.setControlPointId 503
+   Object.layer 1
+
+   rem [ObjectSpawner: CPNAME_SK_SP16_gasstation_ATS]
+   Object.create CPNAME_SK_SP16_gasstation_ATS
+   Object.absolutePosition -237.602/163.486/-128.617
+   Object.rotation 48.983/-0.000/0.000
+   Object.setControlPointId 503
+   Object.layer 1
+
+   rem [ObjectSpawner: CPNAME_SK_SP16_square_ATS]
+   Object.create CPNAME_SK_SP16_square_ATS
+   Object.absolutePosition -186.268/155.601/96.166
+   Object.rotation -155.300/-0.000/0.000
+   Object.setControlPointId 504
+   Object.layer 1
+
+   rem [ObjectSpawner: CPNAME_SK_SP16_square_SMG]
+   Object.create CPNAME_SK_SP16_square_SMG
+   Object.absolutePosition -180.493/156.708/96.528
+   Object.rotation -173.300/-0.000/0.000
+   Object.setControlPointId 504
+   Object.layer 1
+
+   rem [ObjectSpawner: CPNAME_SK_SP16_market_APC]
+   Object.create CPNAME_SK_SP16_market_APC
+   Object.absolutePosition -140.323/149.799/257.465
+   Object.rotation -180.000/-0.000/0.000
+   Object.setControlPointId 502
+   Object.layer 1
+
+   rem [ObjectSpawner: CPNAME_SK_SP16_gasstation_HeavyJeep]
+   Object.create CPNAME_SK_SP16_gasstation_HeavyJeep
+   Object.absolutePosition -140.339/161.335/-255.941
+   Object.rotation -90.000/-0.000/0.000
+   Object.setControlPointId 503
+   Object.layer 1
+
+   rem [ObjectSpawner: CPNAME_SK_SP16_gasstation_APC_0]
+   Object.create CPNAME_SK_SP16_gasstation_APC_0
+   Object.absolutePosition -146.392/161.298/-279.623
+   Object.rotation 0.000/-0.000/0.000
+   Object.setControlPointId 503
+   Object.layer 1
+
+   rem [ObjectSpawner: CPNAME_SK_SP16_gasstation_Tank]
+   Object.create CPNAME_SK_SP16_gasstation_Tank
+   Object.absolutePosition -139.849/161.298/-306.563
+   Object.rotation -90.000/-0.000/0.000
+   Object.setControlPointId 503
+   Object.layer 1
+
+endIf
+
+rem ********** Spawn Points **********
+rem [SpawnPointTemplate: CPNAME_SK_SP16_hotel_1]
+ObjectTemplate.create SpawnPoint CPNAME_SK_SP16_hotel_1
+ObjectTemplate.activeSafe SpawnPoint CPNAME_SK_SP16_hotel_1
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setSpawnPositionOffset 0/1.25/0
+ObjectTemplate.setGroup 1
+ObjectTemplate.setControlPointId 501
+ObjectTemplate.setOnlyForTeam 1
+
+rem [SpawnPoint: CPNAME_SK_SP16_hotel_1]
+Object.create CPNAME_SK_SP16_hotel_1
+Object.absolutePosition -186.621/155.901/63.796
+Object.rotation 102.039/-0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: CPNAME_SK_SP16_hotel_2]
+ObjectTemplate.create SpawnPoint CPNAME_SK_SP16_hotel_2
+ObjectTemplate.activeSafe SpawnPoint CPNAME_SK_SP16_hotel_2
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setSpawnPositionOffset 0/1.25/0
+ObjectTemplate.setGroup 1
+ObjectTemplate.setControlPointId 501
+ObjectTemplate.setOnlyForTeam 1
+ObjectTemplate.setOnlyForHuman 1
+
+rem [SpawnPoint: CPNAME_SK_SP16_hotel_2]
+Object.create CPNAME_SK_SP16_hotel_2
+Object.absolutePosition -173.305/160.307/46.691
+Object.rotation 2.002/-0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: CPNAME_SK_SP16_hotel_3]
+ObjectTemplate.create SpawnPoint CPNAME_SK_SP16_hotel_3
+ObjectTemplate.activeSafe SpawnPoint CPNAME_SK_SP16_hotel_3
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setSpawnPositionOffset 0/1.25/0
+ObjectTemplate.setGroup 1
+ObjectTemplate.setControlPointId 501
+ObjectTemplate.setOnlyForTeam 1
+
+rem [SpawnPoint: CPNAME_SK_SP16_hotel_3]
+Object.create CPNAME_SK_SP16_hotel_3
+Object.absolutePosition -222.139/155.953/64.721
+Object.rotation 90.000/-0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: CPNAME_SK_SP16_hotel_4]
+ObjectTemplate.create SpawnPoint CPNAME_SK_SP16_hotel_4
+ObjectTemplate.activeSafe SpawnPoint CPNAME_SK_SP16_hotel_4
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setSpawnPositionOffset 0/1.25/0
+ObjectTemplate.setGroup 1
+ObjectTemplate.setControlPointId 501
+ObjectTemplate.setOnlyForTeam 1
+
+rem [SpawnPoint: CPNAME_SK_SP16_hotel_4]
+Object.create CPNAME_SK_SP16_hotel_4
+Object.absolutePosition -225.187/155.958/35.984
+Object.rotation 90.000/-0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: CPNAME_SK_SP16_market_1]
+ObjectTemplate.create SpawnPoint CPNAME_SK_SP16_market_1
+ObjectTemplate.activeSafe SpawnPoint CPNAME_SK_SP16_market_1
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setSpawnPositionOffset 0/1.25/0
+ObjectTemplate.setGroup 1
+ObjectTemplate.setControlPointId 502
+ObjectTemplate.setOnlyForTeam 1
+
+rem [SpawnPoint: CPNAME_SK_SP16_market_1]
+Object.create CPNAME_SK_SP16_market_1
+Object.absolutePosition -220.851/149.899/227.001
+Object.rotation 90.000/-0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: CPNAME_SK_SP16_market_2]
+ObjectTemplate.create SpawnPoint CPNAME_SK_SP16_market_2
+ObjectTemplate.activeSafe SpawnPoint CPNAME_SK_SP16_market_2
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setSpawnPositionOffset 0/1.25/0
+ObjectTemplate.setGroup 1
+ObjectTemplate.setControlPointId 502
+ObjectTemplate.setOnlyForTeam 1
+
+rem [SpawnPoint: CPNAME_SK_SP16_market_2]
+Object.create CPNAME_SK_SP16_market_2
+Object.absolutePosition -181.067/149.898/231.052
+Object.rotation -90.000/-0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: CPNAME_SK_SP16_market_5]
+ObjectTemplate.create SpawnPoint CPNAME_SK_SP16_market_5
+ObjectTemplate.activeSafe SpawnPoint CPNAME_SK_SP16_market_5
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setSpawnPositionOffset 0/1.25/0
+ObjectTemplate.setGroup 1
+ObjectTemplate.setControlPointId 502
+ObjectTemplate.setOnlyForTeam 1
+
+rem [SpawnPoint: CPNAME_SK_SP16_market_5]
+Object.create CPNAME_SK_SP16_market_5
+Object.absolutePosition -169.998/149.898/233.172
+Object.rotation -180.000/-0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: CPNAME_SK_SP16_market_4]
+ObjectTemplate.create SpawnPoint CPNAME_SK_SP16_market_4
+ObjectTemplate.activeSafe SpawnPoint CPNAME_SK_SP16_market_4
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setSpawnPositionOffset 0/1.25/0
+ObjectTemplate.setGroup 1
+ObjectTemplate.setControlPointId 502
+ObjectTemplate.setOnlyForTeam 1
+
+rem [SpawnPoint: CPNAME_SK_SP16_market_4]
+Object.create CPNAME_SK_SP16_market_4
+Object.absolutePosition -154.973/150.010/220.487
+Object.rotation -180.000/-0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: CPNAME_SK_SP16_gasstation_1]
+ObjectTemplate.create SpawnPoint CPNAME_SK_SP16_gasstation_1
+ObjectTemplate.activeSafe SpawnPoint CPNAME_SK_SP16_gasstation_1
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setSpawnPositionOffset 0/1.25/0
+ObjectTemplate.setControlPointId 503
+
+rem [SpawnPoint: CPNAME_SK_SP16_gasstation_1]
+Object.create CPNAME_SK_SP16_gasstation_1
+Object.absolutePosition -160.956/161.298/-266.017
+Object.rotation 117.052/-0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: CPNAME_SK_SP16_gasstation_2]
+ObjectTemplate.create SpawnPoint CPNAME_SK_SP16_gasstation_2
+ObjectTemplate.activeSafe SpawnPoint CPNAME_SK_SP16_gasstation_2
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setSpawnPositionOffset 0/1.25/0
+ObjectTemplate.setControlPointId 503
+
+rem [SpawnPoint: CPNAME_SK_SP16_gasstation_2]
+Object.create CPNAME_SK_SP16_gasstation_2
+Object.absolutePosition -121.763/161.298/-282.870
+Object.rotation -90.000/-0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: CPNAME_SK_SP16_gasstation_3]
+ObjectTemplate.create SpawnPoint CPNAME_SK_SP16_gasstation_3
+ObjectTemplate.activeSafe SpawnPoint CPNAME_SK_SP16_gasstation_3
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setSpawnPositionOffset 0/1.25/0
+ObjectTemplate.setControlPointId 503
+
+rem [SpawnPoint: CPNAME_SK_SP16_gasstation_3]
+Object.create CPNAME_SK_SP16_gasstation_3
+Object.absolutePosition -160.159/161.298/-319.513
+Object.rotation 0.000/-0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: CPNAME_SK_SP16_gasstation_5]
+ObjectTemplate.create SpawnPoint CPNAME_SK_SP16_gasstation_5
+ObjectTemplate.activeSafe SpawnPoint CPNAME_SK_SP16_gasstation_5
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setSpawnPositionOffset 0/1.25/0
+ObjectTemplate.setControlPointId 503
+
+rem [SpawnPoint: CPNAME_SK_SP16_gasstation_5]
+Object.create CPNAME_SK_SP16_gasstation_5
+Object.absolutePosition -179.000/161.298/-316.000
+Object.rotation 52.068/-0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: CPNAME_SK_SP16_gasstation_6]
+ObjectTemplate.create SpawnPoint CPNAME_SK_SP16_gasstation_6
+ObjectTemplate.activeSafe SpawnPoint CPNAME_SK_SP16_gasstation_6
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setSpawnPositionOffset 0/1.25/0
+ObjectTemplate.setGroup 1
+ObjectTemplate.setControlPointId 503
+
+rem [SpawnPoint: CPNAME_SK_SP16_gasstation_6]
+Object.create CPNAME_SK_SP16_gasstation_6
+Object.absolutePosition -171.873/162.497/-114.155
+Object.rotation 0.000/-0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: CPNAME_SK_SP16_gasstation_7]
+ObjectTemplate.create SpawnPoint CPNAME_SK_SP16_gasstation_7
+ObjectTemplate.activeSafe SpawnPoint CPNAME_SK_SP16_gasstation_7
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setSpawnPositionOffset 0/1.25/0
+ObjectTemplate.setGroup 1
+ObjectTemplate.setControlPointId 503
+
+rem [SpawnPoint: CPNAME_SK_SP16_gasstation_7]
+Object.create CPNAME_SK_SP16_gasstation_7
+Object.absolutePosition -160.068/162.497/-131.852
+Object.rotation 0.000/-0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: CPNAME_SK_SP16_gasstation_8]
+ObjectTemplate.create SpawnPoint CPNAME_SK_SP16_gasstation_8
+ObjectTemplate.activeSafe SpawnPoint CPNAME_SK_SP16_gasstation_8
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setSpawnPositionOffset 0/1.25/0
+ObjectTemplate.setGroup 1
+ObjectTemplate.setControlPointId 503
+
+rem [SpawnPoint: CPNAME_SK_SP16_gasstation_8]
+Object.create CPNAME_SK_SP16_gasstation_8
+Object.absolutePosition -150.157/162.497/-113.539
+Object.rotation 0.000/-0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: CPNAME_SK_SP16_gasstation_9]
+ObjectTemplate.create SpawnPoint CPNAME_SK_SP16_gasstation_9
+ObjectTemplate.activeSafe SpawnPoint CPNAME_SK_SP16_gasstation_9
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setSpawnPositionOffset 0/1.25/0
+ObjectTemplate.setGroup 2
+ObjectTemplate.setControlPointId 503
+
+rem [SpawnPoint: CPNAME_SK_SP16_gasstation_9]
+Object.create CPNAME_SK_SP16_gasstation_9
+Object.absolutePosition -236.019/163.399/-142.858
+Object.rotation 0.000/-0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: CPNAME_SK_SP16_gasstation_10]
+ObjectTemplate.create SpawnPoint CPNAME_SK_SP16_gasstation_10
+ObjectTemplate.activeSafe SpawnPoint CPNAME_SK_SP16_gasstation_10
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setSpawnPositionOffset 0/1.25/0
+ObjectTemplate.setGroup 2
+ObjectTemplate.setControlPointId 503
+
+rem [SpawnPoint: CPNAME_SK_SP16_gasstation_10]
+Object.create CPNAME_SK_SP16_gasstation_10
+Object.absolutePosition -253.533/163.399/-139.585
+Object.rotation 43.905/-0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: CPNAME_SK_SP16_gasstation_11]
+ObjectTemplate.create SpawnPoint CPNAME_SK_SP16_gasstation_11
+ObjectTemplate.activeSafe SpawnPoint CPNAME_SK_SP16_gasstation_11
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setSpawnPositionOffset 0/1.25/0
+ObjectTemplate.setGroup 2
+ObjectTemplate.setControlPointId 503
+
+rem [SpawnPoint: CPNAME_SK_SP16_gasstation_11]
+Object.create CPNAME_SK_SP16_gasstation_11
+Object.absolutePosition -252.868/163.399/-159.375
+Object.rotation 100.525/-0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: CPNAME_SK_SP16_gasstation_0]
+ObjectTemplate.create SpawnPoint CPNAME_SK_SP16_gasstation_0
+ObjectTemplate.activeSafe SpawnPoint CPNAME_SK_SP16_gasstation_0
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setSpawnPositionOffset 0/1.25/0
+ObjectTemplate.setGroup 2
+ObjectTemplate.setControlPointId 503
+
+rem [SpawnPoint: CPNAME_SK_SP16_gasstation_0]
+Object.create CPNAME_SK_SP16_gasstation_0
+Object.absolutePosition -231.691/163.413/-171.932
+Object.rotation 58.620/-0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: CPNAME_SK_SP16_gasstation_12]
+ObjectTemplate.create SpawnPoint CPNAME_SK_SP16_gasstation_12
+ObjectTemplate.activeSafe SpawnPoint CPNAME_SK_SP16_gasstation_12
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setSpawnPositionOffset 0/1.25/0
+ObjectTemplate.setGroup 1
+ObjectTemplate.setControlPointId 503
+
+rem [SpawnPoint: CPNAME_SK_SP16_gasstation_12]
+Object.create CPNAME_SK_SP16_gasstation_12
+Object.absolutePosition -135.397/163.769/-132.963
+Object.rotation -28.553/-0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: CPNAME_SK_SP16_square_1]
+ObjectTemplate.create SpawnPoint CPNAME_SK_SP16_square_1
+ObjectTemplate.activeSafe SpawnPoint CPNAME_SK_SP16_square_1
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setSpawnPositionOffset 0/1.25/0
+ObjectTemplate.setGroup 1
+ObjectTemplate.setControlPointId 504
+ObjectTemplate.setOnlyForTeam 1
+
+rem [SpawnPoint: CPNAME_SK_SP16_square_1]
+Object.create CPNAME_SK_SP16_square_1
+Object.absolutePosition -251.929/155.900/109.304
+Object.rotation 90.000/-0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: CPNAME_SK_SP16_square_3]
+ObjectTemplate.create SpawnPoint CPNAME_SK_SP16_square_3
+ObjectTemplate.activeSafe SpawnPoint CPNAME_SK_SP16_square_3
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setSpawnPositionOffset 0/1.25/0
+ObjectTemplate.setGroup 1
+ObjectTemplate.setControlPointId 504
+ObjectTemplate.setOnlyForTeam 1
+
+rem [SpawnPoint: CPNAME_SK_SP16_square_3]
+Object.create CPNAME_SK_SP16_square_3
+Object.absolutePosition -124.132/149.957/105.789
+Object.rotation -168.028/-0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: CPNAME_SK_SP16_square_4]
+ObjectTemplate.create SpawnPoint CPNAME_SK_SP16_square_4
+ObjectTemplate.activeSafe SpawnPoint CPNAME_SK_SP16_square_4
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setSpawnPositionOffset 0/1.25/0
+ObjectTemplate.setGroup 1
+ObjectTemplate.setControlPointId 504
+ObjectTemplate.setOnlyForTeam 1
+
+rem [SpawnPoint: CPNAME_SK_SP16_square_4]
+Object.create CPNAME_SK_SP16_square_4
+Object.absolutePosition -146.910/149.847/113.377
+Object.rotation 4.183/-0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: CPNAME_SK_SP16_hotel_inv_att_1]
+ObjectTemplate.create SpawnPoint CPNAME_SK_SP16_hotel_inv_att_1
+ObjectTemplate.activeSafe SpawnPoint CPNAME_SK_SP16_hotel_inv_att_1
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setSpawnPositionOffset 0/1.25/0
+ObjectTemplate.setGroup 2
+ObjectTemplate.setControlPointId 501
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: CPNAME_SK_SP16_hotel_inv_att_1]
+Object.create CPNAME_SK_SP16_hotel_inv_att_1
+Object.absolutePosition -224.380/155.800/-31.082
+Object.rotation 40.083/-0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: CPNAME_SK_SP16_hotel_inv_att_2]
+ObjectTemplate.create SpawnPoint CPNAME_SK_SP16_hotel_inv_att_2
+ObjectTemplate.activeSafe SpawnPoint CPNAME_SK_SP16_hotel_inv_att_2
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setSpawnPositionOffset 0/1.25/0
+ObjectTemplate.setGroup 2
+ObjectTemplate.setControlPointId 501
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: CPNAME_SK_SP16_hotel_inv_att_2]
+Object.create CPNAME_SK_SP16_hotel_inv_att_2
+Object.absolutePosition -179.372/155.800/-29.951
+Object.rotation -14.095/-0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: CPNAME_SK_SP16_hotel_inv_att_3]
+ObjectTemplate.create SpawnPoint CPNAME_SK_SP16_hotel_inv_att_3
+ObjectTemplate.activeSafe SpawnPoint CPNAME_SK_SP16_hotel_inv_att_3
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setSpawnPositionOffset 0/1.25/0
+ObjectTemplate.setGroup 2
+ObjectTemplate.setControlPointId 501
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: CPNAME_SK_SP16_hotel_inv_att_3]
+Object.create CPNAME_SK_SP16_hotel_inv_att_3
+Object.absolutePosition -192.919/155.800/-38.176
+Object.rotation 0.229/-0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: CPNAME_SK_SP16_hotel_inv_att_4]
+ObjectTemplate.create SpawnPoint CPNAME_SK_SP16_hotel_inv_att_4
+ObjectTemplate.activeSafe SpawnPoint CPNAME_SK_SP16_hotel_inv_att_4
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setSpawnPositionOffset 0/1.25/0
+ObjectTemplate.setGroup 2
+ObjectTemplate.setControlPointId 501
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: CPNAME_SK_SP16_hotel_inv_att_4]
+Object.create CPNAME_SK_SP16_hotel_inv_att_4
+Object.absolutePosition -221.819/155.800/-22.101
+Object.rotation 116.031/-0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: CPNAME_SK_SP16_square_inv_att_1]
+ObjectTemplate.create SpawnPoint CPNAME_SK_SP16_square_inv_att_1
+ObjectTemplate.activeSafe SpawnPoint CPNAME_SK_SP16_square_inv_att_1
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setSpawnPositionOffset 0/1.25/0
+ObjectTemplate.setGroup 2
+ObjectTemplate.setControlPointId 504
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: CPNAME_SK_SP16_square_inv_att_1]
+Object.create CPNAME_SK_SP16_square_inv_att_1
+Object.absolutePosition -149.548/155.901/89.159
+Object.rotation -164.128/-0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: CPNAME_SK_SP16_square_inv_att_2]
+ObjectTemplate.create SpawnPoint CPNAME_SK_SP16_square_inv_att_2
+ObjectTemplate.activeSafe SpawnPoint CPNAME_SK_SP16_square_inv_att_2
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setSpawnPositionOffset 0/1.25/0
+ObjectTemplate.setGroup 2
+ObjectTemplate.setControlPointId 504
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: CPNAME_SK_SP16_square_inv_att_2]
+Object.create CPNAME_SK_SP16_square_inv_att_2
+Object.absolutePosition -223.741/155.783/85.765
+Object.rotation 72.984/-0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: CPNAME_SK_SP16_square_inv_att_3]
+ObjectTemplate.create SpawnPoint CPNAME_SK_SP16_square_inv_att_3
+ObjectTemplate.activeSafe SpawnPoint CPNAME_SK_SP16_square_inv_att_3
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setSpawnPositionOffset 0/1.25/0
+ObjectTemplate.setGroup 2
+ObjectTemplate.setControlPointId 504
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: CPNAME_SK_SP16_square_inv_att_3]
+Object.create CPNAME_SK_SP16_square_inv_att_3
+Object.absolutePosition -147.593/155.918/68.468
+Object.rotation -54.017/-0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: CPNAME_SK_SP16_square_inv_att_4]
+ObjectTemplate.create SpawnPoint CPNAME_SK_SP16_square_inv_att_4
+ObjectTemplate.activeSafe SpawnPoint CPNAME_SK_SP16_square_inv_att_4
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setSpawnPositionOffset 0/1.25/0
+ObjectTemplate.setGroup 2
+ObjectTemplate.setControlPointId 504
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: CPNAME_SK_SP16_square_inv_att_4]
+Object.create CPNAME_SK_SP16_square_inv_att_4
+Object.absolutePosition -188.092/155.917/50.206
+Object.rotation 50.083/-0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: CPNAME_SK_SP16_market_inv_att_1]
+ObjectTemplate.create SpawnPoint CPNAME_SK_SP16_market_inv_att_1
+ObjectTemplate.activeSafe SpawnPoint CPNAME_SK_SP16_market_inv_att_1
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setSpawnPositionOffset 0/1.25/0
+ObjectTemplate.setGroup 2
+ObjectTemplate.setControlPointId 502
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: CPNAME_SK_SP16_market_inv_att_1]
+Object.create CPNAME_SK_SP16_market_inv_att_1
+Object.absolutePosition -180.672/149.996/158.794
+Object.rotation 7.104/-0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: CPNAME_SK_SP16_market_inv_att_2]
+ObjectTemplate.create SpawnPoint CPNAME_SK_SP16_market_inv_att_2
+ObjectTemplate.activeSafe SpawnPoint CPNAME_SK_SP16_market_inv_att_2
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setSpawnPositionOffset 0/1.25/0
+ObjectTemplate.setGroup 2
+ObjectTemplate.setControlPointId 502
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: CPNAME_SK_SP16_market_inv_att_2]
+Object.create CPNAME_SK_SP16_market_inv_att_2
+Object.absolutePosition -213.355/149.904/138.699
+Object.rotation 54.081/-0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: CPNAME_SK_SP16_market_inv_att_3]
+ObjectTemplate.create SpawnPoint CPNAME_SK_SP16_market_inv_att_3
+ObjectTemplate.activeSafe SpawnPoint CPNAME_SK_SP16_market_inv_att_3
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setSpawnPositionOffset 0/1.25/0
+ObjectTemplate.setGroup 2
+ObjectTemplate.setControlPointId 502
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: CPNAME_SK_SP16_market_inv_att_3]
+Object.create CPNAME_SK_SP16_market_inv_att_3
+Object.absolutePosition -235.452/155.900/182.353
+Object.rotation 95.510/-0.000/0.000
+Object.layer 1
+
+rem [SpawnPointTemplate: CPNAME_SK_SP16_market_inv_att_4]
+ObjectTemplate.create SpawnPoint CPNAME_SK_SP16_market_inv_att_4
+ObjectTemplate.activeSafe SpawnPoint CPNAME_SK_SP16_market_inv_att_4
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.setSpawnPositionOffset 0/1.25/0
+ObjectTemplate.setGroup 2
+ObjectTemplate.setControlPointId 502
+ObjectTemplate.setOnlyForTeam 2
+
+rem [SpawnPoint: CPNAME_SK_SP16_market_inv_att_4]
+Object.create CPNAME_SK_SP16_market_inv_att_4
+Object.absolutePosition -159.900/149.913/148.514
+Object.rotation -62.470/-0.000/0.000
+Object.layer 1
+
+rem ********** Control Points **********
+rem [ControlPointTemplate: CPNAME_SK_SP16_hotel]
+ObjectTemplate.create ControlPoint CPNAME_SK_SP16_hotel
+ObjectTemplate.activeSafe ControlPoint CPNAME_SK_SP16_hotel
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.setNetworkableInfo ControlPointInfo
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.hasCollisionPhysics 1
+ObjectTemplate.physicsType Mesh
+rem -------------------------------------
+ObjectTemplate.addTemplate flagpole
+rem -------------------------------------
+ObjectTemplate.setControlPointName CPNAME_SK_SP16_hotel
+ObjectTemplate.radius 5
+ObjectTemplate.team 1
+ObjectTemplate.controlPointId 501
+ObjectTemplate.supplyGroupId 1
+ObjectTemplate.enemyTicketLossWhenCaptured 150
+ObjectTemplate.areaValueTeam1 34
+ObjectTemplate.areaValueTeam2 34
+ObjectTemplate.timeToGetControl 25
+ObjectTemplate.timeToLoseControl 15
+ObjectTemplate.hoistMinMax 0.2/0.9
+
+rem [ControlPointTemplate: CPNAME_SK_SP16_market]
+ObjectTemplate.create ControlPoint CPNAME_SK_SP16_market
+ObjectTemplate.activeSafe ControlPoint CPNAME_SK_SP16_market
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.setNetworkableInfo ControlPointInfo
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.hasCollisionPhysics 1
+ObjectTemplate.physicsType Mesh
+rem -------------------------------------
+ObjectTemplate.addTemplate flagpole
+rem -------------------------------------
+ObjectTemplate.setControlPointName CPNAME_SK_SP16_market
+ObjectTemplate.radius 10
+ObjectTemplate.team 1
+ObjectTemplate.controlPointId 502
+ObjectTemplate.supplyGroupId 3
+ObjectTemplate.enemyTicketLossWhenCaptured 0
+ObjectTemplate.areaValueTeam1 34
+ObjectTemplate.areaValueTeam2 34
+ObjectTemplate.timeToGetControl 40
+ObjectTemplate.timeToLoseControl 40
+ObjectTemplate.hoistMinMax 0.2/0.9
+
+rem [ControlPointTemplate: CPNAME_SK_SP16_gasstation]
+ObjectTemplate.create ControlPoint CPNAME_SK_SP16_gasstation
+ObjectTemplate.activeSafe ControlPoint CPNAME_SK_SP16_gasstation
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.setNetworkableInfo ControlPointInfo
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.hasCollisionPhysics 1
+ObjectTemplate.physicsType Mesh
+rem -------------------------------------
+ObjectTemplate.addTemplate flagpole
+rem -------------------------------------
+ObjectTemplate.setControlPointName CPNAME_SK_SP16_gasstation
+ObjectTemplate.radius 10
+ObjectTemplate.team 2
+ObjectTemplate.controlPointId 503
+ObjectTemplate.timeToGetControl 0
+ObjectTemplate.timeToLoseControl 0
+ObjectTemplate.unableToChangeTeam 1
+ObjectTemplate.hoistMinMax 0.2/0.9
+
+rem [ControlPointTemplate: CPNAME_SK_SP16_square]
+ObjectTemplate.create ControlPoint CPNAME_SK_SP16_square
+ObjectTemplate.activeSafe ControlPoint CPNAME_SK_SP16_square
+ObjectTemplate.modifiedByUser "AverageAlien"
+ObjectTemplate.setNetworkableInfo ControlPointInfo
+ObjectTemplate.isNotSaveable 1
+ObjectTemplate.hasMobilePhysics 0
+ObjectTemplate.hasCollisionPhysics 1
+ObjectTemplate.physicsType Mesh
+rem -------------------------------------
+ObjectTemplate.addTemplate flagpole
+rem -------------------------------------
+ObjectTemplate.setControlPointName CPNAME_SK_SP16_square
+ObjectTemplate.radius 8
+ObjectTemplate.team 1
+ObjectTemplate.controlPointId 504
+ObjectTemplate.supplyGroupId 2
+ObjectTemplate.enemyTicketLossWhenCaptured 150
+ObjectTemplate.areaValueTeam1 34
+ObjectTemplate.areaValueTeam2 34
+ObjectTemplate.timeToGetControl 20
+ObjectTemplate.timeToLoseControl 20
+ObjectTemplate.hoistMinMax 0.2/0.9
+
+if v_arg1 == host
+
+   rem [ControlPoint: CPNAME_SK_SP16_hotel]
+   Object.create CPNAME_SK_SP16_hotel
+   Object.absolutePosition -194.373/158.220/11.374
+   Object.layer 1
+
+   rem [ControlPoint: CPNAME_SK_SP16_market]
+   Object.create CPNAME_SK_SP16_market
+   Object.absolutePosition -195.994/149.889/183.614
+   Object.layer 1
+
+   rem [ControlPoint: CPNAME_SK_SP16_gasstation]
+   Object.create CPNAME_SK_SP16_gasstation
+   Object.absolutePosition -161.030/161.287/-262.828
+   Object.layer 1
+
+   rem [ControlPoint: CPNAME_SK_SP16_square]
+   Object.create CPNAME_SK_SP16_square
+   Object.absolutePosition -184.780/155.518/97.329
+   Object.layer 1
+
+endIf
+
+CombatAreaManager.use 1
+CombatAreaManager.timeAllowedOutside 10.000000
+CombatArea.create CombatArea_0_SP16
+CombatArea.min 0.000000/0.000000
+CombatArea.max 0.000000/0.000000
+CombatArea.addAreaPoint -93.940216/-103.074738
+CombatArea.addAreaPoint -92.214111/-111.736786
+CombatArea.addAreaPoint -88.023529/-131.119354
+CombatArea.addAreaPoint -79.747589/-162.637909
+CombatArea.addAreaPoint -75.811981/-182.359741
+CombatArea.addAreaPoint -73.601654/-219.688629
+CombatArea.addAreaPoint -74.575378/-231.764832
+CombatArea.addAreaPoint -78.311737/-265.595245
+CombatArea.addAreaPoint -84.423035/-289.381866
+CombatArea.addAreaPoint -93.819153/-318.460266
+CombatArea.addAreaPoint -100.027618/-327.632263
+CombatArea.addAreaPoint -110.502319/-337.192322
+CombatArea.addAreaPoint -125.095795/-345.803833
+CombatArea.addAreaPoint -138.521973/-350.611725
+CombatArea.addAreaPoint -151.878815/-353.408844
+CombatArea.addAreaPoint -164.611847/-353.706879
+CombatArea.addAreaPoint -180.290802/-351.599670
+CombatArea.addAreaPoint -199.731018/-345.455261
+CombatArea.addAreaPoint -205.529053/-340.983612
+CombatArea.addAreaPoint -212.683441/-330.914429
+CombatArea.addAreaPoint -223.038696/-312.385376
+CombatArea.addAreaPoint -230.998718/-296.961121
+CombatArea.addAreaPoint -246.549988/-264.441589
+CombatArea.addAreaPoint -266.377991/-219.185577
+CombatArea.addAreaPoint -274.018066/-203.108765
+CombatArea.addAreaPoint -287.428375/-170.230408
+CombatArea.addAreaPoint -300.097534/-137.156586
+CombatArea.addAreaPoint -306.082153/-119.406830
+CombatArea.addAreaPoint -312.413269/-96.797394
+CombatArea.addAreaPoint -320.293579/-62.260193
+CombatArea.addAreaPoint -323.804810/-34.927490
+CombatArea.addAreaPoint -327.713013/-11.922119
+CombatArea.addAreaPoint -336.911224/9.524902
+CombatArea.addAreaPoint -350.101135/22.168518
+CombatArea.addAreaPoint -363.615082/32.998962
+CombatArea.addAreaPoint -381.044312/47.879944
+CombatArea.addAreaPoint -393.275482/63.857422
+CombatArea.addAreaPoint -402.224243/80.147827
+CombatArea.addAreaPoint -407.551514/102.704590
+CombatArea.addAreaPoint -409.776855/124.018860
+CombatArea.addAreaPoint -411.808655/147.498901
+CombatArea.addAreaPoint -409.631287/167.315674
+CombatArea.addAreaPoint -406.633026/179.481689
+CombatArea.addAreaPoint -401.373779/193.051758
+CombatArea.addAreaPoint -393.469513/205.476013
+CombatArea.addAreaPoint -382.448853/216.102112
+CombatArea.addAreaPoint -370.477875/227.669983
+CombatArea.addAreaPoint -357.694092/239.039307
+CombatArea.addAreaPoint -333.381317/260.367554
+CombatArea.addAreaPoint -319.711548/271.140930
+CombatArea.addAreaPoint -306.506439/279.156616
+CombatArea.addAreaPoint -290.812073/285.086853
+CombatArea.addAreaPoint -280.494324/286.330994
+CombatArea.addAreaPoint -265.962585/286.675110
+CombatArea.addAreaPoint -201.450195/286.667542
+CombatArea.addAreaPoint -170.027313/286.647705
+CombatArea.addAreaPoint -152.259735/285.128296
+CombatArea.addAreaPoint -142.473907/281.867432
+CombatArea.addAreaPoint -132.719421/276.334839
+CombatArea.addAreaPoint -124.378387/268.684814
+CombatArea.addAreaPoint -121.312256/260.809753
+CombatArea.addAreaPoint -119.203430/244.741272
+CombatArea.addAreaPoint -117.537994/-8.071167
+CombatArea.addAreaPoint -117.525299/-24.145752
+CombatArea.addAreaPoint -115.014191/-35.413940
+CombatArea.addAreaPoint -110.860657/-47.696625
+CombatArea.addAreaPoint -105.292999/-63.766266
+CombatArea.addAreaPoint -100.147247/-79.960297
+CombatArea.team 0
+CombatArea.vehicles 0
+CombatArea.layer 1
+CombatArea.usedByPathFinding 1

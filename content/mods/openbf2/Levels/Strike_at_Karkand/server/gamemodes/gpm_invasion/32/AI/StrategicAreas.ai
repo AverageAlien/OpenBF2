@@ -1,0 +1,211 @@
+rem *** Create strategic areas ***
+aiStrategicArea.createFromControlPoint CPNAME_SK_SP16_gasstation 503 50
+aiStrategicArea.layer 1
+
+aiStrategicArea.createFromControlPoint 1_West_Outpost 504 50
+aiStrategicArea.layer 1
+
+aiStrategicArea.createFromControlPoint 1_East_Outpost 505 50
+aiStrategicArea.layer 1
+
+aiStrategicArea.createFromControlPoint 2_Construction 506 50
+aiStrategicArea.layer 1
+
+aiStrategicArea.createFromControlPoint 2_Small_parking 507 50
+aiStrategicArea.layer 1
+
+aiStrategicArea.createFromControlPoint 3_Hotel 508 50
+aiStrategicArea.layer 1
+
+aiStrategicArea.createFromControlPoint 3_South_Waterfront 509 50
+aiStrategicArea.layer 1
+
+aiStrategicArea.createFromControlPoint 4_Apartments 510 50
+aiStrategicArea.layer 1
+
+aiStrategicArea.createFromControlPoint 4_Square 511 50
+aiStrategicArea.layer 1
+
+aiStrategicArea.createFromControlPoint 4_North_Waterfront 512 50
+aiStrategicArea.layer 1
+
+aiStrategicArea.createFromControlPoint 5_Lower_Villas 513 50
+aiStrategicArea.layer 1
+
+aiStrategicArea.createFromControlPoint 5_Fountain 514 50
+aiStrategicArea.layer 1
+
+aiStrategicArea.createFromControlPoint 5_Office 515 50
+aiStrategicArea.layer 1
+
+aiStrategicArea.createFromControlPoint 6_Upper_Villas 516 50
+aiStrategicArea.layer 1
+
+aiStrategicArea.createFromControlPoint 6_Big_Parking 517 50
+aiStrategicArea.layer 1
+
+aiStrategicArea.createFromControlPoint 6_Market 518 50
+aiStrategicArea.layer 1
+
+
+aiStrategicArea.setActive CPNAME_SK_SP16_gasstation
+AIStrategicArea.addNeighbour 1_West_Outpost
+AIStrategicArea.addNeighbour 1_East_Outpost
+aiStrategicArea.addObjectTypeFlag ControlPoint
+AIStrategicArea.setOrderPosition Infantry -161.03/161.287/-262.828
+AIStrategicArea.setOrderPosition Vehicle -161.03/161.287/-262.828
+aiStrategicArea.setSide 2
+aiStrategicArea.vehicleSearchRadius 89.2
+
+aiStrategicArea.setActive 1_West_Outpost
+AIStrategicArea.addNeighbour CPNAME_SK_SP16_gasstation
+AIStrategicArea.addNeighbour 1_East_Outpost
+AIStrategicArea.addNeighbour 2_Small_parking
+aiStrategicArea.addObjectTypeFlag ControlPoint
+AIStrategicArea.setOrderPosition Infantry -234.417/163.399/-151.605
+AIStrategicArea.setOrderPosition Vehicle -229.167/163.399/-157.215
+aiStrategicArea.setSide 0
+aiStrategicArea.vehicleSearchRadius 31.5
+
+aiStrategicArea.setActive 1_East_Outpost
+AIStrategicArea.addNeighbour 1_West_Outpost
+AIStrategicArea.addNeighbour CPNAME_SK_SP16_gasstation
+AIStrategicArea.addNeighbour 2_Construction
+aiStrategicArea.addObjectTypeFlag ControlPoint
+AIStrategicArea.setOrderPosition Infantry -162.226/162.497/-123.92
+AIStrategicArea.setOrderPosition Vehicle -161.544/162.497/-129.515
+aiStrategicArea.setSide 0
+aiStrategicArea.vehicleSearchRadius 14.3
+
+aiStrategicArea.setActive 2_Construction
+AIStrategicArea.addNeighbour 1_East_Outpost
+AIStrategicArea.addNeighbour 2_Small_parking
+AIStrategicArea.addNeighbour 3_South_Waterfront
+AIStrategicArea.addNeighbour 3_Hotel
+aiStrategicArea.addObjectTypeFlag ControlPoint
+AIStrategicArea.setOrderPosition Infantry -175.603/155.8/-53.6887
+AIStrategicArea.setOrderPosition Vehicle -178.221/155.8/-45.9335
+aiStrategicArea.setSide 0
+
+aiStrategicArea.setActive 2_Small_parking
+AIStrategicArea.addNeighbour 1_West_Outpost
+AIStrategicArea.addNeighbour 2_Construction
+AIStrategicArea.addNeighbour 3_Hotel
+AIStrategicArea.addNeighbour 4_Apartments
+aiStrategicArea.addObjectTypeFlag ControlPoint
+AIStrategicArea.setOrderPosition Infantry -237.954/155.8/-28.7723
+AIStrategicArea.setOrderPosition Vehicle -234.772/155.8/-26.445
+aiStrategicArea.setSide 0
+
+aiStrategicArea.setActive 3_Hotel
+AIStrategicArea.addNeighbour 2_Small_parking
+AIStrategicArea.addNeighbour 2_Construction
+AIStrategicArea.addNeighbour 3_South_Waterfront
+AIStrategicArea.addNeighbour 4_Apartments
+AIStrategicArea.addNeighbour 4_Square
+aiStrategicArea.addObjectTypeFlag ControlPoint
+AIStrategicArea.setOrderPosition Infantry -194.957/158.383/10.949
+AIStrategicArea.setOrderPosition Vehicle -204.941/155.8/21.2041
+aiStrategicArea.setSide 0
+aiStrategicArea.vehicleSearchRadius 33
+
+aiStrategicArea.setActive 3_South_Waterfront
+AIStrategicArea.addNeighbour 2_Construction
+AIStrategicArea.addNeighbour 3_Hotel
+AIStrategicArea.addNeighbour 4_North_Waterfront
+aiStrategicArea.addObjectTypeFlag ControlPoint
+AIStrategicArea.setOrderPosition Infantry -136.447/155.8/4.05668
+AIStrategicArea.setOrderPosition Vehicle -156.298/155.8/3.722
+aiStrategicArea.setSide 0
+
+aiStrategicArea.setActive 4_Apartments
+AIStrategicArea.addNeighbour 2_Small_parking
+AIStrategicArea.addNeighbour 3_Hotel
+AIStrategicArea.addNeighbour 4_Square
+AIStrategicArea.addNeighbour 5_Lower_Villas
+AIStrategicArea.addNeighbour 5_Fountain
+aiStrategicArea.addObjectTypeFlag ControlPoint
+AIStrategicArea.setOrderPosition Infantry -275.953/155.8/41.5361
+AIStrategicArea.setOrderPosition Vehicle -271.739/155.8/45.6662
+aiStrategicArea.setSide 0
+
+aiStrategicArea.setActive 4_Square
+AIStrategicArea.addNeighbour 3_Hotel
+AIStrategicArea.addNeighbour 4_North_Waterfront
+AIStrategicArea.addNeighbour 4_Apartments
+AIStrategicArea.addNeighbour 5_Fountain
+AIStrategicArea.addNeighbour 5_Office
+aiStrategicArea.addObjectTypeFlag ControlPoint
+AIStrategicArea.setOrderPosition Infantry -181.658/155.498/98.5837
+AIStrategicArea.setOrderPosition Vehicle -190.462/155.498/92.0666
+aiStrategicArea.setSide 0
+aiStrategicArea.vehicleSearchRadius 49
+
+aiStrategicArea.setActive 4_North_Waterfront
+AIStrategicArea.addNeighbour 3_South_Waterfront
+AIStrategicArea.addNeighbour 4_Square
+AIStrategicArea.addNeighbour 5_Office
+aiStrategicArea.addObjectTypeFlag ControlPoint
+AIStrategicArea.setOrderPosition Infantry -137.507/155.8/88.4761
+AIStrategicArea.setOrderPosition Vehicle -157.481/155.8/85.6933
+aiStrategicArea.setSide 0
+aiStrategicArea.vehicleSearchRadius 17.6
+
+aiStrategicArea.setActive 5_Lower_Villas
+AIStrategicArea.addNeighbour 4_Apartments
+AIStrategicArea.addNeighbour 6_Upper_Villas
+aiStrategicArea.addObjectTypeFlag ControlPoint
+AIStrategicArea.setOrderPosition Infantry -351.643/165.102/93.8931
+AIStrategicArea.setOrderPosition Vehicle -344.928/164.319/97.2313
+aiStrategicArea.setSide 0
+aiStrategicArea.vehicleSearchRadius 44.8
+
+aiStrategicArea.setActive 5_Fountain
+AIStrategicArea.addNeighbour 4_Apartments
+AIStrategicArea.addNeighbour 4_Square
+AIStrategicArea.addNeighbour 6_Big_Parking
+AIStrategicArea.addNeighbour 6_Upper_Villas
+aiStrategicArea.addObjectTypeFlag ControlPoint
+AIStrategicArea.setOrderPosition Infantry -277.702/156.053/131.959
+AIStrategicArea.setOrderPosition Vehicle -271.952/155.8/130.431
+aiStrategicArea.setSide 0
+aiStrategicArea.vehicleSearchRadius 53.1
+
+aiStrategicArea.setActive 5_Office
+AIStrategicArea.addNeighbour 4_Square
+AIStrategicArea.addNeighbour 4_North_Waterfront
+AIStrategicArea.addNeighbour 6_Market
+aiStrategicArea.addObjectTypeFlag ControlPoint
+AIStrategicArea.setOrderPosition Infantry -187.831/149.799/147.732
+AIStrategicArea.setOrderPosition Vehicle -191.75/149.799/141.99
+aiStrategicArea.setSide 0
+
+aiStrategicArea.setActive 6_Upper_Villas
+AIStrategicArea.addNeighbour 5_Lower_Villas
+AIStrategicArea.addNeighbour 5_Fountain
+AIStrategicArea.addNeighbour 6_Big_Parking
+aiStrategicArea.addObjectTypeFlag ControlPoint
+AIStrategicArea.setOrderPosition Infantry -323.238/168.402/217.605
+AIStrategicArea.setOrderPosition Vehicle -319.747/168.353/210.336
+aiStrategicArea.setSide 0
+aiStrategicArea.vehicleSearchRadius 19.6
+
+aiStrategicArea.setActive 6_Big_Parking
+AIStrategicArea.addNeighbour 5_Fountain
+AIStrategicArea.addNeighbour 6_Market
+AIStrategicArea.addNeighbour 6_Upper_Villas
+aiStrategicArea.addObjectTypeFlag ControlPoint
+AIStrategicArea.setOrderPosition Infantry -243.336/155.8/217.498
+AIStrategicArea.setOrderPosition Vehicle -251.27/155.8/219.79
+aiStrategicArea.setSide 0
+aiStrategicArea.vehicleSearchRadius 75.7
+
+aiStrategicArea.setActive 6_Market
+AIStrategicArea.addNeighbour 5_Office
+AIStrategicArea.addNeighbour 6_Big_Parking
+aiStrategicArea.addObjectTypeFlag ControlPoint
+AIStrategicArea.setOrderPosition Infantry -189.65/149.799/178.052
+AIStrategicArea.setOrderPosition Vehicle -196.578/149.799/179.456
+aiStrategicArea.setSide 0
+aiStrategicArea.vehicleSearchRadius 115
+

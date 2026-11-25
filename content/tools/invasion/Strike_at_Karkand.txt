@@ -1,0 +1,16 @@
+# Invasion layer for Strike at Karkand, built from the 16 single player layer
+# (the only Karkand layer made for bots). make_invasion_layer.py Strike_at_Karkand.txt
+# Since 2026-11-17 the layer is edited in the retail editor (Editor/GamePlayObjects.con); pack it with
+# editor_to_layer.py Strike_at_Karkand.txt. make_invasion_layer.py --force would throw those edits away.
+level Strike_at_Karkand
+source sp1/16
+attackers 2
+
+# start tickets per team
+tickets 2 300
+tickets 1 999
+
+# group <bonus tickets for the attackers when the group falls> <control points>
+group 150 CPNAME_SK_SP16_hotel
+group 150 CPNAME_SK_SP16_square
+group 0 CPNAME_SK_SP16_market

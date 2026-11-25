@@ -1,0 +1,139 @@
+rem *** Create strategic areas ***
+aiStrategicArea.createFromControlPoint MEC_Main 1 50
+aiStrategicArea.layer 1
+
+aiStrategicArea.createFromControlPoint Park 2 50
+aiStrategicArea.layer 1
+
+aiStrategicArea.createFromControlPoint Observation_building 3 50
+aiStrategicArea.layer 1
+
+aiStrategicArea.createFromControlPoint Harbor_hotel 4 50
+aiStrategicArea.layer 1
+
+aiStrategicArea.createFromControlPoint Red_compound 5 50
+aiStrategicArea.layer 1
+
+aiStrategicArea.createFromControlPoint Harbor_apartments 6 50
+aiStrategicArea.layer 1
+
+aiStrategicArea.createFromControlPoint Construction 7 50
+aiStrategicArea.layer 1
+
+aiStrategicArea.createFromControlPoint Intersection 8 50
+aiStrategicArea.layer 1
+
+aiStrategicArea.createFromControlPoint Offices 9 50
+aiStrategicArea.layer 1
+
+aiStrategicArea.createFromControlPoint Comm_towers 10 50
+aiStrategicArea.layer 1
+
+aiStrategicArea.createFromControlPoint TV_Station 11 50
+aiStrategicArea.layer 1
+
+
+aiStrategicArea.setActive MEC_Main
+AIStrategicArea.addNeighbour Park
+aiStrategicArea.addObjectTypeFlag ControlPoint
+AIStrategicArea.setOrderPosition Infantry -589.616/99.5931/-653.3
+AIStrategicArea.setOrderPosition Vehicle -584.322/99.5729/-653.871
+aiStrategicArea.setSide 1
+aiStrategicArea.vehicleSearchRadius 34.7
+
+aiStrategicArea.setActive Park
+AIStrategicArea.addNeighbour MEC_Main
+AIStrategicArea.addNeighbour Observation_building
+aiStrategicArea.addObjectTypeFlag ControlPoint
+AIStrategicArea.setOrderPosition Infantry -410.847/79.9842/-220.33
+AIStrategicArea.setOrderPosition Vehicle -427.193/79.3977/-236.904
+aiStrategicArea.setSide 0
+aiStrategicArea.vehicleSearchRadius 23.5
+
+aiStrategicArea.setActive Observation_building
+AIStrategicArea.addNeighbour Park
+AIStrategicArea.addNeighbour Harbor_hotel
+AIStrategicArea.addNeighbour Red_compound
+aiStrategicArea.addObjectTypeFlag ControlPoint
+AIStrategicArea.setOrderPosition Infantry -351.53/87.5886/-223.497
+AIStrategicArea.setOrderPosition Vehicle -331.647/79.3978/-225.466
+aiStrategicArea.setSide 0
+aiStrategicArea.vehicleSearchRadius 18.5
+
+aiStrategicArea.setActive Harbor_hotel
+AIStrategicArea.addNeighbour Observation_building
+AIStrategicArea.addNeighbour Red_compound
+AIStrategicArea.addNeighbour Harbor_apartments
+aiStrategicArea.addObjectTypeFlag ControlPoint
+AIStrategicArea.setOrderPosition Infantry -288.297/79.3977/-232.231
+AIStrategicArea.setOrderPosition Vehicle -290.743/79.3977/-240.434
+aiStrategicArea.setSide 0
+aiStrategicArea.vehicleSearchRadius 38.4
+
+aiStrategicArea.setActive Red_compound
+AIStrategicArea.addNeighbour Harbor_hotel
+AIStrategicArea.addNeighbour Harbor_apartments
+AIStrategicArea.addNeighbour Observation_building
+AIStrategicArea.addNeighbour Construction
+aiStrategicArea.addObjectTypeFlag ControlPoint
+AIStrategicArea.setOrderPosition Infantry -284.033/85.4162/-193.22
+AIStrategicArea.setOrderPosition Vehicle -270.225/85.399/-203.433
+aiStrategicArea.setSide 0
+aiStrategicArea.vehicleSearchRadius 27.7
+
+aiStrategicArea.setActive Harbor_apartments
+AIStrategicArea.addNeighbour Harbor_hotel
+AIStrategicArea.addNeighbour Red_compound
+AIStrategicArea.addNeighbour Construction
+AIStrategicArea.addNeighbour Intersection
+aiStrategicArea.addObjectTypeFlag ControlPoint
+AIStrategicArea.setOrderPosition Infantry -210.369/81.4673/-231.923
+AIStrategicArea.setOrderPosition Vehicle -223.115/79.3977/-241.307
+aiStrategicArea.setSide 0
+aiStrategicArea.vehicleSearchRadius 22.2
+
+aiStrategicArea.setActive Construction
+AIStrategicArea.addNeighbour Red_compound
+AIStrategicArea.addNeighbour Harbor_apartments
+AIStrategicArea.addNeighbour Intersection
+aiStrategicArea.addObjectTypeFlag ControlPoint
+AIStrategicArea.setOrderPosition Infantry -296.103/91.4003/-129.183
+AIStrategicArea.setOrderPosition Vehicle -296.934/91.4003/-134.649
+aiStrategicArea.setSide 0
+aiStrategicArea.vehicleSearchRadius 24
+
+aiStrategicArea.setActive Intersection
+AIStrategicArea.addNeighbour Harbor_apartments
+AIStrategicArea.addNeighbour Construction
+AIStrategicArea.addNeighbour Offices
+aiStrategicArea.addObjectTypeFlag ControlPoint
+AIStrategicArea.setOrderPosition Infantry -238.933/91.3999/-80.994
+AIStrategicArea.setOrderPosition Vehicle -245.848/91.3983/-88.414
+aiStrategicArea.setSide 0
+aiStrategicArea.vehicleSearchRadius 39
+
+aiStrategicArea.setActive Offices
+AIStrategicArea.addNeighbour Intersection
+AIStrategicArea.addNeighbour Comm_towers
+aiStrategicArea.addObjectTypeFlag ControlPoint
+AIStrategicArea.setOrderPosition Infantry -197.132/91.3957/-54.986
+AIStrategicArea.setOrderPosition Vehicle -188.718/91.3957/-54.7553
+aiStrategicArea.setSide 0
+aiStrategicArea.vehicleSearchRadius 36.8
+
+aiStrategicArea.setActive Comm_towers
+AIStrategicArea.addNeighbour Offices
+AIStrategicArea.addNeighbour TV_Station
+aiStrategicArea.addObjectTypeFlag ControlPoint
+AIStrategicArea.setOrderPosition Infantry -110.554/97.2963/-60.3446
+AIStrategicArea.setOrderPosition Vehicle -118.858/97.2963/-61.4478
+aiStrategicArea.setSide 0
+
+aiStrategicArea.setActive TV_Station
+AIStrategicArea.addNeighbour Comm_towers
+aiStrategicArea.addObjectTypeFlag ControlPoint
+AIStrategicArea.setOrderPosition Infantry -109.323/97.2987/-134.132
+AIStrategicArea.setOrderPosition Vehicle -120.941/97.2964/-133.947
+aiStrategicArea.setSide 0
+aiStrategicArea.vehicleSearchRadius 47.9
+

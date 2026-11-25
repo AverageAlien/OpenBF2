@@ -1,0 +1,55 @@
+hudBuilder.createSplitNode		VehicleHuds T90Hud
+hudBuilder.setNodeLogicShowVariable 	EQUAL GuiIndex 7
+hudBuilder.addNodeBlendEffect		7 2
+
+hudBuilder.createPictureNode		T90Hud T90CrosshairHor 144 294 512 32
+hudBuilder.setPictureNodeTexture 	Ingame\Vehicles\Icons\Hud\Land\T90\T90CrosshairHorizontal.dds
+hudBuilder.setNodeColor		 	0.925 0.424 0.267 1
+
+hudBuilder.createPictureNode		T90Hud T90CrosshairVert 397 320 32 128
+hudBuilder.setPictureNodeTexture 	Ingame\Vehicles\Icons\Hud\Land\T90\T90CrosshairVertical.dds
+hudBuilder.setNodeColor		 	0.925 0.424 0.267 1
+
+rem -------------------------------------- Hit Indication----------------------------------------------------
+   
+hudBuilder.createPictureNode 		T90Hud T90HitIndication 384 284 32 32
+hudBuilder.setPictureNodeTexture 	Ingame/CrossHair/vsp_HitIndicator.tga
+hudBuilder.setNodeColor 		0.925 0.424 0.267 1
+hudBuilder.setNodeAlphaVariable     	HitIndicatorIconAlpha
+hudBuilder.setNodeShowVariable 		HitIndicatorIconShow
+
+rem ------------HE shell page (copy of the page above)-------------
+
+hudBuilder.createSplitNode		VehicleHuds T90HudHE
+hudBuilder.setNodeLogicShowVariable 	EQUAL GuiIndex 92
+hudBuilder.addNodeBlendEffect		7 2
+
+hudBuilder.createPictureNode		T90HudHE T90CrosshairHorHE 144 294 512 32
+hudBuilder.setPictureNodeTexture 	Ingame\Vehicles\Icons\Hud\Land\T90\T90CrosshairHorizontal.dds
+hudBuilder.setNodeColor		 	0.925 0.424 0.267 1
+
+hudBuilder.createPictureNode		T90HudHE T90CrosshairVertHE 397 320 32 128
+hudBuilder.setPictureNodeTexture 	Ingame\Vehicles\Icons\Hud\Land\T90\T90CrosshairVertical.dds
+hudBuilder.setNodeColor		 	0.925 0.424 0.267 1
+
+rem -------------------------------------- Hit Indication----------------------------------------------------
+   
+hudBuilder.createPictureNode 		T90HudHE T90HitIndicationHE 384 284 32 32
+hudBuilder.setPictureNodeTexture 	Ingame/CrossHair/vsp_HitIndicator.tga
+hudBuilder.setNodeColor 		0.925 0.424 0.267 1
+hudBuilder.setNodeAlphaVariable     	HitIndicatorIconAlpha
+hudBuilder.setNodeShowVariable 		HitIndicatorIconShow
+
+rem ------------shell label APFSDS-------------
+hudBuilder.createSplitNode		BottomRightAnimateHud T90ShellLabelAPFSDS
+hudBuilder.setNodeLogicShowVariable 	EQUAL GuiIndex 7
+hudBuilder.createPictureNode		T90ShellLabelAPFSDS T90ShellLabelAPFSDSIcon 325 61 40 10
+hudBuilder.setPictureNodeTexture 	Ingame/Weapons/Icons/Hud/shell_apfsds.tga
+hudBuilder.setNodeColor			1 1 1 1
+
+rem ------------shell label HE-------------
+hudBuilder.createSplitNode		BottomRightAnimateHud T90ShellLabelHE
+hudBuilder.setNodeLogicShowVariable 	EQUAL GuiIndex 92
+hudBuilder.createPictureNode		T90ShellLabelHE T90ShellLabelHEIcon 325 61 40 10
+hudBuilder.setPictureNodeTexture 	Ingame/Weapons/Icons/Hud/shell_he.tga
+hudBuilder.setNodeColor			1 1 1 1

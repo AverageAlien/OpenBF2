@@ -1,0 +1,12 @@
+rem ** gameLogic hasn't been initialized yet **
+
+
+rem *** These should be noops in server & editor
+rem bf2Engine.playMovie Movies\EA.bik 1
+rem bf2Engine.playMovie Movies\dice.bik 1
+rem bf2Engine.playMovie Movies\legal.bik 1
+rem bf2Engine.playMovie Movies\intro.bik 0
+rem bf2Engine.playMovie Movies\welcome.bik 0
+
+rem Frame rate cap (default 100)
+game.lockFps 144

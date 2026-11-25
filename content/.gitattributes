@@ -1,0 +1,10 @@
+# Game files must reach the game byte for byte (they are CRLF, as retail ships them)
+*.con -text
+*.tweak -text
+*.ai -text
+*.desc -text
+*.fx -text
+*.inc -text
+mods/**/*.py -text
+# Shell scripts break with CRLF
+*.sh text eol=lf

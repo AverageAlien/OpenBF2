@@ -7,6 +7,13 @@ It should be indistinguishable from retail and provide all the features retail d
 This is an independent reconstruction in progress. Parts of the engine remain incomplete;
 successful compilation or a diagnostic executable does not establish a playable game.
 
+## This fork
+
+This fork adds engine changes (Invasion game mode, bot AI, native CCIP, mobility kill, tank/APC
+rebalance, commander and listen-server fixes, editor tools) and a game mod, `mods/openbf2`, that uses
+them. To build it and set up the mod on a retail Battlefield 2 1.50 install, follow
+[content/SETUP.md](content/SETUP.md).
+
 ## Start here
 
 - [Getting started](docs/getting-started.md): toolchains, build targets, and runtime setup.
