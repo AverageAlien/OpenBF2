@@ -158,6 +158,16 @@ protected:
 
     // The ctor's last act constructs this in place - it is the class's tail.
     /* 0x670 */ EngineSoundTemplate m_engineSound;
+
+public:
+    // [CHOSEN, not recovered] OpenBF2 extensions, not in retail: mobility kill while the vehicle's
+    // armor is critically damaged (EngineBase::updateCriticalPowerLoss).
+    // ObjectTemplate.criticalDamagePowerLoss: seconds over which power fades to zero; 0 = at once,
+    // negative (default) = off.
+    float m_criticalDamagePowerLoss;
+    // ObjectTemplate.criticalDamageSpin: yaw rate in degrees per second the root spins at in the air
+    // once this engine has lost its power (helicopter tail rotors); 0 = none.
+    float m_criticalDamageSpin;
 };
 
 } // namespace world

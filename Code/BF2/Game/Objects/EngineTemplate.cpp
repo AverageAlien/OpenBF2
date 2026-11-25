@@ -96,6 +96,8 @@ EngineTemplate::EngineTemplate()
     m_defaultAngleOfAttack = 0.0f;               // +0x5B4
     m_remoteEngineInput = io::PINone;            // +0x5BC
     m_canReverse = true;                         // +0x5EC
+    m_criticalDamagePowerLoss = -1.0f;           // OpenBF2 extension
+    m_criticalDamageSpin = 0.0f;                 // OpenBF2 extension
 
     // m_engineSound (+0x670): constructed by its own ctor - the ELF's last call.
 
@@ -297,6 +299,8 @@ bool EngineTemplate::makeScript(io::IStream* stream)
         if (!m_inverseHeatBar) out << "ObjectTemplate.InverseHeatBar 1" << std::endl;
     }
     if (m_spinWhenNoEngineInAir != 0.0f) out << "ObjectTemplate.spinWhenNoEngineInAir " << m_spinWhenNoEngineInAir << std::endl;
+    if (m_criticalDamagePowerLoss >= 0.0f) out << "ObjectTemplate.criticalDamagePowerLoss " << m_criticalDamagePowerLoss << std::endl;
+    if (m_criticalDamageSpin != 0.0f) out << "ObjectTemplate.criticalDamageSpin " << m_criticalDamageSpin << std::endl;
     if (m_dampHorizontalVel != 0.0f) out << "ObjectTemplate.dampHorizontalVel " << m_dampHorizontalVel << std::endl;
     if (m_dampHorizontalVelFactor != 0.0f) out << "ObjectTemplate.dampHorizontalVelFactor " << m_dampHorizontalVelFactor << std::endl;
     if (m_airFlowAffect != 0.0f) out << "ObjectTemplate.airFlowAffect " << m_airFlowAffect << std::endl;

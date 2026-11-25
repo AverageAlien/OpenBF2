@@ -160,6 +160,8 @@ void CarEngine::handleUpdate(float dt, unsigned int flags)
         }
     }
 
+    updateCriticalPowerLoss(dt, !skipSound);                                    // OpenBF2 extension
+
     IObject* const root = getRootParent(this);                                  // shipped: unguarded
     IPhysicsNode* const physicsNode = static_cast<IPhysicsNode*>(
         object_detail::LayoutAccess::physicsNode(root));
@@ -435,7 +437,7 @@ void CarEngine::handleUpdate(float dt, unsigned int flags)
     }
     const float sprintScale = gearDampen > 0.0f ? 12.0f / gearDampen : 0.0f;
     sprintForce = scaled(sprintForce, sprintScale);
-    sprintForce = scaled(sprintForce, pco->getSprintFactor());
+    sprintForce = scaled(sprintForce, pco->getSprintFactor() * m_powerFactor);   // OpenBF2: x power
 
     if (m_gear == m_template->m_numberOfGears)
         sprintForce = scaled(sprintForce, 1.0f - clampFloat(m_input, 0.0f, 1.0f));

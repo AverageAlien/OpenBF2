@@ -156,6 +156,8 @@ void Rotor::handleVisualUpdate(float deltaTime, float distance)
             const float frameScale = deltaTime * 30.0f;                              // ELF flt_888B174
 
             Vec3 rate = engine->getCurrentRotation();                                // ELF +0x184 / PE +0x17C
+            rate.z *= engine->getPowerFactor();                                      // OpenBF2: mobility kill
+            const float input = engine->m_input * engine->getPowerFactor();          // OpenBF2: mobility kill
             if (engine->m_engineRunning)                                             // +0x1B4 PE +0x1CC
             {
                 m_spinDownTimer = 3.0f;
@@ -174,7 +176,7 @@ void Rotor::handleVisualUpdate(float deltaTime, float distance)
             float speedMod;
             if (m_geomState == 0)
             {
-                if (t->m_changeLodAt + t->m_tolerance <= engine->m_input)            // +0x1C4 PE +0x1DC
+                if (t->m_changeLodAt + t->m_tolerance <= input)                      // +0x1C4 PE +0x1DC
                 {
                     void* geometry = m_geometry;                                     // +0x38
                     m_geomState = 1;
@@ -185,7 +187,7 @@ void Rotor::handleVisualUpdate(float deltaTime, float distance)
             }
             else if (m_geomState == 1)
             {
-                if (t->m_changeLodAt - t->m_tolerance >= engine->m_input)
+                if (t->m_changeLodAt - t->m_tolerance >= input)
                 {
                     void* geometry = m_geometry;
                     m_geomState = 0;

@@ -20,6 +20,7 @@
 #include "../Game/Objects/GameLogicComp/IArmorGLComp.h"
 #include "PhysicsSpring.h"                            // the wheel node: m_wheelSpin, m_wheelAngle, getWheelRadius
 #include "../Game/IGameLogic.h"                       // gameLogic->isServer - solveImpulse
+#include "../Game/Utility/Vars.h"                    // phy-dead-track-roll-decel (OpenBF2)
 #include "../Math/LocalBoundingBox.h"
 #include "../Math/Mat4.h"
 #include "../Math/Ray3.h"
@@ -1073,6 +1074,10 @@ float s_slopeDriveGain          = 1.0f;
 int   s_normaliseSlipBySpeed    = 0;
 float s_firstGearSlopeTorqueMod = 0.0f;
 bool  s_projectTrackForce       = false;
+
+// [CHOSEN, not recovered] OpenBF2 extension: how fast a tracked vehicle whose engine lost its power
+// (EngineBase::getPowerFactor) slows down while rolling without brakes, in m/s per second.
+float* const g_deadTrackRollDecel = hfe::Vars::getFloat("phy-dead-track-roll-decel", 1.0f);
 
 // The GCC-inlined Vec3::normalize the friction bodies use: untouched within FLT_EPSILON of unit
 // length, zero within FLT_EPSILON of zero length.
@@ -2128,7 +2133,8 @@ void ResponsePhysics::addFriction(IPhysicsNode* node)
             // the tracked drive
             const float ratio = 3.5f * engine->m_template->m_differential                 // +0x1B0 -> +0x3CC
                               / engine->getGearRatio(engine->m_gear);                     // +0x1A4 (+0x1E8)
-            const float rpm = engine->getCurrentDifferentialRPM(node->getRelativePosition().x) * ratio;   // +0x5C
+            const float rpm = engine->getCurrentDifferentialRPM(node->getRelativePosition().x) * ratio
+                            * engine->getPowerFactor();                                   // +0x5C; OpenBF2: x power
             if (engine->m_byte1DC != true)                                                // +0x1DC
             {
                 const float k = 1.0f - engine->m_soundInput * 0.5f;                       // +0x1E4
@@ -2151,7 +2157,29 @@ void ResponsePhysics::addFriction(IPhysicsNode* node)
                     alongForward.x = alongForward.y = alongForward.z = 0.0f;
                 }
             }
-            const float half = engine->m_soundInput * 0.5f;
+            float half = engine->m_soundInput * 0.5f;
+            // [CHOSEN, not recovered] OpenBF2 mobility kill: without drive the retail track force
+            // aims at a standing track, which stops a tank at once. The lost share of the power
+            // instead lets the tracks roll at the current speed less a small rolling loss, unless
+            // the driver's input opposes the direction of travel (the brake).
+            const float power = engine->getPowerFactor();
+            if (power < 1.0f)
+            {
+                const float ff = forward.z * forward.z + forward.y * forward.y + forward.x * forward.x;
+                const float along = FLT_EPSILON < fabsf(ff)
+                    ? (tangent.z * forward.z + tangent.y * forward.y + tangent.x * forward.x) / sqrtf(ff)
+                    : 0.0f;
+                const float throttle = engine->m_rotationInput.z;                             // +0x160
+                const bool braking = (throttle < -0.1f && along > 0.1f) || (throttle > 0.1f && along < -0.1f);
+                float roll = 0.0f;
+                if (!braking && fabsf(along) > 0.001f)
+                {
+                    roll = 1.0f - *g_deadTrackRollDecel / 30.0f / fabsf(along);
+                    if (roll < 0.0f)
+                        roll = 0.0f;
+                }
+                half = half * power + roll * (1.0f - power);
+            }
             force.x = force.x + alongForward.x * half;
             force.y = force.y + alongForward.y * half;
             force.z = force.z + alongForward.z * half;
@@ -2425,7 +2453,8 @@ void ResponsePhysics::addFrictionNew(IPhysicsNode* node)
         const float gearRatio = engine->getGearRatio(engine->m_gear);      // +0x1A4 (+0x1E8)
         const EngineTemplate* const engineTemplate = engine->m_template;   // +0x1B0
         const float driveFactor = 3.5f * engineTemplate->m_differential * gearRatio;
-        const float driveTorque = engine->getCurrentTorque() * driveFactor * 0.5f;   // +0x1A8
+        const float driveTorque = engine->getCurrentTorque() * driveFactor * 0.5f    // +0x1A8
+                                * engine->getPowerFactor();                         // OpenBF2: x power
         const float spin = wheel->m_wheelSpin;                            // +0x250
         float slopeMod = engineTemplate->m_newCar2SlopeTorqueMod;         // +0x644
         if (engine->m_gear == 1)
@@ -2435,7 +2464,8 @@ void ResponsePhysics::addFrictionNew(IPhysicsNode* node)
             computeSlopeTorque(m_averageNormal, forward, radius, massTerm) * slopeMod;
         const float torque = addTorque(driveTorque, slopeTorque);
         float resist = engineTemplate->m_newCar2FrictionTorque;           // +0x63C
-        if (engine->m_rotationInput.z == 0.0f)                            // +0x160 - no throttle
+        if (engine->m_rotationInput.z == 0.0f                             // +0x160 - no throttle
+            && engine->getPowerFactor() > 0.0f)                           // OpenBF2: a dead engine coasts
             resist = resist + engineTemplate->m_newCar2EngineBrakeTorque; // +0x638
         if (engine->m_byte1DC)                                            // +0x1DC - braking
             resist = resist + engineTemplate->m_newCar2BrakeTorque;       // +0x634

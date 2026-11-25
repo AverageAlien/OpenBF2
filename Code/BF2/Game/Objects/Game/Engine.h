@@ -10,6 +10,8 @@ namespace dice {
 namespace hfe {
 namespace world {
 
+class IPhysicsNode;
+
 class Engine : public EngineBase
 {
 public:
@@ -29,6 +31,8 @@ public:
     void  resetTrackFriction();
     void  setTrackHasContact(float side);
     float getSlope();
+    // [CHOSEN, not recovered] OpenBF2 extension: ObjectTemplate.criticalDamageSpin.
+    void  updateCriticalSpin(float dt, IPhysicsNode* physicsNode);
 
     friend class ResponsePhysics;               // addFriction's tracked arm: the +0x210 / +0x214 friction mean
 

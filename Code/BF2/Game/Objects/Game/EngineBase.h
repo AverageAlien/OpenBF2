@@ -49,6 +49,15 @@ public:
     float getCurrentDifferentialRPM(float relativeX) const;
     static void initSoundTemplates(EngineTemplate* objectTemplate);
 
+    // [CHOSEN, not recovered] OpenBF2 extension, not in retail: the mobility kill.
+    // Fades the power factor towards 0 while the vehicle's armor is critically damaged and back to
+    // 1 after a repair, over the template's criticalDamagePowerLoss seconds (at once for 0). The
+    // engine sound stops while the power is 0. Advances only when advanceTime is set (not on
+    // replayed ticks).
+    void  updateCriticalPowerLoss(float dt, bool advanceTime);
+    // 1 = full power, 0 = dead; always 1 when the template has no criticalDamagePowerLoss.
+    float getPowerFactor() const { return m_powerFactor; }
+
     // A driven wheel's suspension node reads the gear, the sound input and +0x1DC straight out of
     // its engine every tick (PhysicsSpring::updatePhysics' differential branch) - the same
     // precedent as ResponsePhysics' `friend class PhysicsNode`.
@@ -87,6 +96,10 @@ protected:
     /* 0x204 */ int   m_dword204;
     /* 0x208 */ bool  m_byte208;
     /* 0x20C */ float m_runningTimer;
+
+    // [CHOSEN, not recovered] OpenBF2 extension: the mobility kill (updateCriticalPowerLoss).
+    float m_powerFactor;
+    bool  m_powerDead;                           // the engine sound was stopped for it
 };
 
 } // namespace world

@@ -459,6 +459,12 @@ BF2_CONSOLE_PROPERTY_FN(spinWhenNoEngineInAir, float, activeEngine() != 0,
                         VehicleTemplateConsoleAccess::get_spinWhenNoEngineInAir(activeEngine()),
                         VehicleTemplateConsoleAccess::set_spinWhenNoEngineInAir, kObjTemplVehicleConsoleTag)
 
+// [CHOSEN, not recovered] OpenBF2 extensions: the mobility kill (EngineTemplate.h).
+BF2_CONSOLE_FIELD(criticalDamagePowerLoss, float, activeEngine(), m_criticalDamagePowerLoss,
+                  kObjTemplVehicleConsoleTag)
+BF2_CONSOLE_FIELD(criticalDamageSpin, float, activeEngine(), m_criticalDamageSpin,
+                  kObjTemplVehicleConsoleTag)
+
 BF2_CONSOLE_PROPERTY_FN(dampHorizontalVel, float, activeEngine() != 0,
                         VehicleTemplateConsoleAccess::get_dampHorizontalVel(activeEngine()),
                         VehicleTemplateConsoleAccess::set_dampHorizontalVel, kObjTemplVehicleConsoleTag)

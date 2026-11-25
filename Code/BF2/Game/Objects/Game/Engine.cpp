@@ -124,6 +124,8 @@ void Engine::handleUpdate(float dt, unsigned int flags)
         }
     }
 
+    updateCriticalPowerLoss(dt, (flags & 4u) == 0);                             // OpenBF2 extension
+
     IObject* const root = getRootParent(this);                                  // shipped: unguarded
     IPhysicsNode* const physicsNode = static_cast<IPhysicsNode*>(
         object_detail::LayoutAccess::physicsNode(root));
@@ -219,7 +221,7 @@ void Engine::handleUpdate(float dt, unsigned int flags)
             > std::fabs(physicsNode->getRotationalSpeed().y))
         {
             float turnAcceleration = meanFriction * m_template->m_trackTurnAcceleration
-                                   * xRotationRatio;
+                                   * xRotationRatio * m_powerFactor;           // OpenBF2: x power
             if (nextInput < 0.0f)
                 turnAcceleration = -turnAcceleration;
             Vec3 acceleration = physicsNode->getRotationalAcceleration();
@@ -287,6 +289,7 @@ void Engine::handleUpdate(float dt, unsigned int flags)
     m_float1C8 = 0.0f;
     m_float1D0 = 0.0f;
     updatePhysics(dt);
+    updateCriticalSpin(dt, physicsNode);                                          // OpenBF2 extension
 
     if (physicsNode->getIsSleeping())
     {
@@ -382,7 +385,7 @@ void Engine::updatePhysics(float dt)
                     length3(horizontalSpeed) / m_template->m_noEffectAtPerpSpeed, 0.0f, 1.0f);
                 forceScalar *= 1.0f - perpendicularRatio;
 
-                if (m_input < 0.00000011920929f)
+                if (m_input * m_powerFactor < 0.00000011920929f)              // OpenBF2: x power
                 {
                     forceScalar *= 0.05f;
                     const Mat4& nodeTransform = physicsNode->getAbsoluteTransformation();
@@ -452,7 +455,7 @@ void Engine::updatePhysics(float dt)
 
                     physicsNode->addAccelerationAtAbsolutePosition(
                         enginePosition, scaled(forward, forceScalar));
-                    if (m_input > 0.00000011920929f)
+                    if (m_input * m_powerFactor > 0.00000011920929f)          // OpenBF2: x power
                     {
                         const float extra = (m_template->getHorizontalSpeedMagnifier() - 1.0f)
                                           * forceScalar;
@@ -471,10 +474,11 @@ void Engine::updatePhysics(float dt)
                     engineTransform.m[8], engineTransform.m[9], engineTransform.m[10]
                 };
                 const float density = getAirDensity(enginePosition.y);
-                const float relativeInput = m_input
+                const float input = m_input * m_powerFactor;                  // OpenBF2: x power
+                const float relativeInput = input
                     - density * dot3(physicsNode->getPositionalSpeed(), forward)
                     / m_template->m_noPropellerEffectAtSpeed;
-                const float scalar = std::fabs(m_input) * 0.1f
+                const float scalar = std::fabs(input) * 0.1f
                                    + std::fabs(relativeInput) * relativeInput;
                 feedbackLoop(scaled(forward, scalar), forward);
 
@@ -515,7 +519,8 @@ void Engine::updatePhysics(float dt)
                     default: break;
                 }
                 const float sprintScale = gearDampen > 0.0f ? 12.0f / gearDampen : 0.0f;
-                sprintForce = scaled(sprintForce, sprintScale * pco->getSprintFactor());
+                sprintForce = scaled(sprintForce, sprintScale * pco->getSprintFactor()
+                                                  * m_powerFactor);              // OpenBF2: x power
                 if (m_gear == m_template->m_numberOfGears)
                     sprintForce = scaled(sprintForce, 1.0f - clampFloat(m_input, 0.0f, 1.0f));
 
@@ -559,8 +564,9 @@ float Engine::getAirDensity(float height) const
 float Engine::forceIntoEngine(float input)
 {
     const Mat4& t = getAbsoluteTransformation();                                     // vslot +0x84
-    const float sum = input + m_input;                                               // +0x1C4
-    const float v = std::fabs(m_input) * 0.1f + std::fabs(sum) * sum;
+    const float powered = m_input * m_powerFactor;                                   // +0x1C4; OpenBF2: x power
+    const float sum = input + powered;
+    const float v = std::fabs(powered) * 0.1f + std::fabs(sum) * sum;
     Vec3 forward; forward.x = t.m[8]; forward.y = t.m[9]; forward.z = t.m[10];
     Vec3 force;   force.x = t.m[8] * v; force.y = t.m[9] * v; force.z = t.m[10] * v;
     feedbackLoop(force, forward);
@@ -572,6 +578,29 @@ float Engine::getCurrentRatio() const   { return 3.5f * m_template->m_differenti
 float Engine::getCurrentTorque() const  { return m_template->getTorque(m_input); }
 
 void Engine::debugDraw() {}
+
+// [CHOSEN, not recovered] OpenBF2 extension, not in retail: the spin of a helicopter that lost its
+// tail rotor. While the template's criticalDamageSpin is set and power is lost, the root's yaw rate
+// is pushed towards criticalDamageSpin x (1 - power) degrees per second, by at most a full
+// criticalDamageSpin per second. Near the ground (the test of message 5) nothing pushes, so ground
+// contact winds the spin down.
+void Engine::updateCriticalSpin(float dt, IPhysicsNode* physicsNode)
+{
+    const float spin = m_template->m_criticalDamageSpin;
+    if (spin == 0.0f || m_powerFactor >= 1.0f || !physicsNode)
+        return;
+
+    Vec3 normal;
+    if (isObjectCloseToGround(getRootParent(this), normal, 0.0f))
+        return;
+
+    const float spinRadians = spin * 0.017453292f;
+    const float target = spinRadians * (1.0f - m_powerFactor);
+    const float maxStep = std::fabs(spinRadians) * dt;
+    const float step = clampFloat(target - physicsNode->getRotationalSpeed().y, -maxStep, maxStep);
+    Vec3 delta = { 0.0f, step, 0.0f };
+    physicsNode->addRotationalSpeed(delta);
+}
 
 
 void Engine::resetTrackFriction()

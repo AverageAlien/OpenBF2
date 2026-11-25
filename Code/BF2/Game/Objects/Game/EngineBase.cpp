@@ -81,6 +81,8 @@ EngineBase::EngineBase(const EngineTemplate* objectTemplate)
     m_byte1DC = false;                                                               // +0x1DC
     m_byte208 = false;                                                               // +0x208
     m_float1F4 = 0.0f;                                                               // (untouched by the ctor)
+    m_powerFactor = 1.0f;                                                            // OpenBF2 extension
+    m_powerDead = false;
     updateFlags(0u, 0x800u);
 }
 
@@ -151,6 +153,8 @@ void EngineBase::reset()
     m_wrecked = false;
     m_byte1DC = false;
     m_byte208 = false;
+    m_powerFactor = 1.0f;                                                            // OpenBF2 extension
+    m_powerDead = false;
     m_engineSound->setIsRunning(false, true, false);
     updateEngineSound();
     m_rotatesContinuously = true;                                                    // +0x196
@@ -359,7 +363,7 @@ void EngineBase::handleMessage(TemplateMessage message, IPlayer* player, bool fl
             ? static_cast<IGameClient*>(game->queryInterface(IID_IGameClient)) : 0;
         const bool notLocal = !client || client->getIsReady();
         const bool force = m_template->m_constantRpm != 0 || m == 24;                // template +0x5C8
-        m_engineSound->setIsRunning(m_engineRunning, force, notLocal);
+        m_engineSound->setIsRunning(m_engineRunning && !m_powerDead, force, notLocal);   // OpenBF2: dead stays silent
     }
 }
 
@@ -384,7 +388,7 @@ void EngineBase::updateEngineSound()
         rpm = m_input;
         if (rpm < -1.0f) rpm = -1.0f; else if (rpm > 1.0f) rpm = 1.0f;
     }
-    m_soundRpm = rpm;                                                                // +0x1C0
+    m_soundRpm = rpm * m_powerFactor;                                                // +0x1C0; OpenBF2: x power
     float rotational = 0.0f;
     if (m_engineRunning)
     {
@@ -404,6 +408,7 @@ float EngineBase::getEngineIntensity()
         v = m_currentAngle / (m_template->getMaxAngleOfAttack() * 0.017453292f);     // vslot +0x154
     else
         v = m_input;
+    v *= m_powerFactor;                                                              // OpenBF2 extension
     if (v < -1.0f) v = -1.0f; else if (v > 1.0f) v = 1.0f;
     return std::fabs(v);
 }
@@ -447,6 +452,43 @@ float EngineBase::getCurrentDifferentialRPM(float relativeX) const
         if (rpm >  *g_oldTurnLimit) return *g_oldTurnLimit;
     }
     return rpm;
+}
+
+// [CHOSEN, not recovered] OpenBF2 extension, not in retail: the mobility kill. The armor is found
+// the way message 24 finds it. Its critical flag follows the replicated hit points
+// (ArmorGLComp::updateStatus), so every peer fades the same way. m_engineRunning is left alone:
+// clearing it would also zero the driver's input, and the brakes need that input.
+void EngineBase::updateCriticalPowerLoss(float dt, bool advanceTime)
+{
+    const float fadeTime = m_template->m_criticalDamagePowerLoss;
+    if (fadeTime < 0.0f)
+        return;
+
+    if (advanceTime)
+    {
+        IObjectComponent* armor = 0;
+        for (IObject* walk = this; walk && !armor; walk = walk->getParent())
+            armor = object_detail::LayoutAccess::armorComponent(walk);
+        const bool critical = armor && static_cast<IArmorGLComp*>(armor)->isCriticalDamaged();
+
+        const float step = fadeTime > 0.0f ? dt / fadeTime : 1.0f;
+        if (critical)
+            m_powerFactor = m_powerFactor - step > 0.0f ? m_powerFactor - step : 0.0f;
+        else
+            m_powerFactor = m_powerFactor + step < 1.0f ? m_powerFactor + step : 1.0f;
+    }
+
+    const bool dead = m_powerFactor <= 0.0f;
+    if (dead == m_powerDead)
+        return;
+    m_powerDead = dead;
+    if (dead || m_engineRunning)
+    {
+        IGameClient* client = game
+            ? static_cast<IGameClient*>(game->queryInterface(IID_IGameClient)) : 0;
+        const bool notLocal = !client || client->getIsReady();
+        m_engineSound->setIsRunning(!dead, false, notLocal);
+    }
 }
 
 // The small slots.
