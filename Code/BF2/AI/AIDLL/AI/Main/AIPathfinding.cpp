@@ -255,6 +255,9 @@ void AIPathfinding::initMaps()
 {
     for (std::vector<MapContainer*>::iterator i = m_maps.begin(); i != m_maps.end(); ++i)
         (*i)->init();
+    // [CHOSEN, not recovered] OpenBF2 extension: keep the bots inside the layer's combat area.
+    for (std::vector<MapContainer*>::iterator i = m_maps.begin(); i != m_maps.end(); ++i)
+        (*i)->m_quadTreeManager->blockPolygonsOutsideCombatArea((*i)->m_id, (*i)->m_name);
 }
 
 // Debug vehicle selection uses the vehicle IDs and names in AI settings.

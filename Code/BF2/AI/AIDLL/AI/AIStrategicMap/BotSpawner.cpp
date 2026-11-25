@@ -95,8 +95,8 @@ namespace {
 // bases, far more than the vehicles there could carry. A spawn group whose front distance (see
 // IAIGame::getSpawnGroupFrontDistance) exceeds the side's nearest eligible group's by more than
 // kRearSpawnMargin is a rear spawn: bots pick it only while the free vehicle seats within
-// kRearSpawnRadius, or at the spawners of the group's own control point, outnumber the bots
-// already claiming it. In other modes every front distance is
+// kRearSpawnRadius, or at the spawners of the group's own control point that stand nearest this
+// group, outnumber the bots already claiming it. In other modes every front distance is
 // 0, so no spawn is a rear spawn and bot spawning is unchanged.
 const float kRearSpawnMargin = 50.0f;
 const float kRearSpawnRadius = 50.0f;

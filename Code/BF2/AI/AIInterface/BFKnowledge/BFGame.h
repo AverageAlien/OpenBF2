@@ -65,14 +65,21 @@ public:
     // [CHOSEN, not recovered] OpenBF2 extension: the free seats (unoccupied unit positions) of the
     // live, undestroyed mobile vehicles kept by object spawners whose XZ distance from `position` is
     // at most `radius`. Read from the world, not from a side's sensed knowledge. The spawners of
-    // control point `controlPointId` (-1 for none) count wherever they stand: their vehicles while
-    // within `radius` of the spawner.
+    // control point `controlPointId` (-1 for none) that stand nearer `position` than any other spawn
+    // group of that point count wherever they stand: their vehicles while within `radius` of the
+    // spawner.
     virtual int getFreeVehicleSeats(const Vec3& position, float radius, int controlPointId) const = 0;
     // [CHOSEN, not recovered] OpenBF2 extension: the running game mode's name (GSGameMode), and a
     // control point's group (its template's supplyGroupId; -1 for an unknown ID), which the
     // Invasion mode uses to order the objectives.
     virtual std::string getGameMode() const = 0;
     virtual int getControlPointGroup(unsigned int index) const = 0;
+    // [CHOSEN, not recovered] OpenBF2 extension: whether `position` lies inside the running layer's
+    // ground combat area - the inclusion areas for every team (CombatArea.team 0) that apply to
+    // soldiers and land vehicles (CombatArea.vehicles 0 or 4), minus such exclusions, tested as
+    // CombatAreaManager tests a player. 1 inside, 0 outside, -1 when combat areas are off or no such
+    // inclusion area exists.
+    virtual int isInsideGroundCombatArea(const Vec3& position) const = 0;
 };
 
 class BFGame : public IAIGame
@@ -112,6 +119,7 @@ public:
     virtual int getFreeVehicleSeats(const Vec3& position, float radius, int controlPointId) const;
     virtual std::string getGameMode() const;
     virtual int getControlPointGroup(unsigned int index) const;
+    virtual int isInsideGroundCombatArea(const Vec3& position) const;
 
 private:
     /* +0x00 */ // vptr

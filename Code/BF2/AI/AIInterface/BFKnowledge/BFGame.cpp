@@ -45,6 +45,8 @@
 #include "../../../Scene/Object/ObjectManager.h"
 #include "../../../Scene/Object/ObjectTypes/Base/ObjectTemplateManager.h"   // getFreeVehicleSeats: child templates
 #include "../../../Game/Objects/Base/BundleTemplate.h"
+#include "../../../Game/GameLogic/CombatArea.h"                     // isInsideGroundCombatArea
+#include "../../../Game/GameLogic/CombatAreaManager.h"
 #include "IAIObject.h"
 
 #include <algorithm>                                        // std::find over the ignore list
@@ -339,6 +341,38 @@ int BFGame::getControlPointGroup(unsigned int index) const
     return controlPointTemplate->getGroupId();
 }
 
+// [CHOSEN, not recovered] The layer's ground combat area, see IAIGame. Both teams share one
+// navmesh, so areas of a single team are left out.
+int BFGame::isInsideGroundCombatArea(const Vec3& position) const
+{
+    CombatAreaManager* const manager = CombatAreaManager::getInstance();
+    if (!manager || !manager->m_useCombatAreas)
+        return -1;
+
+    bool anyInclusion = false;
+    bool inside = false;
+    for (int pass = 0; pass < 2; ++pass)
+    {
+        for (size_t i = 0; i < manager->m_areas.size(); ++i)
+        {
+            const CombatArea* const area = manager->m_areas[i];
+            if (area->m_isExclusion != (pass == 1) || area->m_team != 0)
+                continue;
+            if (area->m_vehicleCategory != 0 && area->m_vehicleCategory != 4)
+                continue;
+            if (pass == 0)
+                anyInclusion = true;
+            const bool hit = area->m_isPolygon ? area->checkPositionPolygon(position)
+                                               : area->checkPositionRect(position);
+            if (hit)
+                inside = pass == 0;
+        }
+        if (pass == 0 && !anyInclusion)
+            return -1;
+    }
+    return inside ? 1 : 0;
+}
+
 bool BFGame::isControlPointTakeableBy(unsigned int index, int team) const
 {
     typedef std::map<unsigned int, world::IObject*> ControlPointMap;
@@ -417,6 +451,27 @@ int templateSeats(const world::IObjectTemplate* objectTemplate)
     return engine ? seats : 0;
 }
 
+float distanceXZSquared(const Vec3& a, const Vec3& b)
+{
+    const float dx = a.x - b.x;
+    const float dz = a.z - b.z;
+    return dx * dx + dz * dz;
+}
+
+// [CHOSEN, not recovered] Whether a spawner standing at `at` belongs to the spawn group at
+// `position`: no other spawn group of the same control point (`others`) is nearer. A main base with
+// a second spawn group far away (Sharqi's beach landing) otherwise counted every vehicle of the base.
+bool isNearestSpawnGroup(const Vec3& at, const Vec3& position, const std::vector<Vec3>& others)
+{
+    const float own = distanceXZSquared(at, position);
+    for (std::vector<Vec3>::const_iterator it = others.begin(); it != others.end(); ++it)
+    {
+        if (distanceXZSquared(at, *it) < own)
+            return false;
+    }
+    return true;
+}
+
 } // namespace
 
 // [CHOSEN, not recovered] See IAIGame. The AI's information grid only holds what a side's bots have
@@ -429,6 +484,19 @@ int BFGame::getFreeVehicleSeats(const Vec3& position, float radius, int controlP
 
     if (!gameLogic)
         return 0;
+    std::vector<Vec3> otherGroups;
+    if (controlPointId != -1)
+    {
+        const std::map<int, ISpawnGroup*>& groups = static_cast<SpawnManager*>(spawnManager)->getSpawnGroups();
+        for (std::map<int, ISpawnGroup*>::const_iterator it = groups.begin(); it != groups.end(); ++it)
+        {
+            if (!it->second || static_cast<int>(it->second->getControlPointId()) != controlPointId)
+                continue;
+            const Vec3& at = it->second->getPos();
+            if (at.x != position.x || at.y != position.y || at.z != position.z)
+                otherGroups.push_back(at);
+        }
+    }
     int seats = 0;
     const SpawnerMap& spawners = *static_cast<const SpawnerMap*>(gameLogic->getObjectSpawnerMap());
     for (SpawnerMap::const_iterator it = spawners.begin(); it != spawners.end(); ++it)
@@ -438,7 +506,8 @@ int BFGame::getFreeVehicleSeats(const Vec3& position, float radius, int controlP
         if (!spawner)
             continue;
         // A spawner of the given control point counts its vehicles near itself, however far from `position` it stands.
-        const bool own = controlPointId != -1 && static_cast<int>(spawner->getControlPointId()) == controlPointId;
+        const bool own = controlPointId != -1 && static_cast<int>(spawner->getControlPointId()) == controlPointId
+                         && isNearestSpawnGroup(it->second->getAbsolutePosition(), position, otherGroups);
         const Vec3& centre = own ? it->second->getAbsolutePosition() : position;
         if (const world::IObjectTemplate* const pending = spawner->getImmediateSpawnTemplate())
         {

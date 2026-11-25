@@ -58,6 +58,7 @@ public:
     void loadQuadTrees(const std::string&);
     bool loadGTSData(const std::string&, int, int, int, float);
     void recalculatePortalCosts(int);
+    void blockPolygonsOutsideCombatArea(int map, const std::string& name);
     void draw() const;
     void undraw() const;
     void drawCluster();

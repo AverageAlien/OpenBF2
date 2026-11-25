@@ -101,6 +101,27 @@ IAIPlayer* liveHumanSender(const std::list<AIRadioMessageInfo>& messages)
 // ELF 0x200000 (C2) / 0x200240 (C1). The base gets getMaxNBots (IAISettings slot 0); +0x24/+0x30 empty
 // vectors, +0x3C/+0x40 = 0; then index, queue, pattern; +0x08 = checkPointer(new unsigned int[getMaxNBots])
 // and, per bot, urgency (+0x10) = 0.0f (rodata 0x49CB34) and +0x08 = 0xFFFFFFFF.
+// [CHOSEN, not recovered] Weight class of a vehicle by its primary's AI equipment type: Car 1, ArmedCar 2
+// (APCs), Tank 3 (tanks and AA); 0 for anything else (civilian cars, boats, aircraft, emplacements).
+static int vehicleClass(Information* vehicle, int side)
+{
+    Information* const primary = vehicle->isPrimary()
+                                     ? vehicle
+                                     : informationManager->getInformation(vehicle->getPrimaryObject(side));
+    if (!primary || !primary->getUnit() || !primary->getMobile() || primary->isOfType(ITAir)
+        || primary->isOfType(ITHelicopter) || primary->isOfType(ITNaval))
+        return 0;
+    const IAISettings* const settings = static_cast<IAISettings*>(CommonSingletonServer::m_iaiSettings);
+    const int type = primary->getUnit()->getEquipmentType();
+    if (type == settings->getVehicle(std::string("Tank")))
+        return 3;
+    if (type == settings->getVehicle(std::string("ArmedCar")))
+        return 2;
+    if (type == settings->getVehicle(std::string("Car")))
+        return 1;
+    return 0;
+}
+
 BBChange::BBChange(unsigned char index, unsigned char queue, PlanGenerator* pattern, UrgeCurve* curve,
                    float* modifiers)
     : BotBehaviour(modifiers, curve, static_cast<IAISettings*>(CommonSingletonServer::m_iaiSettings)->getMaxNBots()),
@@ -465,9 +486,29 @@ float BBChange::calculateUrgency(Bot* bot, bool evaluate, float scale)
         }
     }
 
+    // [CHOSEN, not recovered] Retail let a driver leave his moving BTR-90 or Vodnik for a passenger seat of a
+    // vehicle passing by (its gun port scored more than driving), stranding his own passengers, whose seats are
+    // worth nothing without a driver. A bot in a ground vehicle now changes only to a heavier class
+    // (vehicleClass: Car < ArmedCar < Tank): a seat of a heavier vehicle, or driving an empty one of the same
+    // class or heavier; both vehicles slower than 2 m/s, and never while he drives with others aboard. Retail's
+    // score still decides between the candidates left.
+    const bool inGroundVehicle = !isAir && !primaryInfo->isOfType(ITAir) && !primaryInfo->isOfType(ITHelicopter)
+                                 && primaryInfo->getMobile();
+    bool keepsGroundVehicle = inGroundVehicle && primaryInfo->getMobile()->getSpeedMagnitude() > 2.0f;
+    if (inGroundVehicle && !keepsGroundVehicle && equipment == primary)
+    {
+        int crewIterator = 0;
+        for (Information* seat = informationManager->getInformation(primaryInfo->getFirstSecondaryObject(crewIterator, side));
+             seat && !keepsGroundVehicle;
+             seat = informationManager->getInformation(primaryInfo->getSecondaryObject(crewIterator, side)))
+            keepsGroundVehicle = seat->getUnit() && seat->getUnit()->isOccupied();
+    }
+
+    const int ownClass = inGroundVehicle ? vehicleClass(primaryInfo, side) : 0;
+
     unsigned int callingHandle = 0xFFFFFFFFu;   // -0x238: the last scanned vehicle's caller state (retail)
     if (!chooseSoldier && (requests.empty() || !requestValid) && !equipmentInfo->isOfType(ITAir)
-        && !inArtillery && !bot->getSquadMember()->isCloseToNonOwnedTarget())
+        && !inArtillery && !bot->getSquadMember()->isCloseToNonOwnedTarget() && !keepsGroundVehicle)
     {
         // ---- ELF 0x201AF9: every vehicle around.
         m_vehicles.resize(0);
@@ -591,6 +632,15 @@ float BBChange::calculateUrgency(Bot* bot, bool evaluate, float scale)
                 usable = reachable;
             if (!usable || !reachable)
                 continue;
+            int otherClass = 0;
+            if (inGroundVehicle)
+            {
+                if (vehicle->getMobile() && vehicle->getMobile()->getSpeedMagnitude() > 2.0f)
+                    continue;
+                otherClass = vehicleClass(vehicle, side);
+                if (otherClass < ownClass)
+                    continue;
+            }
 
             // ELF 0x2020CB: the vehicle's primary seat.
             radioStrength = getRadioStrength(vehicle, bot);
@@ -619,7 +669,7 @@ float BBChange::calculateUrgency(Bot* bot, bool evaluate, float scale)
 
             // ELF 0x20222D: its seats.
             unsigned int seatHandle = vehicle->getFirstSecondaryObject(seatIterator, side);
-            Information* seat = informationManager->getInformation(seatHandle);
+            Information* seat = inGroundVehicle && otherClass <= ownClass ? 0 : informationManager->getInformation(seatHandle);
             const float driverModifier = modifyForDriver(vehicle, false);   // -0x1F0
             while (seat)
             {

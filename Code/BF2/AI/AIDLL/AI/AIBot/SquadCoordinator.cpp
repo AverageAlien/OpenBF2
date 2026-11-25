@@ -273,7 +273,10 @@ void SquadCoordinator::update(double time)
                     // Both the main singleton and side are fresh after the area callback;
                     // the second side read is later still, after getSAI has returned.
                     SAI* const sai = IAIMain::m_instance->getSAI(m_side + 1);
-                    if (!sai->ownAllTakeableCps(m_side + 1))
+                    // [CHOSEN, not recovered] Invasion drops such an attack even when the side owns
+                    // every point it may capture (right after a group falls), instead of keeping the
+                    // squad on its way to a locked point.
+                    if (sai->isInvasionGame() || !sai->ownAllTakeableCps(m_side + 1))
                         unAssignSquad();
                 }
             }
@@ -282,6 +285,15 @@ void SquadCoordinator::update(double time)
             {
                 unAssignSquad();
             }
+        }
+        else if (m_i40 == 1 && m_strategicAreaAssignment &&
+                 m_strategicAreaAssignment->getStatus(m_side + 1) != 0
+                 && !m_strategicAreaAssignment->isTakeableBy(m_side + 1)
+                 && IAIMain::m_instance->getSAI(m_side + 1)->isInvasionGame())
+        {
+            // [CHOSEN, not recovered] Invasion: a defence of a point the side lost and can no longer
+            // retake (its group locked) would only send the squad at the attackers' forward spawn.
+            unAssignSquad();
         }
         else if (m_i40 == 1 && m_strategicAreaAssignment &&
                  m_strategicAreaAssignment->getStatus(m_side + 1) == 0
@@ -967,6 +979,15 @@ bool SquadCoordinator::acceptMission(SquadMember* member)
         AIStrategicObjectManager::getInstance()->getClosestObject(m_v64, m_side + 1));
     if (!IAIMain::m_instance->getSAI(m_side + 1)->isPlayerCommander() && closest && m_i76 == 0
         && closest->m_status[m_side] == 0)
+    {
+        unAssignSquad();
+        return false;
+    }
+    // [CHOSEN, not recovered] Invasion: an AI attack or defend order on a point the side does not own
+    // and cannot capture (an order given just before its group locked) is refused the same way.
+    if (!IAIMain::m_instance->getSAI(m_side + 1)->isPlayerCommander() && closest && (m_i76 == 0 || m_i76 == 1)
+        && closest->m_status[m_side] != 0 && !closest->isTakeableBy(m_side + 1)
+        && IAIMain::m_instance->getSAI(m_side + 1)->isInvasionGame())
     {
         unAssignSquad();
         return false;

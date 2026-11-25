@@ -21,6 +21,9 @@
 #include "../../DrawPrimitives/DPManager.h"             // IDPManager, IDPStaticCreator
 #include "../../../../AIInterface/BFKnowledge/BFGame.h"  // IAIGame::getLevelPath
 #include "../../../../AIInterface/BFKnowledge/BFObjectEnvironment.h"
+#include "../../Main/AIPathfinding.h"                     // blockPolygonsOutsideCombatArea
+#include <cstdio>
+#include <ctime>
 #include "../../../../../IO/File/File.h"
 
 namespace dice {
@@ -260,6 +263,120 @@ void QuadTreeManager::recalculatePortalCosts(int map)
     for (std::vector<std::pair<QuadTree*, ClusterGraph*> >::iterator it = m_quadTrees.begin();
          it != m_quadTrees.end(); ++it, ++island)
         it->second->calculatePortalCosts(map, island);
+}
+
+// [CHOSEN, not recovered] OpenBF2 extension. A level has one navmesh for all its layers, and the
+// retail generator marks unwalkable (material 0) only what lies outside the combat area of the
+// layer it was generated for, so bots of a layer with a smaller combat area path out of it. This
+// marks every polygon whose centre lies outside the running layer's ground combat area
+// (IAIGame::isInsideGroundCombatArea) with material 0, as the generator would, then recomputes the
+// portal-to-portal costs of each cluster that lost a polygon or has a portal on one, so cluster
+// routes no longer lead through the blocked part. Run once per level load, after the layer's
+// objects exist; nothing changes without a ground combat area. OPENBF2_NAVMESH_COMBATAREA=0 in the
+// environment turns it off (to compare bot routes with the retail navmesh).
+void QuadTreeManager::blockPolygonsOutsideCombatArea(int map, const std::string& name)
+{
+    const char* const setting = std::getenv("OPENBF2_NAVMESH_COMBATAREA");
+    if (setting && std::string(setting) == "0")
+    {
+        std::fprintf(stderr, "[AICombatArea] %s: off (OPENBF2_NAVMESH_COMBATAREA=0)\n", name.c_str());
+        return;
+    }
+    IAIGame* const game = static_cast<IAIGame*>(CommonSingletonServer::m_iaiGame);
+    AIPathfinding* const pathfinding = static_cast<AIPathfinding*>(IAIPathfinding::instance);
+    if (!game || !pathfinding)
+        return;
+    const std::clock_t start = std::clock();
+
+    for (unsigned int island = 0; island < m_quadTrees.size(); ++island)
+    {
+        QuadTree* const tree = m_quadTrees[island].first;
+        ClusterGraph* const graph = m_quadTrees[island].second;
+
+        unsigned int blocked = 0;
+        std::set<unsigned short> clusters;
+        for (unsigned int p = 0; p < tree->m_numberOfPolygons; ++p)
+        {
+            Polygon& polygon = tree->m_polygons[p];
+            if (polygon.m_material == 0)
+                continue;
+            Vec3 centre;
+            tree->getCentreOfPolygon(centre, p);
+            const int inside = game->isInsideGroundCombatArea(centre);
+            if (inside < 0)
+                return;
+            if (inside)
+                continue;
+            polygon.m_material = 0;
+            clusters.insert(polygon.cluster);
+            ++blocked;
+        }
+        if (!blocked)
+            continue;
+
+        // The .clb holds the cost types it was generated with; AI.ai may list more (Sharqi's
+        // Vehicle map adds LandingCraft to a two-type file), and their portals and costs would lie
+        // past the arrays.
+        unsigned short costTypes = 0;
+        for (; pathfinding->isValidClusterType(map, costTypes); ++costTypes)
+        {
+            bool stored = true;
+            for (unsigned int cluster = 0; stored && cluster < graph->m_numberOfClusters; ++cluster)
+            {
+                const Cluster& record = graph->m_clusters[cluster];
+                const unsigned int count = record.m_numberOfPortals;
+                stored = record.m_firstPortal + (costTypes + 1u) * count <= graph->m_numberOfPortals &&
+                         record.m_firstPortalCost + (costTypes + 1u) * (count * (count - 1) / 2) <=
+                             graph->m_numberOfPortalCosts;
+            }
+            if (!stored)
+                break;
+        }
+
+        for (unsigned short cluster = 0; cluster < graph->m_numberOfClusters; ++cluster)
+        {
+            const unsigned short count = graph->m_clusters[cluster].m_numberOfPortals;
+            for (unsigned short costType = 0; costType < costTypes; ++costType)
+                for (unsigned short i = 0; i < count; ++i)
+                {
+                    const unsigned int polygon = graph->getClusterPortal(cluster, costType, i)->m_polygon;
+                    if (polygon < tree->m_numberOfPolygons && tree->m_polygons[polygon].m_material == 0)
+                        clusters.insert(cluster);
+                }
+        }
+
+        std::vector<float> costs;
+        for (std::set<unsigned short>::const_iterator cluster = clusters.begin(); cluster != clusters.end();
+             ++cluster)
+        {
+            if (*cluster >= graph->m_numberOfClusters)
+                continue;
+            const unsigned short count = graph->m_clusters[*cluster].m_numberOfPortals;
+            for (unsigned short costType = 0; costType < costTypes; ++costType)
+                for (unsigned short i = 0; i < count; ++i)
+                    for (unsigned short j = static_cast<unsigned short>(i + 1); j < count; ++j)
+                    {
+                        const ClusterPortal* const from = graph->getClusterPortal(*cluster, costType, i);
+                        const ClusterPortal* const to = graph->getClusterPortal(*cluster, costType, j);
+                        std::set<unsigned short> allowedClusters;
+                        allowedClusters.insert(*cluster);
+                        allowedClusters.insert(from->m_neighbourCluster);
+                        allowedClusters.insert(to->m_neighbourCluster);
+                        costs.resize(0);
+                        pathfinding->getPortalCost(costs, costType, map, island, to->m_position,
+                                                   to->m_polygon, from->m_position, from->m_polygon,
+                                                   allowedClusters);
+                        graph->setCostBetweenClustersPortals(*cluster, i, j, costType,
+                                                             costs.empty() ? -1.0f : costs[0]);
+                    }
+        }
+
+        std::fprintf(stderr, "[AICombatArea] %s: %u of %u polygons outside the combat area made unwalkable, "
+                     "%u clusters re-costed (%ld ms)\n", name.c_str(), blocked, tree->m_numberOfPolygons,
+                     static_cast<unsigned int>(clusters.size()),
+                     static_cast<long>((std::clock() - start) * 1000 / CLOCKS_PER_SEC));
+        std::fflush(stderr);
+    }
 }
 
 // ELF 0x30BE00. Re-creates each debug mesh's static mesh (1e9 s); neither manager is null-tested.
