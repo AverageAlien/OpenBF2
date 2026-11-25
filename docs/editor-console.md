@@ -213,7 +213,11 @@ EditorCombatArea.list | info <name> | create <name> <x/y/z> <size> | createHere 
                delete <name> | movePoint <name> <index> <x> <z> | insertPoint <name> <index> <x> <z> |
                removePoint <name> <index> | set <name> <team|vehicles|layer|usedByPathFinding|inverted>
                <n> | manager <use|timeAllowedOutside|damage> <value> | select <name> <point> |
-               deselect     (undoable edits; sync <name> | syncManager are the replays)
+               deselect     (undoable edits; sync <name> | syncManager are the replays) |
+               draw <name> | drawPoint <x> <z> | drawUndo | drawClose | drawCancel   (the drawing tool: points
+               one by one, a point or close that would cross the outline refused; drawClose makes the area,
+               one undoable edit, stored clockwise from a point the engine's direction test reads right) |
+               orient <name>   (undoable: an existing area's points put into that order)
 
 EditorSound.list | info <name> | move <name> <x/y/z> | create <name> <file> <x/y/z> |
                createHere <name> <file> | delete <name> | select <name> | deselect

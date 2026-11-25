@@ -32,6 +32,8 @@ set(BF2_EDITOR_OUTPUT_DIR "${CMAKE_BINARY_DIR}/bin_editor")
 set(bf2_editor_framework_sources
     "${BF2_EDITOR_ROOT}/App/CommandLine.cpp"
     "${BF2_EDITOR_ROOT}/App/CommandLine.h"
+    "${BF2_EDITOR_ROOT}/Framework/CombatAreaShape.cpp"
+    "${BF2_EDITOR_ROOT}/Framework/CombatAreaShape.h"
     "${BF2_EDITOR_ROOT}/Framework/CommandHistory.cpp"
     "${BF2_EDITOR_ROOT}/Framework/CommandHistory.h"
     "${BF2_EDITOR_ROOT}/Framework/EditorConfig.h"
@@ -262,6 +264,7 @@ set(bf2_editor_app_sources
 #   Physics/HeightmapConsole.cpp  - heightmapCluster.create resolves the editable class (WP8).
 #   Menu/Bf2TransformNode.cpp     - tells the HUD editor where each script-made HUD node stands (App/HudEditor).
 #   Game/GameLogic/GameLogic.cpp  - a level load keeps its destroyable and dynamic objects (no respawner conversion).
+#   Physics/CollisionManager.cpp  - a level load keeps the collision templates it did not use, loadable later.
 set(bf2_editor_shared_sources
     "${BF2_ROOT}/Game/Main/BF2Engine.cpp"
     "${BF2_ROOT}/Core/ModuleRegistry.cpp"
@@ -270,10 +273,11 @@ set(bf2_editor_shared_sources
     "${BF2_ROOT}/Physics/HeightmapConsole.cpp"
     "${BF2_ROOT}/Menu/Bf2TransformNode.cpp"
     "${BF2_ROOT}/Game/GameLogic/GameLogic.cpp"
+    "${BF2_ROOT}/Physics/CollisionManager.cpp"
 )
 # Matches the object path of each shared TU inside $<TARGET_OBJECTS:bf2_client_objects>.
 set(bf2_editor_shared_object_regex
-    "(Game[/\\\\]Main[/\\\\]BF2Engine|Core[/\\\\]ModuleRegistry|Game[/\\\\]Main[/\\\\]BF2EngineSetup|Physics[/\\\\]HeightmapCluster|Physics[/\\\\]HeightmapConsole|Menu[/\\\\]Bf2TransformNode|Game[/\\\\]GameLogic[/\\\\]GameLogic)\\.cpp\\.obj")
+    "(Game[/\\\\]Main[/\\\\]BF2Engine|Core[/\\\\]ModuleRegistry|Game[/\\\\]Main[/\\\\]BF2EngineSetup|Physics[/\\\\]HeightmapCluster|Physics[/\\\\]HeightmapConsole|Menu[/\\\\]Bf2TransformNode|Game[/\\\\]GameLogic[/\\\\]GameLogic|Physics[/\\\\]CollisionManager)\\.cpp\\.obj")
 
 # Dear ImGui (docking) and ImGuizmo are vendored under Code/BF2/External.
 # Only the Win32 and D3D9 backends are built.

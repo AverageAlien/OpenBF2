@@ -256,10 +256,15 @@ void CollisionManager::postLevelLoad()
     eventManager->postEvent(static_cast<EventCategory>(2), 7u,
                             const_cast<char*>("Loading Collision Meshes.."), 0.0f);
 
+#if defined(BF2_IMAGE_EDITOR) && BF2_IMAGE_EDITOR
+    // [CHOSEN, not recovered] editor-only: the unrequested templates stay registered, unloaded, so an object of a
+    // template new to the level gets its collision mesh later (loadRegistered); only the requested ones load here.
+#else
     // Prunes templates that were registered but never requested by instantiated objects.
     for (Registry::iterator it = m_collisionMeshTemplates.begin();
          it != m_collisionMeshTemplates.end(); )
         it = erase(it);
+#endif
 
     // 3. group by directory
     std::map<std::string, Registry::iterator, NoCaseStringCompare> byFolder;
@@ -267,6 +272,10 @@ void CollisionManager::postLevelLoad()
          it != m_collisionMeshTemplates.end(); ++it)
     {
         CollisionMeshTemplate* first = it->second[0];             // [0], unchecked, as read
+#if defined(BF2_IMAGE_EDITOR) && BF2_IMAGE_EDITOR
+        if (!first || !first->m_loadRequested)
+            continue;
+#endif
         std::string folder = getLowerCase(getFixPath(first->m_directory, '/') + first->m_name);
         goUpInPath(folder);
         byFolder.insert(std::make_pair(folder, it));
@@ -810,6 +819,19 @@ void CollisionManager::load(std::vector<CollisionMeshTemplate*>& parts)
 
     parts[0]->buildEdgeInfo();                               // [FRONTIER] - part 0 only, as read
 }
+
+#if defined(BF2_IMAGE_EDITOR) && BF2_IMAGE_EDITOR
+bool CollisionManager::loadRegistered(const std::string& name)
+{
+    std::map<std::string, std::vector<CollisionMeshTemplate*>, NoCaseStringCompare>::iterator it =
+        m_collisionMeshTemplates.find(name);
+    if (it == m_collisionMeshTemplates.end() || it->second.empty() || !it->second[0])
+        return false;
+    if (it->second[0]->m_loaded != 1)
+        load(it->second);
+    return !it->second.empty() && it->second[0] && it->second[0]->m_loaded == 1;
+}
+#endif
 
 // Records a line as two vertices and one segment color. drawDebugPrimitives consumes
 // and clears the accumulated streams during the physics draw event.

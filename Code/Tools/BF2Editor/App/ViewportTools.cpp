@@ -14,6 +14,9 @@
 #include "Framework/Matrix4.h"
 
 #include "Core/Ids.h"
+#include "Game/GameLogic/CombatArea.h"
+#include "Game/GameLogic/CombatAreaManager.h"
+#include "Game/Objects/IControlPoint.h"
 #include "Game/Objects/IObject.h"
 #include "Game/Objects/IObjectTemplate.h"
 #include "Game/Objects/IPlayerControlObjectTemplate.h"
@@ -262,6 +265,7 @@ void ViewportTools::draw(EditSession& session, const FreeCamera& camera, dice::h
     m_camera = &camera;
     drawNavMesh(session, viewProjection);
     drawCombatAreas(session, viewProjection);
+    drawAreaDraw(session, viewProjection);
     drawSplines(session, viewProjection);
     drawCompareLayer(session, viewProjection);
     drawOverlays(session, viewProjection);
@@ -327,6 +331,17 @@ void ViewportTools::draw(EditSession& session, const FreeCamera& camera, dice::h
         m_gizmoShown = false;
         m_pressed = false;
         handleMeasure(session);
+    }
+    else if (session.areaDrawActive())
+    {
+        // The combat area drawing tool has the mouse: a click adds a point or closes the outline.
+        if (m_dragging)
+            finishDrag(session);
+        m_areaDrag = false;
+        m_soundDrag = false;
+        m_gizmoShown = false;
+        m_pressed = false;
+        handleAreaDraw(session, viewProjection);
     }
     else if (session.roadToolActive() || m_splineDrag)
     {
@@ -451,7 +466,17 @@ void ViewportTools::drawMarkers(EditSession& session, const float viewProjection
         {
         case EditSession::MarkerSpawner:      colour = IM_COL32(255, 150, 40, alpha); break;
         case EditSession::MarkerSpawnPoint:   colour = IM_COL32(90, 220, 90, alpha); break;
-        case EditSession::MarkerControlPoint: colour = IM_COL32(80, 150, 255, alpha); break;
+        case EditSession::MarkerControlPoint:
+        {
+            // The owner's colour (team 1 red, team 2 blue, as the spawn capsules), white for a neutral point: a blue
+            // pennant on every point read as a second, US flag beside a MEC point's own.
+            dice::hfe::world::IControlPoint* point = static_cast<dice::hfe::world::IControlPoint*>(
+                object->queryInterface(dice::hfe::world::IID_IControlPoint));
+            const int team = point ? point->getTeam() : 0;
+            colour = team == 1 ? IM_COL32(255, 95, 75, alpha) : team == 2 ? IM_COL32(85, 150, 255, alpha)
+                                                                          : IM_COL32(235, 235, 235, alpha);
+            break;
+        }
         case EditSession::MarkerTrigger:      colour = IM_COL32(200, 110, 255, alpha); break;
         case EditSession::MarkerEffectArea:   colour = IM_COL32(60, 220, 220, alpha); break;
         default: break;
@@ -692,6 +717,148 @@ bool ViewportTools::handleCombatAreas(EditSession& session, const float viewProj
     std::snprintf(line, sizeof(line), "EditorCombatArea.insertPoint %s %d %.3f %.3f", area.name.c_str(), edge + 1, at[0], at[2]);
     session.runCommand(line, "combat area");
     return true;
+}
+
+namespace
+{
+
+// A click this near the first point's handle closes the outline.
+const float kAreaCloseRadius = 10.0f;
+
+// One edge on the ground, a metre above it, a sample every 8 m.
+void drawGroundEdge(EditSession& session, const std::pair<float, float>& from, const std::pair<float, float>& to,
+                    const float viewProjection[16], ImU32 colour, float thickness)
+{
+    const ImGuiIO& io = ImGui::GetIO();
+    const FreeCamera& camera = session.camera();
+    const float ex = to.first - from.first, ez = to.second - from.second;
+    int steps = static_cast<int>(std::sqrt(ex * ex + ez * ez) / 8.0f) + 1;
+    if (steps > 64)
+        steps = 64;
+    ImVec2 previous;
+    bool previousVisible = false;
+    for (int s = 0; s <= steps; ++s)
+    {
+        const float t = static_cast<float>(s) / static_cast<float>(steps);
+        const float x = from.first + ex * t, z = from.second + ez * t;
+        float ground = 0.0f;
+        if (!session.groundHeight(x, z, ground))
+            ground = camera.y() - 20.0f;
+        const float p[3] = { x, ground + 1.0f, z };
+        ImVec2 at;
+        const bool visible = project(viewProjection, p, io.DisplaySize.x, io.DisplaySize.y, at);
+        if (visible && previousVisible)
+            ImGui::GetBackgroundDrawList()->AddLine(previous, at, colour, thickness);
+        previous = at;
+        previousVisible = visible;
+    }
+}
+
+} // namespace
+
+void ViewportTools::handleAreaDraw(EditSession& session, const float viewProjection[16])
+{
+    const ImGuiIO& io = ImGui::GetIO();
+    // Esc cancels, Backspace takes the last point off, Enter closes (the measure tool's keys).
+    if (!io.WantTextInput)
+    {
+        if (ImGui::IsKeyPressed(ImGuiKey_Escape, false))
+        {
+            session.runCommand("EditorCombatArea.drawCancel", "combat area");
+            return;
+        }
+        if (ImGui::IsKeyPressed(ImGuiKey_Backspace, false))
+            session.runCommand("EditorCombatArea.drawUndo", "combat area");
+        if (ImGui::IsKeyPressed(ImGuiKey_Enter, false) || ImGui::IsKeyPressed(ImGuiKey_KeypadEnter, false))
+        {
+            session.runCommand("EditorCombatArea.drawClose", "combat area");
+            return;
+        }
+    }
+    if (!ImGui::IsMouseClicked(ImGuiMouseButton_Left) || pointerOverUi() || ImGui::GetDragDropPayload())
+        return;
+    const AreaOutline& points = session.areaDrawPoints();
+    ImVec2 first;
+    if (points.size() >= 3 && areaPointOnScreen(session, points[0], viewProjection, first))
+    {
+        const float dx = first.x - io.MousePos.x, dy = first.y - io.MousePos.y;
+        if (dx * dx + dy * dy < kAreaCloseRadius * kAreaCloseRadius)
+        {
+            session.runCommand("EditorCombatArea.drawClose", "combat area");
+            return;
+        }
+    }
+    float at[3];
+    std::string detail;
+    if (!session.surfaceAt(io.MousePos.x, io.MousePos.y, at, detail))
+        return;
+    char line[128];
+    std::snprintf(line, sizeof(line), "EditorCombatArea.drawPoint %.3f %.3f", at[0], at[2]);
+    session.runCommand(line, "combat area");
+}
+
+void ViewportTools::drawAreaDraw(EditSession& session, const float viewProjection[16])
+{
+    if (!session.areaDrawActive())
+        return;
+    const ImGuiIO& io = ImGui::GetIO();
+    ImDrawList* list = ImGui::GetBackgroundDrawList();
+    const AreaOutline& points = session.areaDrawPoints();
+    const ImU32 drawn = IM_COL32(255, 215, 70, 255);
+    const ImU32 refused = IM_COL32(255, 80, 60, 255);
+    const ImU32 closing = IM_COL32(110, 255, 120, 255);
+    for (size_t i = 1; i < points.size(); ++i)
+        drawGroundEdge(session, points[i - 1], points[i], viewProjection, drawn, 3.0f);
+
+    // Where the cursor would put the next point, or close the outline.
+    bool closeHover = false;
+    ImVec2 first;
+    if (points.size() >= 3 && areaPointOnScreen(session, points[0], viewProjection, first))
+    {
+        const float dx = first.x - io.MousePos.x, dy = first.y - io.MousePos.y;
+        closeHover = !pointerOverUi() && dx * dx + dy * dy < kAreaCloseRadius * kAreaCloseRadius;
+    }
+    const char* hint = 0;
+    ImU32 hintColour = refused;
+    if (closeHover)
+    {
+        const bool ok = !areaClosingCrosses(points);
+        drawGroundEdge(session, points.back(), points[0], viewProjection, ok ? closing : refused, 3.0f);
+        list->AddCircle(first, kAreaCloseRadius, ok ? closing : refused, 20, 2.0f);
+        hint = ok ? "click to close the area" : "closing here would cross an edge";
+        hintColour = ok ? closing : refused;
+    }
+    else if (!points.empty() && !pointerOverUi())
+    {
+        float at[3];
+        std::string detail;
+        if (session.surfaceAt(io.MousePos.x, io.MousePos.y, at, detail))
+        {
+            const std::pair<float, float> next(at[0], at[2]);
+            const bool ok = areaChainCrossing(points, next) < 0;
+            drawGroundEdge(session, points.back(), next, viewProjection, ok ? IM_COL32(255, 255, 255, 200) : refused, 2.0f);
+            if (!ok)
+                hint = "a point here would cross the outline";
+            // The closing edge as it would be, faint.
+            if (points.size() >= 2)
+                drawGroundEdge(session, next, points[0], viewProjection, IM_COL32(255, 255, 255, 70), 1.0f);
+        }
+    }
+    for (size_t i = 0; i < points.size(); ++i)
+    {
+        ImVec2 at;
+        if (!areaPointOnScreen(session, points[i], viewProjection, at))
+            continue;
+        const float r = i == 0 ? 5.0f : 4.0f;
+        list->AddRectFilled(ImVec2(at.x - r, at.y - r), ImVec2(at.x + r, at.y + r), i == 0 ? closing : drawn);
+        list->AddRect(ImVec2(at.x - r, at.y - r), ImVec2(at.x + r, at.y + r), IM_COL32(20, 20, 20, 255));
+    }
+    if (hint)
+        list->AddText(ImVec2(io.MousePos.x + 16.0f, io.MousePos.y + 14.0f), hintColour, hint);
+    const std::string help = "Drawing combat area " + session.areaDrawName()
+                           + ": click the ground point by point, click the first point (or Enter) to close, Backspace "
+                             "takes the last point off, Esc cancels";
+    list->AddText(ImVec2(12.0f, io.DisplaySize.y - 28.0f), IM_COL32(255, 230, 120, 230), help.c_str());
 }
 
 // A click near a combat area's boundary (other than `except`) selects that area. [CHOSEN, not recovered]: retail
@@ -1212,8 +1379,74 @@ void ViewportTools::drawMeasure(EditSession& session, const float viewProjection
     }
 }
 
-// The navmeshes as two lists per map (filled polygons, their edges), built once per loaded mesh and drawn whole, depth
-// tested (App/WorldOverlay).
+// The ground combat area test of the game's AI at level load (IAIGame::isInsideGroundCombatArea, BFGame.cpp): the
+// inclusion areas for every team that apply to soldiers and land vehicles (vehicles 0 or 4), minus such exclusions.
+// 1 inside, 0 outside, -1 when combat areas are off or there is no such inclusion area (the AI then blocks nothing).
+static int groundCombatAreaTest(float x, float z)
+{
+    dice::hfe::CombatAreaManager* const manager = dice::hfe::CombatAreaManager::getInstance();
+    if (!manager || !manager->m_useCombatAreas)
+        return -1;
+    dice::hfe::Vec3 position;
+    position.x = x;
+    position.y = 0.0f;
+    position.z = z;
+    bool anyInclusion = false, inside = false;
+    for (int pass = 0; pass < 2; ++pass)
+    {
+        for (size_t i = 0; i < manager->m_areas.size(); ++i)
+        {
+            const dice::hfe::CombatArea* const area = manager->m_areas[i];
+            if (!area || area->m_isExclusion != (pass == 1) || area->m_team != 0)
+                continue;
+            if (area->m_vehicleCategory != 0 && area->m_vehicleCategory != 4)
+                continue;
+            if (pass == 0)
+                anyInclusion = true;
+            if (area->m_isPolygon ? area->checkPositionPolygon(position) : area->checkPositionRect(position))
+                inside = pass == 0;
+        }
+        if (pass == 0 && !anyInclusion)
+            return -1;
+    }
+    return inside ? 1 : 0;
+}
+
+// A value that changes whenever anything groundCombatAreaTest reads changes.
+static unsigned groundCombatAreaSignature()
+{
+    dice::hfe::CombatAreaManager* const manager = dice::hfe::CombatAreaManager::getInstance();
+    if (!manager)
+        return 0;
+    unsigned hash = 2166136261u;
+    const auto mix = [&hash](const void* data, size_t size) {
+        for (size_t b = 0; b < size; ++b)
+            hash = (hash ^ static_cast<const unsigned char*>(data)[b]) * 16777619u;
+    };
+    mix(&manager->m_useCombatAreas, sizeof(manager->m_useCombatAreas));
+    for (size_t i = 0; i < manager->m_areas.size(); ++i)
+    {
+        const dice::hfe::CombatArea* const area = manager->m_areas[i];
+        if (!area)
+            continue;
+        mix(&area->m_isExclusion, sizeof(area->m_isExclusion));
+        mix(&area->m_team, sizeof(area->m_team));
+        mix(&area->m_vehicleCategory, sizeof(area->m_vehicleCategory));
+        mix(&area->m_isPolygon, sizeof(area->m_isPolygon));
+        mix(&area->m_minX, sizeof(area->m_minX));
+        mix(&area->m_minZ, sizeof(area->m_minZ));
+        mix(&area->m_maxX, sizeof(area->m_maxX));
+        mix(&area->m_maxZ, sizeof(area->m_maxZ));
+        if (!area->m_points.empty())
+            mix(&area->m_points[0], area->m_points.size() * sizeof(area->m_points[0]));
+    }
+    return hash;
+}
+
+// The navmeshes as two lists per map (filled polygons, their edges), built once per loaded mesh and combat area shape
+// and drawn whole, depth tested (App/WorldOverlay). Polygons bots cannot walk in this layer are drawn dark: material 0
+// in the file, or centre outside the layer's ground combat area, which the game's AI blocks at level load
+// (QuadTreeManager::blockPolygonsOutsideCombatArea).
 void ViewportTools::drawNavMesh(EditSession& session, const float viewProjection[16])
 {
     (void)viewProjection;
@@ -1224,25 +1457,40 @@ void ViewportTools::drawNavMesh(EditSession& session, const float viewProjection
     static std::vector<WorldVertex> fills[NavMesh::KindCount], edges[NavMesh::KindCount];
     static const void* builtFor[NavMesh::KindCount] = { 0, 0 };
     static size_t builtCount[NavMesh::KindCount] = { 0, 0 };
+    static unsigned builtAreas[NavMesh::KindCount] = { 0, 0 };
+    const unsigned areas = groundCombatAreaSignature();
     for (int k = 0; k < NavMesh::KindCount; ++k)
     {
         const NavMesh::Kind kind = static_cast<NavMesh::Kind>(k);
         if (!(kind == NavMesh::Infantry ? overlays.navMeshInfantry : overlays.navMeshVehicle) || !mesh.loaded(kind))
             continue;
         const std::vector<NavMesh::Polygon>& polygons = mesh.polygons(kind);
-        if (builtFor[k] != &polygons[0] || builtCount[k] != polygons.size())
+        if (builtFor[k] != &polygons[0] || builtCount[k] != polygons.size() || builtAreas[k] != areas)
         {
             builtFor[k] = &polygons[0];
             builtCount[k] = polygons.size();
+            builtAreas[k] = areas;
             fills[k].clear();
             edges[k].clear();
             const bool infantry = kind == NavMesh::Infantry;
-            const unsigned fill = infantry ? worldColour(70, 230, 70, 45) : worldColour(255, 160, 40, 45);
-            const unsigned edge = infantry ? worldColour(70, 230, 70, 170) : worldColour(255, 160, 40, 170);
+            const unsigned walkableFill = infantry ? worldColour(70, 230, 70, 45) : worldColour(255, 160, 40, 45);
+            const unsigned walkableEdge = infantry ? worldColour(70, 230, 70, 170) : worldColour(255, 160, 40, 170);
+            const unsigned blockedFill = worldColour(0, 0, 0, 120);
+            const unsigned blockedEdge = infantry ? worldColour(35, 115, 35, 110) : worldColour(128, 80, 20, 110);
             const float lift = infantry ? 0.10f : 0.20f;
             for (size_t i = 0; i < polygons.size(); ++i)
             {
                 const NavMesh::Polygon& polygon = polygons[i];
+                float centreX = 0.0f, centreZ = 0.0f;
+                for (unsigned c = 0; c < polygon.count; ++c)
+                {
+                    centreX += mesh.vertex(kind, polygon.first + c)[0];
+                    centreZ += mesh.vertex(kind, polygon.first + c)[2];
+                }
+                const bool blocked = polygon.material == 0 || (polygon.count
+                                     && groundCombatAreaTest(centreX / polygon.count, centreZ / polygon.count) == 0);
+                const unsigned fill = blocked ? blockedFill : walkableFill;
+                const unsigned edge = blocked ? blockedEdge : walkableEdge;
                 WorldVertex first = { 0.0f, 0.0f, 0.0f, fill };
                 for (unsigned c = 0; c < polygon.count; ++c)
                 {

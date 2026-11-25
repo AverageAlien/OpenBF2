@@ -790,6 +790,28 @@ bool EditSession::hostTool(const std::string& action, const std::string& argumen
     }
     if (action == "copyArea")
         return copyCombatArea(argument, result);
+    if (action == "drawArea")
+        return beginAreaDraw(argument, result);
+    if (action == "drawAreaPoint")
+    {
+        // "<x>\n<z>" (EditorCombatArea.drawPoint).
+        const size_t split = argument.find('\n');
+        if (split == std::string::npos)
+        {
+            result = "EditorCombatArea.drawPoint takes x and z";
+            return false;
+        }
+        return areaDrawAdd(static_cast<float>(std::atof(argument.substr(0, split).c_str())),
+                           static_cast<float>(std::atof(argument.substr(split + 1).c_str())), result);
+    }
+    if (action == "drawAreaUndo")
+        return areaDrawUndo(result);
+    if (action == "drawAreaClose")
+        return areaDrawClose(result);
+    if (action == "drawAreaCancel")
+        return areaDrawCancel(result);
+    if (action == "orientArea")
+        return orientCombatArea(argument, result);
     if (action == "pasteArea")
         return pasteCombatArea(argument, result);
     if (action == "levels" || action == "open")

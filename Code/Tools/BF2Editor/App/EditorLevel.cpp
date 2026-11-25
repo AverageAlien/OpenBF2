@@ -376,6 +376,9 @@ bool EditorLevel::open(const std::string& name, const std::string& gameMode, int
     settings->stringSet("GSGameMode", gameMode);
     settings->intSet("GSMaxNrOfPlayers", maxPlayers);
     settings->boolSet("GSUseObjectCache", false);
+    // [CHOSEN, not recovered] The geometry templates the level does not use stay registered (unloaded), so an object
+    // of a template new to the level can have its meshes loaded when it is made (EditSession::loadTemplateGeometry).
+    settings->boolSet("GSKeepTemplates", true);
     m_game->setLevel(levelDirectory, name, gameMode, maxPlayers);
 
     logLine(LogLevel::Info, "level: opening %s (%s, %d players)", path.c_str(), gameMode.c_str(), maxPlayers);

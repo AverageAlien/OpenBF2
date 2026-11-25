@@ -68,6 +68,10 @@ private:
     // The selected combat area's point handles; true when they took the mouse this frame.
     bool handleCombatAreas(EditSession& session, const float viewProjection[16]);
     bool pickCombatArea(EditSession& session, const float viewProjection[16], const std::string& except);
+    // The combat area drawing tool (EditSession::areaDrawActive): a click adds the ground point under it, a click on
+    // the first point closes the outline; the outline so far, the edge to the cursor and the closing edge drawn.
+    void handleAreaDraw(EditSession& session, const float viewProjection[16]);
+    void drawAreaDraw(EditSession& session, const float viewProjection[16]);
     bool areaPointOnScreen(EditSession& session, const std::pair<float, float>& point, const float viewProjection[16],
                            ImVec2& out) const;
     void handleGizmo(EditSession& session, const float view[16], const float projection[16],

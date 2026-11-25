@@ -1185,14 +1185,53 @@ void SessionPanels::drawCombatAreas(EditSession& session)
         ImGui::SameLine();
         if (ImGui::Button("Delete area"))
             session.runCommand("EditorCombatArea.delete " + area.name, "combat areas");
+        // The engine's one-point direction test (Framework/CombatAreaShape.h): wrong, the navmesh export reverses it.
+        if (area.points.size() >= 3 && !areaSelfIntersects(area.points) && !areaDirectionReadable(area.points))
+        {
+            ImGui::TextColored(ImVec4(1.0f, 0.55f, 0.35f, 1.0f), "The engine reads this outline's direction wrong:");
+            ImGui::TextColored(ImVec4(1.0f, 0.55f, 0.35f, 1.0f), "the navmesh export would get it reversed.");
+            if (ImGui::Button("Fix point order"))
+                session.runCommand("EditorCombatArea.orient " + area.name, "combat areas");
+            ImGui::SetItemTooltip("Stores the points clockwise, from a point whose first edge the engine's test reads "
+                                  "right. The shape stays the same.");
+        }
+        else if (area.points.size() >= 3 && areaSelfIntersects(area.points))
+            ImGui::TextColored(ImVec4(1.0f, 0.4f, 0.35f, 1.0f), "The outline crosses itself.");
     }
 
     ImGui::SeparatorText("New area");
+    if (session.areaDrawActive())
+    {
+        ImGui::Text("Drawing %s: %u points", session.areaDrawName().c_str(),
+                    static_cast<unsigned>(session.areaDrawPoints().size()));
+        ImGui::TextDisabled("Click the ground point by point, then the first point to close.");
+        ImGui::BeginDisabled(session.areaDrawPoints().size() < 3);
+        if (ImGui::Button("Close"))
+            session.runCommand("EditorCombatArea.drawClose", "combat areas");
+        ImGui::EndDisabled();
+        ImGui::SameLine();
+        ImGui::BeginDisabled(session.areaDrawPoints().empty());
+        if (ImGui::Button("Undo point"))
+            session.runCommand("EditorCombatArea.drawUndo", "combat areas");
+        ImGui::EndDisabled();
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel"))
+            session.runCommand("EditorCombatArea.drawCancel", "combat areas");
+        ImGui::End();
+        return;
+    }
     ImGui::SetNextItemWidth(160.0f);
     ImGui::InputText("Name##newArea", m_newAreaName, sizeof(m_newAreaName));
+    ImGui::BeginDisabled(!m_newAreaName[0]);
+    if (ImGui::Button("Draw in the view"))
+        session.runCommand(std::string("EditorCombatArea.draw ") + m_newAreaName, "combat areas");
+    ImGui::EndDisabled();
+    ImGui::SetItemTooltip("As the retail editor: click the ground point by point and close on the first point. "
+                          "Backspace takes the last point off, Enter closes, Esc cancels.");
     ImGui::SetNextItemWidth(120.0f);
     ImGui::InputFloat("Size (m)", &m_newAreaSize, 10.0f, 50.0f, "%.0f");
-    if (ImGui::Button("Create at the view centre") && m_newAreaName[0])
+    ImGui::SameLine();
+    if (ImGui::Button("Square at the view centre") && m_newAreaName[0])
     {
         std::snprintf(line, sizeof(line), "EditorCombatArea.createHere %s %g", m_newAreaName, m_newAreaSize);
         session.runCommand(line, "combat areas");

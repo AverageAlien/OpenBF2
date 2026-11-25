@@ -13,6 +13,7 @@
 
 #include "Framework/EditorConfig.h"
 
+#include "Framework/CombatAreaShape.h"
 #include "Framework/CommandHistory.h"
 #include "Framework/EditorConsole.h"
 #include "Framework/LayerSummary.h"
@@ -448,6 +449,12 @@ public:
     // part of the level: never saved, not picked themselves - a click on one picks its spawner. [CHOSEN, not recovered]
     void updateVehicleGhosts();
     void clearVehicleGhosts();
+    // [CHOSEN, not recovered] The meshes and collision meshes of a template and its children, loaded now when they
+    // are not: a level loads only those of the templates it uses (ResourceManager::postLoadLevel,
+    // CollisionManager::postLevelLoad), so an object or vehicle ghost of a template new to the level had no mesh, no
+    // bounding box and nothing to click. The editor keeps the others registered for this (GSKeepTemplates,
+    // EditorLevel::load; the editor build of CollisionManager). Called before the object is made.
+    void loadTemplateGeometry(dice::hfe::world::IObjectTemplate* objectTemplate);
     // The spawn point whose soldier capsule, or the spawner whose vehicle, the ray through window pixel (x, y) meets
     // first; 0 when none.
     unsigned spawnShapeAt(float x, float y, std::string& detail) const;
@@ -1119,6 +1126,23 @@ public:
     // points and settings kept, then a new area made from them under another name, one undoable edit.
     bool copyCombatArea(const std::string& name, std::string& result);
     bool pasteCombatArea(const std::string& name, std::string& result);
+    // The drawing tool (EditorCombatArea.draw), as the retail editor makes an area: each click on the ground adds a
+    // point, and closing on the first point makes the area from them, one undoable edit. A point whose edge would cross
+    // the outline is refused, and so is a close that would. [CHOSEN, not recovered]: the new area is stored in the
+    // order the engine's direction test reads right (Framework/CombatAreaShape.h).
+    bool areaDrawActive() const { return !m_areaDrawName.empty(); }
+    const std::string& areaDrawName() const { return m_areaDrawName; }
+    const AreaOutline& areaDrawPoints() const { return m_areaDrawPoints; }
+    bool beginAreaDraw(const std::string& name, std::string& result);
+    bool areaDrawAdd(float x, float z, std::string& result);
+    bool areaDrawUndo(std::string& result);
+    bool areaDrawClose(std::string& result);
+    bool areaDrawCancel(std::string& result);
+    // A new area from an outline already in the engine's order (areaOrientForEngine), one undoable edit.
+    bool createCombatAreaFromOutline(const std::string& name, const AreaOutline& points, const std::string& label,
+                                     std::string& result);
+    // An existing area's points put into the order the engine's direction test reads right, one undoable edit.
+    bool orientCombatArea(const std::string& name, std::string& result);
     bool moveCombatAreaPoint(const std::string& name, int index, float x, float z, std::string& result);
     // Before point `index` (the point count appends).
     bool insertCombatAreaPoint(const std::string& name, int index, float x, float z, std::string& result);
@@ -1496,6 +1520,8 @@ private:
     float                         m_clipboardOrigin[3];     // where the copied primary stood (paste in place)
     LevelObjectFile::CombatAreaData m_copiedArea;           // EditorCombatArea.copy
     bool                          m_hasCopiedArea;
+    std::string                   m_areaDrawName;       // the area being drawn; "" when the tool is off
+    AreaOutline                   m_areaDrawPoints;
     std::string                   m_panelTemplate;      // EditorObjectTemplate.show, for the panel
     // Undergrowth (App/EditSessionUndergrowth.cpp).
     bool loadUndergrowth(std::string& error);

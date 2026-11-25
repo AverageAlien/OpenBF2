@@ -1692,6 +1692,17 @@ std::string helpDocumentsList() { return hostToolAction("helpDocuments", ""); }
 std::string helpOpen(const std::string& name) { return hostToolAction("helpOpen", name); }
 std::string helpDescribe(const std::string& command) { return hostToolAction("helpDescribe", command); }
 std::string combatCopy(const std::string& name) { return hostToolAction("copyArea", name); }
+std::string combatDraw(const std::string& name) { return hostToolAction("drawArea", name); }
+std::string combatDrawPoint(float x, float z)
+{
+    char argument[64];
+    std::snprintf(argument, sizeof(argument), "%.3f\n%.3f", x, z);
+    return hostToolAction("drawAreaPoint", argument);
+}
+std::string combatDrawUndo() { return hostToolAction("drawAreaUndo", ""); }
+std::string combatDrawClose() { return hostToolAction("drawAreaClose", ""); }
+std::string combatDrawCancel() { return hostToolAction("drawAreaCancel", ""); }
+std::string combatOrient(const std::string& name) { return hostToolAction("orientArea", name); }
 std::string gameplaySelectSpawners() { return hostToolAction("selectSpawners", ""); }
 std::string gameplaySupplyGroups() { return hostToolAction("supplyGroups", ""); }
 std::string lightingLightSetup() { return hostToolAction("lightSetup", ""); }
@@ -2991,6 +3002,12 @@ BF2_CONSOLE_METHOD_3_RET_ACTIVE(create, combatCreate, std::string, g_commands !=
 BF2_CONSOLE_METHOD_2_RET_ACTIVE(createHere, combatCreateHere, std::string, g_commands != 0, std::string, float, kEditorConsoleTag)
 BF2_CONSOLE_METHOD_1_RET_ACTIVE(copy, combatCopy, std::string, g_commands != 0, std::string, kEditorConsoleTag)
 BF2_CONSOLE_METHOD_1_RET_ACTIVE(paste, combatPaste, std::string, g_commands != 0, std::string, kEditorConsoleTag)
+BF2_CONSOLE_METHOD_1_RET_ACTIVE(draw, combatDraw, std::string, g_commands != 0, std::string, kEditorConsoleTag)
+BF2_CONSOLE_METHOD_2_RET_ACTIVE(drawPoint, combatDrawPoint, std::string, g_commands != 0, float, float, kEditorConsoleTag)
+BF2_CONSOLE_METHOD_0_RET_ACTIVE(drawUndo, combatDrawUndo, std::string, g_commands != 0, kEditorConsoleTag)
+BF2_CONSOLE_METHOD_0_RET_ACTIVE(drawClose, combatDrawClose, std::string, g_commands != 0, kEditorConsoleTag)
+BF2_CONSOLE_METHOD_0_RET_ACTIVE(drawCancel, combatDrawCancel, std::string, g_commands != 0, kEditorConsoleTag)
+BF2_CONSOLE_METHOD_1_RET_ACTIVE(orient, combatOrient, std::string, g_commands != 0, std::string, kEditorConsoleTag)
 BF2_CONSOLE_METHOD_1_RET_ACTIVE(delete, combatDelete, std::string, g_commands != 0, std::string, kEditorConsoleTag)
 BF2_CONSOLE_METHOD_4(movePoint, combatMovePoint, g_commands != 0, std::string, int, float, float, kEditorConsoleTag)
 BF2_CONSOLE_METHOD_4(insertPoint, combatInsertPoint, g_commands != 0, std::string, int, float, float, kEditorConsoleTag)

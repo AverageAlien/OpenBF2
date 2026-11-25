@@ -16,6 +16,12 @@
 #include "Game/Objects/IObjectTemplate.h"
 #include "Game/GameLogic/CombatArea.h"
 #include "Game/GameLogic/CombatAreaManager.h"
+#include "Game/Main/BF2ClientSeams.h"
+#include "Game/Objects/Base/BundleTemplate.h"
+#include "Game/Objects/Base/SimpleObjectTemplate.h"
+#include "Geom/GeometryTemplateManager.h"
+#include "Geom/IGeometryTemplate.h"
+#include "Physics/CollisionManager.h"
 #include "Math/LocalBoundingBox.h"
 #include "Scene/Object/ObjectManager.h"
 #include "Scene/Object/ObjectPredicator.h"
@@ -23,6 +29,7 @@
 #include "IO/Console/Console.h"
 
 #include <algorithm>
+#include <cctype>
 #include <cfloat>
 #include <cmath>
 #include <cstdio>
@@ -1704,6 +1711,8 @@ bool EditSession::makeObject(const std::string& templateName, const Mat4& transf
     }
     // Object.create (ObjectTemplateAdm::createObject) makes the object and the active object; an
     // unknown template makes nothing and clears the active object.
+    if (dice::hfe::world::objectTemplateManager)
+        loadTemplateGeometry(dice::hfe::world::objectTemplateManager->getTemplate(templateName));
     const std::string answer = engineLine("Object.create " + templateName);
     IObject* made = dice::hfe::world::objectManager->getActiveObject();
     if (!made || !made->getTemplate() || _stricmp(made->getTemplate()->getName().c_str(), templateName.c_str()) != 0)
@@ -2591,22 +2600,40 @@ bool EditSession::createCombatArea(const std::string& name, const Vec3& centre, 
         result = "a new combat area needs a size above 1 m";
         return false;
     }
-    // [CHOSEN] a square around the point, its corners the first four points, on the layer the
-    // level's other areas use (else the gameplay layer's objects').
+    // [CHOSEN] a square around the point, its corners the first four points, in the order the engine's direction test
+    // reads right.
+    AreaOutline points;
+    const float h = size * 0.5f;
+    points.push_back(std::make_pair(centre.x - h, centre.z - h));
+    points.push_back(std::make_pair(centre.x + h, centre.z - h));
+    points.push_back(std::make_pair(centre.x + h, centre.z + h));
+    points.push_back(std::make_pair(centre.x - h, centre.z + h));
+    areaOrientForEngine(points);
+    return createCombatAreaFromOutline(name, points, "Create combat area " + name, result);
+}
+
+// [CHOSEN] on the layer the level's other areas use (else the gameplay layer's objects').
+bool EditSession::createCombatAreaFromOutline(const std::string& name, const AreaOutline& points,
+                                              const std::string& label, std::string& result)
+{
+    LevelObjectFile::CombatAreaData existing;
+    if (!combatAreaEditable(name, false, existing, result))
+        return false;
+    if (engineCombatArea(name, existing))
+    {
+        result = "a combat area named '" + name + "' exists already";
+        return false;
+    }
     LevelObjectFile::CombatAreaData area;
     area.name = name;
-    const float h = size * 0.5f;
-    area.points.push_back(std::make_pair(centre.x - h, centre.z - h));
-    area.points.push_back(std::make_pair(centre.x + h, centre.z - h));
-    area.points.push_back(std::make_pair(centre.x + h, centre.z + h));
-    area.points.push_back(std::make_pair(centre.x - h, centre.z + h));
+    area.points = points;
     size_t file = 0;
     m_document->gameplayFile(file);
     const std::vector<LevelObjectFile::CombatAreaData> areas = combatAreas();
     area.layer = m_layerModel.active() ? m_layerModel.activeLayer
                : !areas.empty() ? areas.back().layer : (m_document->fileLayer(file) >= 0 ? m_document->fileLayer(file) : 1);
     HistoryEntry entry;
-    entry.label = "Create combat area " + name;
+    entry.label = label;
     entry.doScript = defineAreaScript(area) + syncLine(name);
     entry.undoScript = removeAreaScript(name) + syncLine(name);
     if (!m_history.execute(entry, result))
@@ -2620,6 +2647,143 @@ bool EditSession::createCombatArea(const std::string& name, const Vec3& centre, 
     m_activeCombatPoint = -1;
     logLine(LogLevel::Info, "edit: %s", entry.label.c_str());
     result = entry.label + " (" + m_document->fileName(file) + ")";
+    return true;
+}
+
+bool EditSession::beginAreaDraw(const std::string& name, std::string& result)
+{
+    LevelObjectFile::CombatAreaData existing;
+    if (!combatAreaEditable(name, false, existing, result))
+        return false;
+    if (engineCombatArea(name, existing))
+    {
+        result = "a combat area named '" + name + "' exists already";
+        return false;
+    }
+    m_areaDrawName = name;
+    m_areaDrawPoints.clear();
+    if (!m_combatAreasShown)
+    {
+        std::string error;
+        setCombatAreasShown(true, error);
+    }
+    result = "drawing combat area " + name + ": click the ground point by point, then click the first point to close "
+             "(Backspace takes the last point off, Esc cancels)";
+    return true;
+}
+
+bool EditSession::areaDrawAdd(float x, float z, std::string& result)
+{
+    if (!areaDrawActive())
+    {
+        result = "no combat area is being drawn (EditorCombatArea.draw <name>)";
+        return false;
+    }
+    const std::pair<float, float> point(x, z);
+    if (!m_areaDrawPoints.empty())
+    {
+        const std::pair<float, float>& last = m_areaDrawPoints.back();
+        if (std::fabs(last.first - x) < 0.01f && std::fabs(last.second - z) < 0.01f)
+        {
+            result = "that is where the last point is";
+            return false;
+        }
+    }
+    const int crossed = areaChainCrossing(m_areaDrawPoints, point);
+    if (crossed >= 0)
+    {
+        char text[160];
+        std::snprintf(text, sizeof(text), "a point there would cross the outline's edge %d-%d: refused", crossed + 1,
+                      crossed + 2);
+        result = text;
+        return false;
+    }
+    m_areaDrawPoints.push_back(point);
+    char text[160];
+    std::snprintf(text, sizeof(text), "point %u at %.2f / %.2f", static_cast<unsigned>(m_areaDrawPoints.size()), x, z);
+    result = text;
+    return true;
+}
+
+bool EditSession::areaDrawUndo(std::string& result)
+{
+    if (m_areaDrawPoints.empty())
+    {
+        result = "no point to take off";
+        return false;
+    }
+    m_areaDrawPoints.pop_back();
+    char text[64];
+    std::snprintf(text, sizeof(text), "%u points", static_cast<unsigned>(m_areaDrawPoints.size()));
+    result = text;
+    return true;
+}
+
+bool EditSession::areaDrawClose(std::string& result)
+{
+    if (!areaDrawActive())
+    {
+        result = "no combat area is being drawn (EditorCombatArea.draw <name>)";
+        return false;
+    }
+    if (m_areaDrawPoints.size() < 3)
+    {
+        result = "a combat area needs at least three points";
+        return false;
+    }
+    if (areaClosingCrosses(m_areaDrawPoints))
+    {
+        result = "closing the outline there would cross one of its edges: refused";
+        return false;
+    }
+    AreaOutline points = m_areaDrawPoints;
+    if (!areaOrientForEngine(points))
+    {
+        result = "the outline encloses no area, or crosses itself: refused";
+        return false;
+    }
+    const std::string name = m_areaDrawName;
+    char label[160];
+    std::snprintf(label, sizeof(label), "Draw combat area %s (%u points)", name.c_str(), static_cast<unsigned>(points.size()));
+    if (!createCombatAreaFromOutline(name, points, label, result))
+        return false;
+    m_areaDrawName.clear();
+    m_areaDrawPoints.clear();
+    return true;
+}
+
+bool EditSession::areaDrawCancel(std::string& result)
+{
+    if (!areaDrawActive())
+    {
+        result = "no combat area is being drawn";
+        return false;
+    }
+    result = "drawing combat area " + m_areaDrawName + " cancelled";
+    m_areaDrawName.clear();
+    m_areaDrawPoints.clear();
+    return true;
+}
+
+bool EditSession::orientCombatArea(const std::string& name, std::string& result)
+{
+    LevelObjectFile::CombatAreaData before;
+    if (!combatAreaEditable(name, true, before, result))
+        return false;
+    if (areaDirectionReadable(before.points))
+    {
+        result = "the engine reads combat area " + name + "'s direction right already";
+        return true;
+    }
+    LevelObjectFile::CombatAreaData after = before;
+    if (!areaOrientForEngine(after.points))
+    {
+        result = "combat area " + name + " encloses no area or crosses itself, so it has no direction to fix: refused";
+        return false;
+    }
+    if (!replaceCombatArea(before, after, "Fix the point order of combat area " + name, result))
+        return false;
+    m_activeCombatPoint = -1;
     return true;
 }
 
@@ -4530,6 +4694,53 @@ Mat4 ghostMatrix(const Mat4& spawner, IObject* vehicle)
 
 } // namespace
 
+void EditSession::loadTemplateGeometry(dice::hfe::world::IObjectTemplate* objectTemplate)
+{
+    using namespace dice::hfe;
+    if (!g_geometryTemplateManager)
+        return;
+    geom::IGeometryTemplateManager* manager = static_cast<geom::IGeometryTemplateManager*>(g_geometryTemplateManager);
+    std::vector<std::pair<world::IObjectTemplate*, int> > pending(1, std::make_pair(objectTemplate, 0));
+    std::set<std::string> done;
+    while (!pending.empty())
+    {
+        world::IObjectTemplate* t = pending.back().first;
+        const int depth = pending.back().second;
+        pending.pop_back();
+        if (!t || depth > 16)
+            continue;
+        if (world::ISimpleObjectTemplate* simple =
+                static_cast<world::ISimpleObjectTemplate*>(t->queryInterface(world::IID_ISimpleObjectTemplate)))
+        {
+            const std::string name = simple->getGeometry();
+            std::string key = "g:" + name;
+            std::transform(key.begin(), key.end(), key.begin(), [](char c) { return static_cast<char>(std::tolower(static_cast<unsigned char>(c))); });
+            if (!name.empty() && done.insert(key).second)
+            {
+                geom::IGeometryTemplate* geometry = manager->getTemplate(name);
+                if (geometry && !geometry->isLoaded())
+                {
+                    const bool loaded = geometry->load();
+                    logLine(loaded ? LogLevel::Info : LogLevel::Warning, "geometry: %s %s for %s (the level did not use it)",
+                            loaded ? "loaded" : "could not load", name.c_str(), t->getName().c_str());
+                }
+            }
+            const std::string collision = simple->getCollisionMesh();
+            key = "c:" + collision;
+            std::transform(key.begin(), key.end(), key.begin(), [](char c) { return static_cast<char>(std::tolower(static_cast<unsigned char>(c))); });
+            if (!collision.empty() && done.insert(key).second && world::collisionManager)
+            {
+                world::CollisionManager* collisions = static_cast<world::CollisionManager*>(world::collisionManager);
+                if (!collisions->loadRegistered(collision))
+                    logLine(LogLevel::Warning, "geometry: no collision mesh %s for %s", collision.c_str(), t->getName().c_str());
+            }
+        }
+        if (world::IBundleTemplate* bundle = static_cast<world::IBundleTemplate*>(t->queryInterface(world::IID_IBundleTemplate)))
+            for (int i = 0; i < bundle->getNoTemplates(); ++i)
+                pending.push_back(std::make_pair(world::objectTemplateManager->getTemplate(bundle->getTemplate(i)), depth + 1));
+    }
+}
+
 void EditSession::clearVehicleGhosts()
 {
     for (std::map<unsigned, VehicleGhost>::iterator it = m_ghosts.begin(); it != m_ghosts.end(); ++it)
@@ -4604,6 +4815,7 @@ void EditSession::updateVehicleGhosts()
             if (!t)
                 continue;
             ++made;
+            loadTemplateGeometry(t);
             IObject* previous = objectManager->getActiveObject();
             engineLine("Object.create " + t->getName());
             IObject* ghostObject = objectManager->getActiveObject();

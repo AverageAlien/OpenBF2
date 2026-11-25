@@ -160,6 +160,11 @@ public:
     std::map<std::string, std::vector<CollisionMeshTemplate*>, NoCaseStringCompare>::iterator
     erase(std::map<std::string, std::vector<CollisionMeshTemplate*>, NoCaseStringCompare>::iterator it);
     void load(std::vector<CollisionMeshTemplate*>& templates);
+#if defined(BF2_IMAGE_EDITOR) && BF2_IMAGE_EDITOR
+    // [CHOSEN, not recovered] editor-only: loads a registered collision mesh that no object of the level asked for
+    // (postLevelLoad keeps those registered in the editor). True when it is loaded.
+    bool loadRegistered(const std::string& name);
+#endif
     void drawDebugPrimitives();
     void rotateObjectAroundVector(IObject* object, const Vec3& axis, float radians);
     // Returns the focused object, or null. Static entry point; no manager instance is required.

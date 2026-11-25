@@ -10,6 +10,7 @@
 #include "Framework/AnimationSystemFile.h"
 #include "Framework/ArchiveRewrite.h"
 #include "Framework/BafHeader.h"
+#include "Framework/CombatAreaShape.h"
 #include "Framework/GameplayLayers.h"
 #include "Framework/LightSetupFile.h"
 #include "Framework/GroundPropertiesFile.h"
@@ -1147,6 +1148,66 @@ void checkLevelObjectFileCombatAreas()
 
 // Ambient sounds (phase C): a Sound template block goes and comes with its `Sound.addTrigger` line; a new
 // one takes the class's banner spelling and its record the editor block's form (no banner).
+void checkCombatAreaShape()
+{
+    typedef std::pair<float, float> P;
+    // Anticlockwise square: the engine's probe reads it so; oriented, it runs clockwise and is still read right.
+    AreaOutline square;
+    square.push_back(P(0.0f, 0.0f));
+    square.push_back(P(100.0f, 0.0f));
+    square.push_back(P(100.0f, 100.0f));
+    square.push_back(P(0.0f, 100.0f));
+    CHECK(areaSignedArea(square) > 0.0 && areaDirectionReadable(square));
+    AreaOutline oriented = square;
+    CHECK(areaOrientForEngine(oriented) && areaSignedArea(oriented) < 0.0 && areaEngineSaysClockwise(oriented)
+          && oriented.size() == 4);
+    // A long first edge (retail Highway_Tampa): the probe lands outside an anticlockwise strip and calls it clockwise.
+    AreaOutline strip;
+    strip.push_back(P(0.0f, 0.0f));
+    strip.push_back(P(1000.0f, 0.0f));
+    strip.push_back(P(1000.0f, 100.0f));
+    strip.push_back(P(0.0f, 100.0f));
+    CHECK(areaSignedArea(strip) > 0.0 && areaEngineSaysClockwise(strip) && !areaDirectionReadable(strip));
+    CHECK(areaOrientForEngine(strip) && areaSignedArea(strip) < 0.0 && areaDirectionReadable(strip));
+    // A U shape (concave): every outcome is read right and runs clockwise.
+    AreaOutline u;
+    u.push_back(P(0.0f, 0.0f));
+    u.push_back(P(300.0f, 0.0f));
+    u.push_back(P(300.0f, 300.0f));
+    u.push_back(P(200.0f, 300.0f));
+    u.push_back(P(200.0f, 20.0f));
+    u.push_back(P(100.0f, 20.0f));
+    u.push_back(P(100.0f, 300.0f));
+    u.push_back(P(0.0f, 300.0f));
+    CHECK(!areaSelfIntersects(u) && areaOrientForEngine(u) && areaSignedArea(u) < 0.0 && areaDirectionReadable(u));
+    // Crossings while drawing: a point whose edge crosses an earlier one, a point doubling back, a closing edge.
+    AreaOutline chain;
+    chain.push_back(P(0.0f, 0.0f));
+    chain.push_back(P(10.0f, 0.0f));
+    chain.push_back(P(10.0f, 10.0f));
+    CHECK(areaChainCrossing(chain, P(5.0f, -5.0f)) == 0);
+    CHECK(areaChainCrossing(chain, P(10.0f, 5.0f)) == 1);
+    CHECK(areaChainCrossing(chain, P(0.0f, 10.0f)) == -1);
+    AreaOutline closing;
+    closing.push_back(P(0.0f, 0.0f));
+    closing.push_back(P(0.0f, 10.0f));
+    closing.push_back(P(10.0f, 10.0f));
+    closing.push_back(P(20.0f, 0.0f));
+    CHECK(areaChainCrossing(closing, P(10.0f, 20.0f)) == -1);
+    closing.push_back(P(10.0f, 20.0f));
+    CHECK(areaClosingCrosses(closing) && areaSelfIntersects(closing));
+    closing.pop_back();
+    CHECK(!areaClosingCrosses(closing) && !areaSelfIntersects(closing));
+    // A bowtie encloses nothing net and crosses itself: refused.
+    AreaOutline bowtie;
+    bowtie.push_back(P(0.0f, 0.0f));
+    bowtie.push_back(P(10.0f, 10.0f));
+    bowtie.push_back(P(10.0f, 0.0f));
+    bowtie.push_back(P(0.0f, 10.0f));
+    AreaOutline kept = bowtie;
+    CHECK(areaSelfIntersects(bowtie) && !areaOrientForEngine(bowtie) && bowtie == kept);
+}
+
 void checkLevelObjectFileSounds()
 {
     const std::string blockA =
@@ -4843,6 +4904,7 @@ int main()
     checkLevelObjectFileTemplates();
     checkLevelObjectFileGameplay();
     checkLevelObjectFileCombatAreas();
+    checkCombatAreaShape();
     checkLevelObjectFileSounds();
     checkLevelObjectFileRenames();
     checkLevelSettingsFile();

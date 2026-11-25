@@ -449,7 +449,8 @@ void EditSession::updateControlPointFlags()
         return;
     // Only a server keeps a capturable point's authored team (a client waits for the server's): in the editor such
     // points had no team, so no flag showed. Each point is put back to its template's team, which also follows edits
-    // of that team.
+    // of that team. An owned point whose flag is not hoisted (an uncappable point keeps its team on a client, but its
+    // take-over counter stays 0, so its flag hung at the foot of the pole) is reset too: the game shows it at the top.
     const std::map<unsigned int, IObject*>& roots = objectManager->getAllObjectsFromGrid();
     for (std::map<unsigned int, IObject*>::const_iterator it = roots.begin(); it != roots.end(); ++it)
     {
@@ -459,7 +460,8 @@ void EditSession::updateControlPointFlags()
         const IObjectTemplate* t = it->second->getTemplate();
         IControlPointTemplate* pointTemplate =
             t ? static_cast<IControlPointTemplate*>(t->queryInterface(IID_IControlPointTemplate)) : 0;
-        if (point && pointTemplate && point->getTeam() != pointTemplate->getStartTeam())
+        if (point && pointTemplate
+            && (point->getTeam() != pointTemplate->getStartTeam() || (point->getTeam() != 0 && point->getTakeOverCounter() < 1.0f)))
             point->reset();
     }
 }
