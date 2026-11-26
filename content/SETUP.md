@@ -8,8 +8,46 @@ built. Nothing here is a prebuilt binary or a full game: you need your own Battl
 The steps are written so that a person or a coding agent can follow them in order. Agents changing
 engine source must also follow [AGENTS.md](../AGENTS.md); this file only covers setup.
 
-Status: the author plays it on Linux under Wine. The Windows build and launch steps follow upstream's
-documented path but haven't been tried on Windows.
+Status: the author plays it on Linux under Wine, on one machine. The Windows build and launch steps
+follow upstream's documented path but haven't been tried on Windows, and an install without Special
+Forces hasn't been tried either.
+
+## What you end up with
+
+Two setups side by side in the same Battlefield 2 folder:
+
+| Client | Mod | Start with |
+| --- | --- | --- |
+| Retail `BF2.exe` (in the game folder, unchanged) | `mods/bf2` (unchanged) | your usual shortcut, as before |
+| OpenBF2 `BF2.exe` (in this repository's build folder) | `mods/openbf2` (new) | `run-openbf2.sh` / `run-openbf2.cmd` (step 4) |
+
+`mods/openbf2` is a copy of `mods/bf2` with this fork's changes on top. Most of them need the
+modified engine (new game mode, new tweak properties, new AI), so the retail client can't run
+`mods/openbf2`; that's why it is a separate mod. Keep `mods/bf2` installed: the engine loads any file
+`mods/openbf2` lacks from `mods/bf2`.
+
+Nothing of the retail install is changed: not the game's `.exe`/`.dll` files, not `mods/bf2`. The
+only shared things, on Linux, are the Wine setup in step 2 (DXVK in the game's Wine prefix, a
+`dxvk.conf` in the game folder), which retail uses too and benefits from. Both clients also use the
+same player profiles (`Documents/Battlefield 2/Profiles`), so video and control settings are shared.
+
+## For coding agents
+
+A user may only give you this repository's URL and where their game is installed. Then:
+
+1. Ask what you still need: the Battlefield 2 folder (the one with `BF2.exe` and `mods/bf2`), the
+   operating system, and on Linux the game's Wine prefix (the folder holding `drive_c` of the prefix
+   the game is installed in). Check that the folder has `mods/bf2/Levels` and that the game is 1.50.
+2. Clone as shown under Requirements, then follow sections 1 to 4 in order. On Linux, skip the
+   parts of section 2 the user already has (a working game under Wine).
+3. Commands that need administrator rights (`sudo pacman`, Visual Studio installer) are for the user
+   to run; give them the exact command.
+4. Check each step before the next:
+   - after the build: `out/build/release-x86/bin_client/` holds `BF2.exe` and `aidll.dll`;
+   - after the install: the script ends with `Done:` and `mods/openbf2/armorbuff_objects.zip` exists;
+   - after the first start: the user reaches the main menu, and "Strike at Karkand (Invasion) - 16"
+     is in the single player map list.
+5. Never change `mods/bf2` or the retail `.exe`/`.dll` files in the game folder.
 
 ## What the fork adds
 
@@ -66,8 +104,17 @@ cmake --build out/build/release-x86 --target bf2_client
 ```
 
 Optional, the editor: `cmake --build out/build/release-x86 --target bf2_editor`.
-If the batch helpers can't find Visual Studio, set `BF2_VSDEVCMD` to the full path of `VsDevCmd.bat`
-(see [docs/building.md](../docs/building.md)).
+
+From any other shell (an agent can't open that prompt), enter the same environment with the
+repository's helper in front of each command, from the repository root:
+
+```bat
+cmd /c "call Code\Build\vsdevcmd.cmd x86 && cmake --build out/build/release-x86 --target bf2_client"
+```
+
+Visual Studio's own CMake and Ninja (component "C++ CMake tools for Windows") are on the path in that
+environment. If the helper can't find Visual Studio, set `BF2_VSDEVCMD` to the full path of
+`VsDevCmd.bat` (see [docs/building.md](../docs/building.md)).
 
 ### Linux (Wine + msvc-wine)
 
@@ -107,7 +154,9 @@ from that folder: the linker rewrites files the running game has loaded.
 
 ## 2. Linux only: Battlefield 2 under Wine
 
-Skip this on Windows. The author's setup, with plain Wine (not Proton) and DXVK:
+Skip this on Windows, and skip what you already have if the retail game already runs under Wine.
+These settings apply to the retail client as well. The author's setup, with plain Wine (not Proton)
+and DXVK:
 
 1. Make a prefix for the game, for example `~/Games/bf2`, and always run its programs with
    `WINEPREFIX=~/Games/bf2`.
@@ -156,7 +205,11 @@ content\tools\openbf2\run-openbf2.cmd "C:\...\Battlefield 2"
 ```
 
 Both start `BF2.exe +menu 1 +fullscreen 1 +modPath mods/openbf2` with the game folder as working
-directory (the engine needs that). On Linux the log goes to `<prefix>/debug/openbf2-<time>.log`, and
+directory (the engine needs that).
+
+The retail game starts as before: your usual shortcut on Windows, or on Linux
+`cd "<Battlefield 2 folder>" && WINEPREFIX=~/Games/bf2 wine BF2.exe +menu 1 +fullscreen 1`
+(it runs `mods/bf2`). On Linux the log goes to `<prefix>/debug/openbf2-<time>.log`, and
 DXVK shows the frame rate (`DXVK_HUD=` turns it off).
 
 - Single player: pick an Invasion map, e.g. "Strike at Karkand (Invasion) - 32". The menu still

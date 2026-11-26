@@ -11,8 +11,12 @@ successful compilation or a diagnostic executable does not establish a playable 
 
 This fork adds engine changes (Invasion game mode, bot AI, native CCIP, mobility kill, tank/APC
 rebalance, commander and listen-server fixes, editor tools) and a game mod, `mods/openbf2`, that uses
-them. To build it and set up the mod on a retail Battlefield 2 1.50 install, follow
-[content/SETUP.md](content/SETUP.md).
+them. It installs next to a retail Battlefield 2 1.50 install without changing it: the retail
+client keeps running `mods/bf2`, and the client built here runs `mods/openbf2`. To build it and set
+it up, follow [content/SETUP.md](content/SETUP.md).
+
+Coding agents asked to set this fork up: read [content/SETUP.md](content/SETUP.md), section "For
+coding agents", first. The user only needs to tell you where their game is installed.
 
 ## Start here
 
